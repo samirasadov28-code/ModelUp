@@ -11,6 +11,8 @@ out/
 .env
 .env.local
 .env.*.local
+.env.setup
+.env.local.generated
 
 # Build outputs
 dist/
