@@ -9,22 +9,18 @@
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
-# Redirect all routes to Next.js (handled by plugin, but explicit fallback)
-[[redirects]]
-  from = "/*"
-  to = "/.netlify/functions/___netlify-handler"
-  status = 200
-
-# Environment variable hints (set real values in Netlify dashboard)
-# GROK_API_KEY                    → xAI Grok API key
-# NEXTAUTH_SECRET                 → random 32-char secret
-# NEXTAUTH_URL                    → https://your-site.netlify.app
-# NEXT_PUBLIC_SUPABASE_URL        → Supabase project URL
-# NEXT_PUBLIC_SUPABASE_ANON_KEY   → Supabase anon key
-# SUPABASE_SERVICE_ROLE_KEY       → Supabase service role key
-# STRIPE_SECRET_KEY               → Stripe secret key
+# Environment variable reference (set real values in Netlify dashboard)
+# GROK_API_KEY                       → xAI Grok API key
+# NEXT_PUBLIC_GA_ID                  → Google Analytics ID
+# NEXT_PUBLIC_SUPABASE_URL           → Supabase project URL
+# NEXT_PUBLIC_SUPABASE_ANON_KEY      → Supabase anon/publishable key
+# SUPABASE_SERVICE_ROLE_KEY          → Supabase service role key
+# STRIPE_SECRET_KEY                  → Stripe secret key
 # NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY → Stripe publishable key
-# STRIPE_WEBHOOK_SECRET           → Stripe webhook signing secret
-# STRIPE_PRICE_ID_PRO_MONTHLY     → Stripe price ID for $9.99/mo plan
-# PYTHON_SERVICE_URL              → URL of deployed excel-service (Railway/Fly.io)
-# NEXT_PUBLIC_APP_URL             → https://your-site.netlify.app
+# STRIPE_WEBHOOK_SECRET              → Stripe webhook signing secret
+# STRIPE_PRICE_ID_PRO_MONTHLY        → Stripe price ID for $9.99/mo plan
+# NEXTAUTH_URL                       → https://modelups.netlify.app
+# NEXTAUTH_SECRET                    → random 32-char secret
+# NEXT_PUBLIC_APP_URL                → https://modelups.netlify.app
+# PYTHON_SERVICE_URL                 → URL of deployed excel-service
+# NEXT_PUBLIC_GATE_ENABLED           → false
