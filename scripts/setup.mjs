@@ -168,11 +168,13 @@ alter table users enable row level security;
 alter table models enable row level security;
 
 -- Users can read/update their own row
-create policy if not exists "users_self_rw" on users
+drop policy if exists "users_self_rw" on users;
+create policy "users_self_rw" on users
   using (auth.uid() = id) with check (auth.uid() = id);
 
 -- Users can read/write their own models
-create policy if not exists "models_owner_rw" on models
+drop policy if exists "models_owner_rw" on models;
+create policy "models_owner_rw" on models
   using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
 -- Service role bypasses RLS (used by API routes)

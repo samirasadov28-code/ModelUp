@@ -31,11 +31,13 @@ alter table users  enable row level security;
 alter table models enable row level security;
 
 -- Users can read and update only their own row
-create policy if not exists "users_self_rw" on users
+drop policy if exists "users_self_rw" on users;
+create policy "users_self_rw" on users
   for all using (auth.uid() = id) with check (auth.uid() = id);
 
 -- Users can read and write only their own models
-create policy if not exists "models_owner_rw" on models
+drop policy if exists "models_owner_rw" on models;
+create policy "models_owner_rw" on models
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
 -- ── Updated-at trigger ────────────────────────────────────────────────────────
