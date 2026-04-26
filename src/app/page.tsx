@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, BarChart3, Download, Shield, Zap } from "lucide-react";
+import { VERSION_LABEL } from "@/lib/version";
 
 export default function LandingPage() {
   return (
@@ -141,9 +142,12 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="border-t border-white/8 py-8">
         <div className="max-w-5xl mx-auto px-6 flex items-center justify-between">
-          <span className="text-white/30 text-sm">
-            Model<span className="text-accent-500/50">Up</span>
-          </span>
+          <div className="flex items-center gap-3">
+            <span className="text-white/30 text-sm">
+              Model<span className="text-accent-500/50">Up</span>
+            </span>
+            <span className="text-white/15 text-xs font-mono">{VERSION_LABEL}</span>
+          </div>
           <div className="flex items-center gap-6">
             <Link href="/pricing" className="text-white/30 text-xs hover:text-white/60 transition-colors">
               Pricing

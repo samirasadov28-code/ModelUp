@@ -57,6 +57,23 @@ create or replace trigger models_updated_at
   before update on models
   for each row execute function set_updated_at();
 
+-- ── Feedback ─────────────────────────────────────────────────────────────────
+create table if not exists feedback (
+  id         uuid primary key default gen_random_uuid(),
+  email      text,
+  message    text not null,
+  rating     int check (rating between 1 and 5),
+  page_url   text,
+  created_at timestamptz default now()
+);
+
+alter table feedback enable row level security;
+
+-- Anyone can submit feedback (anonymous allowed)
+drop policy if exists "feedback_insert_all" on feedback;
+create policy "feedback_insert_all" on feedback
+  for insert with check (true);
+
 -- ── Indexes ───────────────────────────────────────────────────────────────────
 create index if not exists models_user_id_idx on models(user_id);
 create index if not exists users_stripe_id_idx on users(stripe_customer_id);
