@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Lightbulb, Zap, DollarSign, BarChart3, TrendingUp, Download } from "lucide-react";
 import { VERSION_LABEL } from "@/lib/version";
+import { ForceUpdateButton } from "@/components/ForceUpdateButton";
 
 export default function LandingPage() {
   return (
@@ -237,6 +238,7 @@ export default function LandingPage() {
             <Link href="/model/new" className="text-gray-400 text-xs hover:text-gray-600 transition-colors">
               Build a model
             </Link>
+            <ForceUpdateButton />
           </div>
         </div>
       </footer>
