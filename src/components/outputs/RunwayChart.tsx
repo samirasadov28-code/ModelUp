@@ -11,12 +11,9 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import type { MonthlyDataPoint, RunwayData } from "@/lib/types";
+import { formatCurrencyCompact } from "@/lib/utils";
 
-function fmtAxis(value: number): string {
-  if (Math.abs(value) >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`;
-  if (Math.abs(value) >= 1_000) return `$${(value / 1_000).toFixed(0)}K`;
-  return `$${value}`;
-}
+const fmtAxis = formatCurrencyCompact;
 
 const TOOLTIP_STYLE = {
   backgroundColor: "#0f2040",

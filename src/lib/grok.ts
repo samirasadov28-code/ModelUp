@@ -5,6 +5,7 @@
 
 import OpenAI from "openai";
 import type { AnnualSummary, RunwayData, CapTableData, QuestionnaireAnswers } from "./types";
+import { formatCurrencyCompact, formatNumber } from "./utils";
 
 let _client: OpenAI | null = null;
 
@@ -19,11 +20,7 @@ function getClient(): OpenAI | null {
   return _client;
 }
 
-function fmtCurrency(value: number): string {
-  if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`;
-  if (value >= 1_000) return `$${(value / 1_000).toFixed(0)}K`;
-  return `$${Math.round(value).toLocaleString()}`;
-}
+const fmtCurrency = formatCurrencyCompact;
 
 export async function generateNarrativeWithGrok(params: {
   answers: QuestionnaireAnswers;
@@ -44,9 +41,9 @@ Type: ${answers.businessModel} | Stage: ${answers.fundingStage} | Market: ${answ
 Raise: ${fmtCurrency(answers.fundingAsk)} | Use of proceeds: ${answers.useOfProceeds.join(", ")}
 Growth scenario: ${answers.growthCurve}
 
-Year 1 Revenue: ${fmtCurrency(annual[0].revenue)} | ARR: ${fmtCurrency(annual[0].arr)} | Customers: ${annual[0].endingUsers.toLocaleString()}
-Year 2 Revenue: ${fmtCurrency(annual[1].revenue)} | ARR: ${fmtCurrency(annual[1].arr)} | Customers: ${annual[1].endingUsers.toLocaleString()}
-Year 3 Revenue: ${fmtCurrency(annual[2].revenue)} | ARR: ${fmtCurrency(annual[2].arr)} | Customers: ${annual[2].endingUsers.toLocaleString()}
+Year 1 Revenue: ${fmtCurrency(annual[0].revenue)} | ARR: ${fmtCurrency(annual[0].arr)} | Customers: ${formatNumber(annual[0].endingUsers)}
+Year 2 Revenue: ${fmtCurrency(annual[1].revenue)} | ARR: ${fmtCurrency(annual[1].arr)} | Customers: ${formatNumber(annual[1].endingUsers)}
+Year 3 Revenue: ${fmtCurrency(annual[2].revenue)} | ARR: ${fmtCurrency(annual[2].arr)} | Customers: ${formatNumber(annual[2].endingUsers)}
 Year 3 EBITDA: ${fmtCurrency(annual[2].ebitda)} | Margin: ${(annual[2].ebitdaMargin * 100).toFixed(1)}%
 
 Runway: ${runway.cashPositive ? "36+ months" : `${runway.runwayMonths} months`}

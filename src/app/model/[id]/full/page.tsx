@@ -14,14 +14,11 @@ import { CapTableSummary } from "@/components/outputs/CapTableSummary";
 import { MetricCard } from "@/components/outputs/MetricCard";
 import { TrustBadge } from "@/components/outputs/TrustBadge";
 import { getModelLocally } from "@/lib/model-client-store";
+import { formatCurrencyCompact } from "@/lib/utils";
 import { Download, Lightbulb, Lock, Zap } from "lucide-react";
 import type { ModelOutputs } from "@/lib/types";
 
-function fmtCurrency(value: number): string {
-  if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`;
-  if (value >= 1_000) return `$${(value / 1_000).toFixed(0)}K`;
-  return `$${Math.round(value).toLocaleString()}`;
-}
+const fmtCurrency = formatCurrencyCompact;
 
 // In production, read subscription status from session/Supabase.
 // For MVP on Netlify, we enable full view for all visitors.

@@ -1,13 +1,9 @@
 "use client";
 
-import { cn } from "@/lib/utils";
+import { cn, formatCurrencyCompact } from "@/lib/utils";
 import type { UnitEconomics } from "@/lib/types";
 
-function fmt(value: number): string {
-  if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(2)}M`;
-  if (value >= 1_000) return `$${(value / 1_000).toFixed(1)}K`;
-  return `$${value.toFixed(0)}`;
-}
+const fmt = formatCurrencyCompact;
 
 interface MetricCardProps {
   label: string;

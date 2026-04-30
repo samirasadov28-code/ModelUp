@@ -319,7 +319,7 @@ function buildFundingNarrative(
   const breakEvenText = runway.breakEvenYear
     ? `Year ${runway.breakEvenYear}`
     : "within the forecast period";
-  const y3Users = annual[2].endingUsers.toLocaleString();
+  const y3Users = annual[2].endingUsers.toLocaleString("en-US");
   const y3Arr = formatCurrency(annual[2].arr);
 
   return `${company} is raising ${raise} at ${stage}. The raise provides ${runwayText} of runway and funds ${proceedsText}. At target growth, the business reaches EBITDA breakeven in ${breakEvenText} with ${y3Users} paying customers generating ${y3Arr} ARR. Post-raise, new investors receive ${(capTable.newEquityPercent * 100).toFixed(1)}% equity at a ${formatCurrency(capTable.preMoneyValuation)} pre-money valuation.`;

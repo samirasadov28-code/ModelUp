@@ -1,16 +1,11 @@
 "use client";
 
 import type { CapTableData } from "@/lib/types";
+import { formatCurrency, formatCurrencyCompact, formatNumber, formatPercent } from "@/lib/utils";
 
-function fmt(value: number): string {
-  if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(2)}M`;
-  if (value >= 1_000) return `$${(value / 1_000).toFixed(0)}K`;
-  return `$${value.toFixed(2)}`;
-}
-
-function fmtPct(value: number): string {
-  return `${(value * 100).toFixed(1)}%`;
-}
+const fmt = formatCurrencyCompact;
+const fmtPrice = (value: number) => formatCurrency(value, 2);
+const fmtPct = (value: number) => formatPercent(value, 1);
 
 interface CapTableSummaryProps {
   capTable: CapTableData;
@@ -50,13 +45,13 @@ export function CapTableSummary({ capTable }: CapTableSummaryProps) {
               <tr key={entry.shareholder} className="border-b border-white/5">
                 <td className="py-3 px-4 text-white/80 font-medium">{entry.shareholder}</td>
                 <td className="py-3 px-4 text-right font-mono text-white/60 tabular-nums">
-                  {entry.sharesPreRaise.toLocaleString()}
+                  {formatNumber(entry.sharesPreRaise)}
                 </td>
                 <td className="py-3 px-4 text-right font-mono text-white/60 tabular-nums">
                   {fmtPct(entry.ownershipPreRaise)}
                 </td>
                 <td className="py-3 px-4 text-right font-mono text-white tabular-nums">
-                  {entry.sharesPostRaise.toLocaleString()}
+                  {formatNumber(entry.sharesPostRaise)}
                 </td>
                 <td className="py-3 px-4 text-right font-mono text-white tabular-nums font-semibold">
                   {fmtPct(entry.ownershipPostRaise)}
@@ -68,7 +63,7 @@ export function CapTableSummary({ capTable }: CapTableSummaryProps) {
       </div>
 
       <p className="text-xs text-white/30 text-center">
-        Price per share: {fmt(capTable.pricePerShare)} · Based on {fmtPct(capTable.newEquityPercent)} new equity
+        Price per share: {fmtPrice(capTable.pricePerShare)} · Based on {fmtPct(capTable.newEquityPercent)} new equity
       </p>
     </div>
   );

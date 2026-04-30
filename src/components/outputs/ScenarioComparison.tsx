@@ -1,13 +1,9 @@
 "use client";
 
-import { cn } from "@/lib/utils";
+import { cn, formatCurrencyCompact, formatNumber } from "@/lib/utils";
 import type { ScenarioMetrics } from "@/lib/types";
 
-function fmt(value: number): string {
-  if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`;
-  if (value >= 1_000) return `$${(value / 1_000).toFixed(0)}K`;
-  return `$${Math.round(value).toLocaleString()}`;
-}
+const fmt = formatCurrencyCompact;
 
 interface ScenarioComparisonProps {
   base: ScenarioMetrics;
@@ -21,7 +17,7 @@ const COLS = [
   { key: "revenueY3" as keyof ScenarioMetrics, label: "Revenue Y3", format: fmt },
   { key: "arrY3" as keyof ScenarioMetrics, label: "ARR (EoY3)", format: fmt },
   { key: "ebitdaY3" as keyof ScenarioMetrics, label: "EBITDA Y3", format: fmt },
-  { key: "totalUsersY3" as keyof ScenarioMetrics, label: "Customers Y3", format: (v: number) => v.toLocaleString() },
+  { key: "totalUsersY3" as keyof ScenarioMetrics, label: "Customers Y3", format: (v: number) => formatNumber(v) },
   { key: "runwayMonths" as keyof ScenarioMetrics, label: "Runway", format: (v: number) => v >= 36 ? "36mo+" : `${v}mo` },
 ];
 
