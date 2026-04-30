@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -15,6 +15,7 @@ import { MetricCard } from "@/components/outputs/MetricCard";
 import { TrustBadge } from "@/components/outputs/TrustBadge";
 import { getModelLocally } from "@/lib/model-client-store";
 import { formatCurrencyCompact } from "@/lib/utils";
+import { grantEarlyAccess, hasEarlyAccess, isEarlyAccessEmail } from "@/lib/early-access";
 import { Download, Lightbulb, Lock, Zap } from "lucide-react";
 import type { ModelOutputs } from "@/lib/types";
 
@@ -31,8 +32,15 @@ export default function FullModelPage() {
 
   const [model, setModel] = useState<ModelOutputs | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isSubscribed] = useState(!GATE_ENABLED || justSubscribed);
+  const [isSubscribed, setIsSubscribed] = useState(!GATE_ENABLED || justSubscribed);
   const [exporting, setExporting] = useState(false);
+  const [earlyEmail, setEarlyEmail] = useState("");
+  const [earlyError, setEarlyError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!GATE_ENABLED) return;
+    if (hasEarlyAccess()) setIsSubscribed(true);
+  }, []);
 
   useEffect(() => {
     if (!params.id) return;
@@ -110,9 +118,19 @@ export default function FullModelPage() {
   }
 
   if (!isSubscribed) {
+    const handleEarlyAccess = (e: FormEvent) => {
+      e.preventDefault();
+      if (isEarlyAccessEmail(earlyEmail)) {
+        grantEarlyAccess(earlyEmail);
+        setIsSubscribed(true);
+      } else {
+        setEarlyError("That email isn't on the early access list yet.");
+      }
+    };
+
     return (
       <div className="min-h-screen bg-navy-900 flex items-center justify-center px-6">
-        <div className="max-w-md text-center space-y-6">
+        <div className="max-w-md w-full text-center space-y-6">
           <div className="w-16 h-16 rounded-full bg-accent-500/10 border border-accent-500/30 flex items-center justify-center mx-auto">
             <Lock className="w-7 h-7 text-accent-400" />
           </div>
@@ -136,6 +154,40 @@ export default function FullModelPage() {
           >
             Start 7-day free trial — $9.99/mo
           </button>
+
+          <div className="pt-4 border-t border-white/8 text-left">
+            <p className="text-xs text-white/40 uppercase tracking-wider font-semibold mb-2 text-center">
+              Early access
+            </p>
+            <form onSubmit={handleEarlyAccess} className="space-y-2">
+              <div className="flex gap-2">
+                <input
+                  type="email"
+                  required
+                  value={earlyEmail}
+                  onChange={(e) => {
+                    setEarlyEmail(e.target.value);
+                    if (earlyError) setEarlyError(null);
+                  }}
+                  placeholder="you@example.com"
+                  className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/25 focus:outline-none focus:border-accent-500/50"
+                />
+                <button
+                  type="submit"
+                  className="bg-white/10 hover:bg-white/15 text-white text-sm font-medium px-4 py-2 rounded-lg border border-white/10 transition-colors"
+                >
+                  Unlock
+                </button>
+              </div>
+              {earlyError && (
+                <p className="text-xs text-red-400">{earlyError}</p>
+              )}
+              <p className="text-xs text-white/30 text-center">
+                Have an early access invite? Enter your email to skip checkout.
+              </p>
+            </form>
+          </div>
+
           <Link
             href={`/model/${params.id}/preview`}
             className="block text-sm text-white/30 hover:text-white/60 transition-colors"
