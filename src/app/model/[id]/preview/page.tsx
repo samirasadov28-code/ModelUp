@@ -9,13 +9,10 @@ import { UnitEconomicsDashboard } from "@/components/outputs/UnitEconomicsDashbo
 import { TrustBadge } from "@/components/outputs/TrustBadge";
 import { Lock, ArrowRight, Zap } from "lucide-react";
 import { getModelLocally } from "@/lib/model-client-store";
+import { formatCurrencyCompact, formatNumber } from "@/lib/utils";
 import type { ModelOutputs } from "@/lib/types";
 
-function fmtCurrency(value: number): string {
-  if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`;
-  if (value >= 1_000) return `$${(value / 1_000).toFixed(0)}K`;
-  return `$${Math.round(value).toLocaleString()}`;
-}
+const fmtCurrency = formatCurrencyCompact;
 
 export default function PreviewPage() {
   const params = useParams<{ id: string }>();
@@ -138,7 +135,7 @@ export default function PreviewPage() {
           />
           <MetricCard
             label="Year 3 Customers"
-            value={annual[2].endingUsers.toLocaleString()}
+            value={formatNumber(annual[2].endingUsers)}
             sub="Paying customers (EoY)"
           />
         </div>

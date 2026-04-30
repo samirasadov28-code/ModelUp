@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@/lib/utils";
+import { cn, formatCurrencyCompact, formatNumber, formatPercent } from "@/lib/utils";
 import type { AnnualSummary } from "@/lib/types";
 
 interface PLTableProps {
@@ -8,15 +8,8 @@ interface PLTableProps {
   compact?: boolean;
 }
 
-function fmt(value: number): string {
-  if (Math.abs(value) >= 1_000_000) return `$${(value / 1_000_000).toFixed(2)}M`;
-  if (Math.abs(value) >= 1_000) return `$${(value / 1_000).toFixed(0)}K`;
-  return `$${Math.round(value).toLocaleString()}`;
-}
-
-function fmtPct(value: number): string {
-  return `${(value * 100).toFixed(1)}%`;
-}
+const fmt = formatCurrencyCompact;
+const fmtPct = (value: number) => formatPercent(value, 1);
 
 const rows: { key: keyof AnnualSummary; label: string; indent?: boolean; bold?: boolean; isPercent?: boolean; highlight?: boolean }[] = [
   { key: "revenue", label: "Revenue", bold: true },
@@ -92,7 +85,7 @@ export function PLTable({ annual, compact = false }: PLTableProps) {
                 <td className="py-3 px-4 text-white/80">Paying Customers (EOP)</td>
                 {annual.map((yr) => (
                   <td key={yr.year} className="py-3 px-4 text-right font-mono text-white/60 tabular-nums">
-                    {yr.endingUsers.toLocaleString()}
+                    {formatNumber(yr.endingUsers)}
                   </td>
                 ))}
               </tr>
