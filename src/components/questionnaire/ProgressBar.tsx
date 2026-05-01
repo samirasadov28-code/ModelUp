@@ -12,7 +12,7 @@ export function ProgressBar({ current, total }: ProgressBarProps) {
   return (
     <div className="w-full space-y-1.5">
       <Progress value={percent} className="h-1" />
-      <p className="text-right text-xs text-white/30">{percent}% complete</p>
+      <p className="text-right text-xs text-gray-400 font-medium">{percent}% complete</p>
     </div>
   );
 }

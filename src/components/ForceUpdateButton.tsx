@@ -39,7 +39,7 @@ export function ForceUpdateButton() {
       type="button"
       onClick={forceUpdate}
       disabled={busy}
-      className="inline-flex items-center gap-1.5 text-gray-400 text-xs hover:text-violet-600 transition-colors disabled:opacity-50"
+      className="inline-flex items-center gap-1.5 text-gray-400 text-xs hover:text-blue-600 transition-colors disabled:opacity-50"
       title="Clear cache and reload to the latest version"
     >
       <RefreshCw className={`w-3 h-3 ${busy ? "animate-spin" : ""}`} />

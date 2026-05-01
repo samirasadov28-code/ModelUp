@@ -22,15 +22,15 @@ const COLS = [
 ];
 
 const SCENARIO_STYLES = {
-  Conservative: "border-slate-500/30 bg-slate-500/5",
-  Base: "border-accent-500/30 bg-accent-500/5",
-  Aggressive: "border-violet-500/30 bg-violet-500/5",
+  Conservative: "border-gray-200 bg-white",
+  Base: "border-blue-200 bg-blue-50/60",
+  Aggressive: "border-cyan-200 bg-cyan-50/60",
 };
 
 const HEADER_STYLES = {
-  Conservative: "text-slate-300",
-  Base: "text-accent-400",
-  Aggressive: "text-violet-400",
+  Conservative: "text-gray-700",
+  Base: "text-blue-700",
+  Aggressive: "text-cyan-700",
 };
 
 export function ScenarioComparison({ base, conservative, aggressive }: ScenarioComparisonProps) {
@@ -42,14 +42,13 @@ export function ScenarioComparison({ base, conservative, aggressive }: ScenarioC
 
   return (
     <div className="space-y-3">
-      {/* Card view on mobile */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         {scenarios.map(({ data, name }) => (
-          <div key={name} className={cn("rounded-xl border p-5", SCENARIO_STYLES[name])}>
+          <div key={name} className={cn("rounded-xl border p-5 shadow-sm", SCENARIO_STYLES[name])}>
             <div className="flex items-center justify-between mb-4">
-              <h4 className={cn("text-sm font-semibold", HEADER_STYLES[name])}>{name}</h4>
+              <h4 className={cn("text-sm font-bold uppercase tracking-wider", HEADER_STYLES[name])}>{name}</h4>
               {name === "Base" && (
-                <span className="text-xs bg-accent-500/20 text-accent-400 border border-accent-500/30 px-2 py-0.5 rounded-full">
+                <span className="text-xs bg-blue-600 text-white px-2 py-0.5 rounded-full font-semibold">
                   Selected
                 </span>
               )}
@@ -57,10 +56,10 @@ export function ScenarioComparison({ base, conservative, aggressive }: ScenarioC
             <div className="space-y-3">
               {COLS.map((col) => (
                 <div key={col.key} className="flex justify-between items-baseline">
-                  <span className="text-xs text-white/40">{col.label}</span>
+                  <span className="text-xs text-gray-500">{col.label}</span>
                   <span className={cn(
-                    "text-sm font-mono font-medium tabular-nums",
-                    col.key === "ebitdaY3" && (data[col.key] as number) < 0 ? "text-red-400" : "text-white"
+                    "text-sm font-mono font-semibold tabular-nums",
+                    col.key === "ebitdaY3" && (data[col.key] as number) < 0 ? "text-red-600" : "text-gray-900"
                   )}>
                     {col.format(data[col.key] as number)}
                   </span>

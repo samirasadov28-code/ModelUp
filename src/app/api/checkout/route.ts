@@ -15,7 +15,6 @@ export async function POST(req: NextRequest) {
       priceId,
       successUrl: `${appUrl}/model/${modelId}/full?subscribed=1`,
       cancelUrl: `${appUrl}/pricing`,
-      trialDays: 7,
     });
 
     return NextResponse.json({ url });

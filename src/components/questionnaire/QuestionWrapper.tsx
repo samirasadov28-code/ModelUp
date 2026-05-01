@@ -29,26 +29,22 @@ export function QuestionWrapper({
 }: QuestionWrapperProps) {
   return (
     <div className="w-full max-w-xl mx-auto">
-      {/* Step counter */}
-      <p className="text-xs font-medium text-white/30 uppercase tracking-widest mb-2">
+      <p className="text-xs font-semibold text-blue-600 uppercase tracking-widest mb-2">
         Step {stepNumber} of {totalSteps}
       </p>
 
-      {/* Question */}
-      <h2 className="text-2xl font-semibold text-white mb-1">{title}</h2>
-      {subtitle && <p className="text-sm text-white/50 mb-6">{subtitle}</p>}
+      <h2 className="text-2xl font-bold text-gray-900 mb-1">{title}</h2>
+      {subtitle && <p className="text-sm text-gray-500 mb-6">{subtitle}</p>}
       {!subtitle && <div className="mb-6" />}
 
-      {/* Content */}
       <div className="space-y-3">{children}</div>
 
-      {/* Navigation */}
       <div className="flex items-center justify-between mt-8">
         {onBack ? (
           <button
             type="button"
             onClick={onBack}
-            className="text-sm text-white/40 hover:text-white transition-colors"
+            className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
           >
             ← Back
           </button>
@@ -60,10 +56,10 @@ export function QuestionWrapper({
           onClick={onNext}
           disabled={nextDisabled}
           className={cn(
-            "px-6 py-2.5 rounded-lg text-sm font-medium transition-all",
+            "px-6 py-2.5 rounded-lg text-sm font-semibold transition-all",
             nextDisabled
-              ? "bg-white/10 text-white/30 cursor-not-allowed"
-              : "bg-accent-500 text-white hover:bg-accent-600 shadow-lg shadow-accent-500/20"
+              ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+              : "bg-blue-600 text-white hover:bg-blue-700 shadow-md shadow-blue-500/20"
           )}
         >
           {isLast ? "Generate My Model →" : `${nextLabel} →`}

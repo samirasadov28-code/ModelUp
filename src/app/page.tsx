@@ -22,7 +22,7 @@ export default function LandingPage() {
               className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-100 px-3 py-1.5 rounded-full transition-colors whitespace-nowrap"
             >
               <Sparkles className="w-3.5 h-3.5" />
-              Pro · $9.99/mo
+              Pro · $4.99/mo
             </Link>
             <Link
               href="/model/new"
@@ -288,7 +288,7 @@ export default function LandingPage() {
             <div className="bg-gradient-to-br from-blue-600 to-cyan-700 rounded-2xl p-8 text-white shadow-xl shadow-blue-500/20">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-blue-100 text-xs uppercase tracking-widest font-bold">Pro</h3>
-                <span className="text-white font-bold">$9.99/mo</span>
+                <span className="text-white font-bold">$4.99/mo</span>
               </div>
               <div className="space-y-3">
                 {[

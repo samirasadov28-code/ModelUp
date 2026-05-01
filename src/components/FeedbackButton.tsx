@@ -48,10 +48,9 @@ export function FeedbackButton() {
 
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
-      {/* Floating trigger button */}
       <Dialog.Trigger asChild>
         <button
-          className="fixed bottom-6 right-6 z-50 inline-flex items-center gap-2 bg-accent-500 hover:bg-accent-600 text-white text-sm font-medium px-4 py-2.5 rounded-full shadow-lg shadow-accent-500/30 transition-all hover:scale-105 active:scale-95"
+          className="fixed bottom-6 right-6 z-50 inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2.5 rounded-full shadow-lg shadow-blue-500/30 transition-all hover:scale-105 active:scale-95"
           aria-label="Give feedback"
         >
           <MessageSquarePlus className="w-4 h-4" />
@@ -60,21 +59,18 @@ export function FeedbackButton() {
       </Dialog.Trigger>
 
       <Dialog.Portal>
-        {/* Backdrop */}
-        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-gray-900/30 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
 
-        {/* Panel */}
-        <Dialog.Content className="fixed bottom-20 right-6 z-50 w-full max-w-sm rounded-2xl border border-white/10 bg-navy-800 shadow-2xl p-6 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:slide-out-to-bottom-4 data-[state=open]:slide-in-from-bottom-4">
-          {/* Header */}
+        <Dialog.Content className="fixed bottom-20 right-6 z-50 w-full max-w-sm rounded-2xl border border-gray-200 bg-white shadow-2xl p-6 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:slide-out-to-bottom-4 data-[state=open]:slide-in-from-bottom-4">
           <div className="flex items-center justify-between mb-5">
             <div>
-              <Dialog.Title className="text-white font-semibold">Share your feedback</Dialog.Title>
-              <Dialog.Description className="text-white/40 text-xs mt-0.5">
+              <Dialog.Title className="text-gray-900 font-semibold">Share your feedback</Dialog.Title>
+              <Dialog.Description className="text-gray-500 text-xs mt-0.5">
                 Takes 30 seconds. Helps us improve ModelUp.
               </Dialog.Description>
             </div>
             <Dialog.Close asChild>
-              <button className="text-white/30 hover:text-white transition-colors rounded-lg p-1">
+              <button className="text-gray-400 hover:text-gray-700 transition-colors rounded-lg p-1">
                 <X className="w-4 h-4" />
               </button>
             </Dialog.Close>
@@ -82,15 +78,14 @@ export function FeedbackButton() {
 
           {status === "success" ? (
             <div className="flex flex-col items-center justify-center py-6 gap-3">
-              <CheckCircle2 className="w-10 h-10 text-emerald-400" />
-              <p className="text-white font-medium">Thank you!</p>
-              <p className="text-white/40 text-sm text-center">Your feedback helps make ModelUp better.</p>
+              <CheckCircle2 className="w-10 h-10 text-emerald-500" />
+              <p className="text-gray-900 font-semibold">Thank you!</p>
+              <p className="text-gray-500 text-sm text-center">Your feedback helps make ModelUp better.</p>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Star rating */}
               <div>
-                <p className="text-xs text-white/50 mb-2">How would you rate your experience?</p>
+                <p className="text-xs text-gray-600 mb-2 font-medium">How would you rate your experience?</p>
                 <div className="flex gap-1">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <button
@@ -106,7 +101,7 @@ export function FeedbackButton() {
                           "w-6 h-6 transition-colors",
                           star <= (hovered || rating)
                             ? "fill-amber-400 text-amber-400"
-                            : "text-white/20"
+                            : "text-gray-300"
                         )}
                       />
                     </button>
@@ -114,10 +109,9 @@ export function FeedbackButton() {
                 </div>
               </div>
 
-              {/* Message */}
               <div>
-                <label className="text-xs text-white/50 mb-1.5 block">
-                  What&apos;s on your mind? <span className="text-red-400">*</span>
+                <label className="text-xs text-gray-600 mb-1.5 block font-medium">
+                  What&apos;s on your mind? <span className="text-red-500">*</span>
                 </label>
                 <textarea
                   required
@@ -125,32 +119,31 @@ export function FeedbackButton() {
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder="Bug report, feature request, general thoughts…"
-                  className="w-full rounded-lg border border-white/15 bg-navy-900/60 px-3 py-2 text-sm text-white placeholder:text-white/25 focus:outline-none focus:ring-2 focus:ring-accent-500 resize-none"
+                  className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-400 resize-none"
                 />
               </div>
 
-              {/* Email */}
               <div>
-                <label className="text-xs text-white/50 mb-1.5 block">
-                  Your email <span className="text-white/25">(optional — if you&apos;d like a reply)</span>
+                <label className="text-xs text-gray-600 mb-1.5 block font-medium">
+                  Your email <span className="text-gray-400">(optional — if you&apos;d like a reply)</span>
                 </label>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
-                  className="w-full rounded-lg border border-white/15 bg-navy-900/60 px-3 py-2 text-sm text-white placeholder:text-white/25 focus:outline-none focus:ring-2 focus:ring-accent-500"
+                  className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-400"
                 />
               </div>
 
               {status === "error" && (
-                <p className="text-red-400 text-xs">Something went wrong. Please try again.</p>
+                <p className="text-red-600 text-xs">Something went wrong. Please try again.</p>
               )}
 
               <button
                 type="submit"
                 disabled={status === "submitting" || !message.trim()}
-                className="w-full inline-flex items-center justify-center gap-2 bg-accent-500 hover:bg-accent-600 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium py-2.5 rounded-lg transition-colors"
+                className="w-full inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-semibold py-2.5 rounded-lg transition-colors"
               >
                 {status === "submitting" ? (
                   <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

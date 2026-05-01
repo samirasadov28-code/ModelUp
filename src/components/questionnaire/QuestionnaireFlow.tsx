@@ -1,13 +1,15 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { saveModelLocally } from "@/lib/model-client-store";
 import { ProgressBar } from "./ProgressBar";
 import { QuestionWrapper } from "./QuestionWrapper";
 import { OptionCard } from "./OptionCard";
 import { Input } from "@/components/ui/input";
+import { MoneyInput } from "@/components/ui/money-input";
 import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 import type {
   QuestionnaireAnswers,
   BusinessModel,
@@ -29,6 +31,9 @@ const DEFAULT_ANSWERS: Partial<QuestionnaireAnswers> = {
   growthCurve: "base",
 };
 
+const tileOff = "border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50";
+const tileOn = "border-blue-500 bg-blue-50 text-blue-700";
+
 export function QuestionnaireFlow() {
   const router = useRouter();
   const [step, setStep] = useState(1);
@@ -36,7 +41,6 @@ export function QuestionnaireFlow() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Dynamic tier count for Q5
   const [tierCount, setTierCount] = useState(2);
 
   const update = <K extends keyof QuestionnaireAnswers>(
@@ -83,7 +87,6 @@ export function QuestionnaireFlow() {
     setLoading(true);
     setError(null);
     try {
-      // Resolve churn rate from estimate
       const churnMap: Record<string, number> = {
         lt2: 1.5, "2to5": 3.5, "5to10": 7.5, gt10: 12, unknown: 5,
       };
@@ -121,11 +124,10 @@ export function QuestionnaireFlow() {
       if (!res.ok) throw new Error("Failed to generate model");
       const { modelId, outputs } = await res.json();
 
-      // Persist full model in localStorage so pages work across Netlify invocations
       if (outputs) saveModelLocally(outputs);
 
       router.push(`/model/${modelId}/preview`);
-    } catch (e) {
+    } catch {
       setError("Something went wrong. Please try again.");
       setLoading(false);
     }
@@ -135,12 +137,12 @@ export function QuestionnaireFlow() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6">
         <div className="relative w-16 h-16">
-          <div className="absolute inset-0 rounded-full border-2 border-accent-500/20 animate-ping" />
-          <div className="absolute inset-2 rounded-full border-2 border-accent-500 border-t-transparent animate-spin" />
+          <div className="absolute inset-0 rounded-full border-2 border-blue-500/20 animate-ping" />
+          <div className="absolute inset-2 rounded-full border-2 border-blue-600 border-t-transparent animate-spin" />
         </div>
         <div className="text-center">
-          <p className="text-white font-medium">Building your financial model…</p>
-          <p className="text-white/40 text-sm mt-1">Running projections across 3 scenarios</p>
+          <p className="text-gray-900 font-semibold">Building your financial model…</p>
+          <p className="text-gray-500 text-sm mt-1">Running projections across 3 scenarios</p>
         </div>
       </div>
     );
@@ -150,7 +152,7 @@ export function QuestionnaireFlow() {
     <div className="w-full max-w-2xl mx-auto space-y-8">
       <ProgressBar current={step} total={TOTAL_STEPS} />
       {error && (
-        <p className="text-red-400 text-sm text-center bg-red-500/10 rounded-lg p-3">
+        <p className="text-red-600 text-sm text-center bg-red-50 border border-red-100 rounded-lg p-3">
           {error}
         </p>
       )}
@@ -271,18 +273,17 @@ export function QuestionnaireFlow() {
           nextDisabled={!canAdvance()}
         >
           <div className="mb-4">
-            <Label className="text-white/60 text-xs uppercase tracking-wider">Number of pricing tiers</Label>
+            <Label className="text-gray-500 text-xs uppercase tracking-wider font-semibold">Number of pricing tiers</Label>
             <div className="flex gap-2 mt-2">
               {[1, 2, 3, 4].map((n) => (
                 <button
                   key={n}
                   type="button"
                   onClick={() => setTierCount(n)}
-                  className={`flex-1 py-2 rounded-lg text-sm font-medium border transition-all ${
-                    tierCount === n
-                      ? "border-accent-500 bg-accent-500/20 text-white"
-                      : "border-white/15 text-white/50 hover:border-white/30"
-                  }`}
+                  className={cn(
+                    "flex-1 py-2 rounded-lg text-sm font-medium border transition-all",
+                    tierCount === n ? tileOn : tileOff
+                  )}
                 >
                   {n} tier{n > 1 ? "s" : ""}
                 </button>
@@ -291,11 +292,11 @@ export function QuestionnaireFlow() {
           </div>
 
           {Array.from({ length: tierCount }, (_, i) => (
-            <div key={i} className="rounded-xl border border-white/10 bg-navy-900/40 p-4 space-y-3">
-              <p className="text-xs text-white/40 font-medium uppercase tracking-wider">Tier {i + 1}</p>
+            <div key={i} className="rounded-xl border border-gray-200 bg-gray-50/60 p-4 space-y-3">
+              <p className="text-xs text-gray-500 font-semibold uppercase tracking-wider">Tier {i + 1}</p>
               <div className="grid grid-cols-3 gap-3">
                 <div className="col-span-1">
-                  <Label className="text-xs text-white/50 mb-1 block">Name</Label>
+                  <Label className="text-xs text-gray-600 mb-1 block font-medium">Name</Label>
                   <Input
                     placeholder={["Free", "Basic", "Pro", "Enterprise"][i] ?? `Tier ${i + 1}`}
                     value={answers.tiers?.[i]?.name ?? ""}
@@ -304,18 +305,16 @@ export function QuestionnaireFlow() {
                   />
                 </div>
                 <div>
-                  <Label className="text-xs text-white/50 mb-1 block">$/month</Label>
-                  <Input
-                    type="number"
-                    min={0}
+                  <Label className="text-xs text-gray-600 mb-1 block font-medium">$/month</Label>
+                  <MoneyInput
                     placeholder="49"
-                    value={answers.tiers?.[i]?.monthlyPrice || ""}
-                    onChange={(e) => updateTier(i, "monthlyPrice", Number(e.target.value))}
+                    value={answers.tiers?.[i]?.monthlyPrice || undefined}
+                    onValueChange={(v) => updateTier(i, "monthlyPrice", v ?? 0)}
                     className="text-sm h-9"
                   />
                 </div>
                 <div>
-                  <Label className="text-xs text-white/50 mb-1 block">% of users</Label>
+                  <Label className="text-xs text-gray-600 mb-1 block font-medium">% of users</Label>
                   <Input
                     type="number"
                     min={0}
@@ -330,10 +329,10 @@ export function QuestionnaireFlow() {
             </div>
           ))}
 
-          <p className="text-xs text-white/30 mt-2">
+          <p className="text-xs text-gray-500 mt-2">
             Allocation total: {answers.tiers?.reduce((s, t) => s + (t.allocationPercent || 0), 0) ?? 0}%
             {answers.tiers?.reduce((s, t) => s + (t.allocationPercent || 0), 0) !== 100 && (
-              <span className="text-amber-400 ml-1">(should total 100%)</span>
+              <span className="text-amber-600 ml-1 font-medium">(should total 100%)</span>
             )}
           </p>
         </QuestionWrapper>
@@ -369,11 +368,10 @@ export function QuestionnaireFlow() {
                       selected ? curr.filter((c) => c !== ch.value) : [...curr, ch.value]
                     );
                   }}
-                  className={`flex items-center gap-2 rounded-xl border px-4 py-3 text-sm transition-all ${
-                    selected
-                      ? "border-accent-500 bg-accent-500/10 text-white"
-                      : "border-white/15 text-white/60 hover:border-white/30"
-                  }`}
+                  className={cn(
+                    "flex items-center gap-2 rounded-xl border px-4 py-3 text-sm transition-all",
+                    selected ? tileOn : tileOff
+                  )}
                 >
                   <span>{ch.icon}</span>
                   {ch.label}
@@ -384,54 +382,36 @@ export function QuestionnaireFlow() {
 
           <div className="space-y-3">
             <div>
-              <Label className="text-white/70 mb-2 block">
-                Estimated cost to acquire one customer (CAC) <span className="text-red-400">*</span>
+              <Label className="text-gray-700 mb-2 block font-medium">
+                Estimated cost to acquire one customer (CAC) <span className="text-red-500">*</span>
               </Label>
-              <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 text-sm">$</span>
-                <Input
-                  type="number"
-                  min={0}
-                  placeholder="250"
-                  value={answers.cac || ""}
-                  onChange={(e) => update("cac", Number(e.target.value))}
-                  className="pl-8"
-                />
-              </div>
-              <p className="text-xs text-white/30 mt-1">All-in cost: ads spend + sales time + tools</p>
+              <MoneyInput
+                placeholder="250"
+                value={answers.cac}
+                onValueChange={(v) => update("cac", v ?? 0)}
+              />
+              <p className="text-xs text-gray-500 mt-1">All-in cost: ads spend + sales time + tools</p>
             </div>
 
             {(answers.customerType === "b2b" || answers.customerType === "both") && (
               <div>
-                <Label className="text-white/70 mb-2 block">Average annual contract value (ACV)</Label>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 text-sm">$</span>
-                  <Input
-                    type="number"
-                    min={0}
-                    placeholder="2400"
-                    value={answers.acv || ""}
-                    onChange={(e) => update("acv", Number(e.target.value))}
-                    className="pl-8"
-                  />
-                </div>
+                <Label className="text-gray-700 mb-2 block font-medium">Average annual contract value (ACV)</Label>
+                <MoneyInput
+                  placeholder="2,400"
+                  value={answers.acv}
+                  onValueChange={(v) => update("acv", v)}
+                />
               </div>
             )}
 
             {(answers.customerType === "b2c" || answers.customerType === "both") && (
               <div>
-                <Label className="text-white/70 mb-2 block">Average monthly spend per consumer</Label>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 text-sm">$</span>
-                  <Input
-                    type="number"
-                    min={0}
-                    placeholder="29"
-                    value={answers.avgMonthlySpend || ""}
-                    onChange={(e) => update("avgMonthlySpend", Number(e.target.value))}
-                    className="pl-8"
-                  />
-                </div>
+                <Label className="text-gray-700 mb-2 block font-medium">Average monthly spend per consumer</Label>
+                <MoneyInput
+                  placeholder="29"
+                  value={answers.avgMonthlySpend}
+                  onValueChange={(v) => update("avgMonthlySpend", v)}
+                />
               </div>
             )}
           </div>
@@ -475,7 +455,7 @@ export function QuestionnaireFlow() {
           nextDisabled={!canAdvance()}
         >
           <div>
-            <Label className="text-white/70 mb-3 block">Current headcount</Label>
+            <Label className="text-gray-700 mb-3 block font-medium">Current headcount</Label>
             <div className="grid grid-cols-2 gap-2">
               {[
                 { value: "1", label: "Just me (1)" },
@@ -487,11 +467,10 @@ export function QuestionnaireFlow() {
                   key={opt.value}
                   type="button"
                   onClick={() => update("headcount", opt.value)}
-                  className={`py-3 rounded-xl border text-sm font-medium transition-all ${
-                    answers.headcount === opt.value
-                      ? "border-accent-500 bg-accent-500/10 text-white"
-                      : "border-white/15 text-white/60 hover:border-white/30"
-                  }`}
+                  className={cn(
+                    "py-3 rounded-xl border text-sm font-medium transition-all",
+                    answers.headcount === opt.value ? tileOn : tileOff
+                  )}
                 >
                   {opt.label}
                 </button>
@@ -500,21 +479,15 @@ export function QuestionnaireFlow() {
           </div>
 
           <div className="mt-4">
-            <Label className="text-white/70 mb-2 block">
-              Monthly burn rate — all costs today <span className="text-red-400">*</span>
+            <Label className="text-gray-700 mb-2 block font-medium">
+              Monthly burn rate — all costs today <span className="text-red-500">*</span>
             </Label>
-            <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 text-sm">$</span>
-              <Input
-                type="number"
-                min={0}
-                placeholder="15000"
-                value={answers.monthlyBurn || ""}
-                onChange={(e) => update("monthlyBurn", Number(e.target.value))}
-                className="pl-8"
-              />
-            </div>
-            <p className="text-xs text-white/30 mt-1">Salaries, tools, office, cloud infra — everything</p>
+            <MoneyInput
+              placeholder="15,000"
+              value={answers.monthlyBurn}
+              onValueChange={(v) => update("monthlyBurn", v ?? 0)}
+            />
+            <p className="text-xs text-gray-500 mt-1">Salaries, tools, office, cloud infra — everything</p>
           </div>
         </QuestionWrapper>
       )}
@@ -528,21 +501,20 @@ export function QuestionnaireFlow() {
           nextDisabled={!canAdvance()}
         >
           <div className="mb-4">
-            <Label className="text-white/70 mb-2 block">
-              Year 1 customer / user target <span className="text-red-400">*</span>
+            <Label className="text-gray-700 mb-2 block font-medium">
+              Year 1 customer / user target <span className="text-red-500">*</span>
             </Label>
-            <Input
-              type="number"
-              min={1}
+            <MoneyInput
+              prefix=""
               placeholder="500"
-              value={answers.year1UserTarget || ""}
-              onChange={(e) => update("year1UserTarget", Number(e.target.value))}
+              value={answers.year1UserTarget}
+              onValueChange={(v) => update("year1UserTarget", v ?? 0)}
             />
-            <p className="text-xs text-white/30 mt-1">Total paying customers at end of year one</p>
+            <p className="text-xs text-gray-500 mt-1">Total paying customers at end of year one</p>
           </div>
 
           <div>
-            <Label className="text-white/70 mb-3 block">Growth scenario</Label>
+            <Label className="text-gray-700 mb-3 block font-medium">Growth scenario</Label>
             {[
               { value: "conservative", label: "Conservative", desc: "~4% monthly growth — realistic, defensible to investors", icon: "🛡️" },
               { value: "base", label: "Base case", desc: "~9% monthly growth — solid execution, strong market", icon: "📊" },
@@ -572,24 +544,18 @@ export function QuestionnaireFlow() {
           isLast
         >
           <div>
-            <Label className="text-white/70 mb-2 block">
-              How much are you raising? <span className="text-red-400">*</span>
+            <Label className="text-gray-700 mb-2 block font-medium">
+              How much are you raising? <span className="text-red-500">*</span>
             </Label>
-            <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 text-sm">$</span>
-              <Input
-                type="number"
-                min={0}
-                placeholder="1000000"
-                value={answers.fundingAsk || ""}
-                onChange={(e) => update("fundingAsk", Number(e.target.value))}
-                className="pl-8"
-              />
-            </div>
+            <MoneyInput
+              placeholder="1,000,000"
+              value={answers.fundingAsk}
+              onValueChange={(v) => update("fundingAsk", v ?? 0)}
+            />
           </div>
 
           <div className="mt-3">
-            <Label className="text-white/70 mb-3 block">What will you use it for? (select all)</Label>
+            <Label className="text-gray-700 mb-3 block font-medium">What will you use it for? (select all)</Label>
             <div className="grid grid-cols-2 gap-2">
               {[
                 { value: "product-dev", label: "Product Development" },
@@ -610,11 +576,10 @@ export function QuestionnaireFlow() {
                         selected ? curr.filter((v) => v !== opt.value) : [...curr, opt.value]
                       );
                     }}
-                    className={`py-2.5 rounded-xl border text-sm transition-all ${
-                      selected
-                        ? "border-accent-500 bg-accent-500/10 text-white"
-                        : "border-white/15 text-white/60 hover:border-white/30"
-                    }`}
+                    className={cn(
+                      "py-2.5 rounded-xl border text-sm transition-all",
+                      selected ? tileOn : tileOff
+                    )}
                   >
                     {opt.label}
                   </button>
@@ -624,18 +589,17 @@ export function QuestionnaireFlow() {
           </div>
 
           <div className="mt-3">
-            <Label className="text-white/70 mb-3 block">Target runway from this raise</Label>
+            <Label className="text-gray-700 mb-3 block font-medium">Target runway from this raise</Label>
             <div className="grid grid-cols-4 gap-2">
               {[12, 18, 24, 36].map((months) => (
                 <button
                   key={months}
                   type="button"
                   onClick={() => update("targetRunway", months as 12 | 18 | 24 | 36)}
-                  className={`py-2.5 rounded-xl border text-sm font-medium transition-all ${
-                    answers.targetRunway === months
-                      ? "border-accent-500 bg-accent-500/10 text-white"
-                      : "border-white/15 text-white/60 hover:border-white/30"
-                  }`}
+                  className={cn(
+                    "py-2.5 rounded-xl border text-sm font-medium transition-all",
+                    answers.targetRunway === months ? tileOn : tileOff
+                  )}
                 >
                   {months}mo
                 </button>
@@ -644,7 +608,7 @@ export function QuestionnaireFlow() {
           </div>
 
           <div className="mt-3">
-            <Label className="text-white/70 mb-2 block">Company name (optional)</Label>
+            <Label className="text-gray-700 mb-2 block font-medium">Company name (optional)</Label>
             <Input
               placeholder="Your startup"
               value={answers.companyName ?? ""}
