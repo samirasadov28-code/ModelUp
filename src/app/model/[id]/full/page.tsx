@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PLTable } from "@/components/outputs/PLTable";
@@ -13,16 +14,15 @@ import { FundingNarrative } from "@/components/outputs/FundingNarrative";
 import { CapTableSummary } from "@/components/outputs/CapTableSummary";
 import { MetricCard } from "@/components/outputs/MetricCard";
 import { TrustBadge } from "@/components/outputs/TrustBadge";
+import { EarlyAccessForm } from "@/components/EarlyAccessForm";
 import { getModelLocally } from "@/lib/model-client-store";
 import { formatCurrencyCompact } from "@/lib/utils";
-import { grantEarlyAccess, hasEarlyAccess, isEarlyAccessEmail } from "@/lib/early-access";
-import { Download, Lightbulb, Lock, Zap } from "lucide-react";
+import { hasEarlyAccess } from "@/lib/early-access";
+import { Download, Lightbulb, Lock, Sparkles } from "lucide-react";
 import type { ModelOutputs } from "@/lib/types";
 
 const fmtCurrency = formatCurrencyCompact;
 
-// In production, read subscription status from session/Supabase.
-// For MVP on Netlify, we enable full view for all visitors.
 const GATE_ENABLED = process.env.NEXT_PUBLIC_GATE_ENABLED === "true";
 
 export default function FullModelPage() {
@@ -34,8 +34,6 @@ export default function FullModelPage() {
   const [loading, setLoading] = useState(true);
   const [isSubscribed, setIsSubscribed] = useState(!GATE_ENABLED || justSubscribed);
   const [exporting, setExporting] = useState(false);
-  const [earlyEmail, setEarlyEmail] = useState("");
-  const [earlyError, setEarlyError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!GATE_ENABLED) return;
@@ -45,7 +43,6 @@ export default function FullModelPage() {
   useEffect(() => {
     if (!params.id) return;
 
-    // localStorage first (Netlify-safe), then API fallback
     const local = getModelLocally(params.id);
     if (local) {
       setModel(local);
@@ -91,10 +88,10 @@ export default function FullModelPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-navy-900 flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center space-y-4">
-          <div className="w-12 h-12 rounded-full border-2 border-accent-500 border-t-transparent animate-spin mx-auto" />
-          <p className="text-white/50 text-sm">Loading your model…</p>
+          <div className="w-12 h-12 rounded-full border-2 border-blue-600 border-t-transparent animate-spin mx-auto" />
+          <p className="text-gray-500 text-sm">Loading your model…</p>
         </div>
       </div>
     );
@@ -102,14 +99,14 @@ export default function FullModelPage() {
 
   if (!model) {
     return (
-      <div className="min-h-screen bg-navy-900 flex items-center justify-center px-6">
+      <div className="min-h-screen bg-white flex items-center justify-center px-6">
         <div className="text-center space-y-4">
-          <p className="text-white text-lg font-semibold">Model not found</p>
-          <p className="text-white/40 text-sm max-w-sm">
+          <p className="text-gray-900 text-lg font-semibold">Model not found</p>
+          <p className="text-gray-500 text-sm max-w-sm">
             Models are stored in your browser. Try returning to the preview page,
             or build a new model.
           </p>
-          <Link href="/model/new" className="text-accent-400 text-sm hover:underline">
+          <Link href="/model/new" className="text-blue-600 text-sm hover:underline font-semibold">
             Build a new model →
           </Link>
         </div>
@@ -118,27 +115,20 @@ export default function FullModelPage() {
   }
 
   if (!isSubscribed) {
-    const handleEarlyAccess = (e: FormEvent) => {
-      e.preventDefault();
-      if (isEarlyAccessEmail(earlyEmail)) {
-        grantEarlyAccess(earlyEmail);
-        setIsSubscribed(true);
-      } else {
-        setEarlyError("That email isn't on the early access list yet.");
-      }
-    };
-
     return (
-      <div className="min-h-screen bg-navy-900 flex items-center justify-center px-6">
-        <div className="max-w-md w-full text-center space-y-6">
-          <div className="w-16 h-16 rounded-full bg-accent-500/10 border border-accent-500/30 flex items-center justify-center mx-auto">
-            <Lock className="w-7 h-7 text-accent-400" />
+      <div className="min-h-screen bg-white flex items-center justify-center px-6 py-12">
+        <div className="max-w-lg w-full space-y-6">
+          <div className="text-center">
+            <div className="w-16 h-16 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center mx-auto mb-4">
+              <Lock className="w-7 h-7 text-blue-600" />
+            </div>
+            <h1 className="text-2xl font-extrabold text-gray-900 mb-2">Unlock your full model</h1>
+            <p className="text-gray-500">
+              Get interactive charts, unit economics, scenario comparison, cap table,
+              and the populated Excel download.
+            </p>
           </div>
-          <h1 className="text-2xl font-bold text-white">Unlock your full model</h1>
-          <p className="text-white/50">
-            Get interactive charts, unit economics, scenario comparison, cap table,
-            and Excel download.
-          </p>
+
           <button
             onClick={async () => {
               const res = await fetch("/api/checkout", {
@@ -150,47 +140,17 @@ export default function FullModelPage() {
               if (url) window.location.href = url;
               else alert("Stripe not configured. Set STRIPE_PRICE_ID_PRO_MONTHLY in env vars.");
             }}
-            className="w-full bg-accent-500 text-white py-3 rounded-xl font-semibold hover:bg-accent-600 transition-colors"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold transition-colors shadow-lg shadow-blue-500/20"
           >
-            Start 7-day free trial — $9.99/mo
+            Get Pro — $4.99/mo
           </button>
+          <p className="text-center text-xs text-gray-400 -mt-2">Cancel anytime · No commitment</p>
 
-          <div className="pt-4 border-t border-white/8 text-left">
-            <p className="text-xs text-white/40 uppercase tracking-wider font-semibold mb-2 text-center">
-              Early access
-            </p>
-            <form onSubmit={handleEarlyAccess} className="space-y-2">
-              <div className="flex gap-2">
-                <input
-                  type="email"
-                  required
-                  value={earlyEmail}
-                  onChange={(e) => {
-                    setEarlyEmail(e.target.value);
-                    if (earlyError) setEarlyError(null);
-                  }}
-                  placeholder="you@example.com"
-                  className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/25 focus:outline-none focus:border-accent-500/50"
-                />
-                <button
-                  type="submit"
-                  className="bg-white/10 hover:bg-white/15 text-white text-sm font-medium px-4 py-2 rounded-lg border border-white/10 transition-colors"
-                >
-                  Unlock
-                </button>
-              </div>
-              {earlyError && (
-                <p className="text-xs text-red-400">{earlyError}</p>
-              )}
-              <p className="text-xs text-white/30 text-center">
-                Have an early access invite? Enter your email to skip checkout.
-              </p>
-            </form>
-          </div>
+          <EarlyAccessForm onUnlocked={() => setIsSubscribed(true)} />
 
           <Link
             href={`/model/${params.id}/preview`}
-            className="block text-sm text-white/30 hover:text-white/60 transition-colors"
+            className="block text-center text-sm text-gray-400 hover:text-gray-700 transition-colors"
           >
             Back to free preview
           </Link>
@@ -204,53 +164,57 @@ export default function FullModelPage() {
   const company = answers.companyName ?? "Your business";
 
   return (
-    <main className="min-h-screen bg-navy-900 text-white">
-      {/* Sticky header */}
-      <div className="border-b border-white/8 sticky top-0 z-20 bg-navy-900/95 backdrop-blur-sm">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          <a href="/" className="text-white font-semibold text-lg tracking-tight">
-            Model<span className="text-accent-500">Up</span>
-          </a>
+    <main className="min-h-screen bg-white text-gray-900">
+      <nav className="sticky top-0 z-40 bg-white/90 backdrop-blur-sm border-b border-gray-100">
+        <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between gap-3">
+          <Link href="/" className="flex items-center gap-2 flex-shrink-0">
+            <Image src="/Logo_192.png" alt="ModelUp" width={28} height={28} className="rounded-lg" />
+            <span className="text-gray-900 font-bold text-lg tracking-tight whitespace-nowrap">
+              Model<span className="text-blue-600">Up</span>
+            </span>
+          </Link>
           <div className="flex items-center gap-3">
-            <TrustBadge />
+            <div className="hidden md:block">
+              <TrustBadge />
+            </div>
             <button
               onClick={handleExport}
               disabled={exporting}
-              className="inline-flex items-center gap-2 bg-white/8 text-white/80 hover:bg-white/15 px-4 py-2 rounded-lg text-sm font-medium border border-white/10 transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-colors shadow-sm disabled:opacity-50 whitespace-nowrap"
             >
               <Download className="w-4 h-4" />
               {exporting ? "Exporting…" : "Download Excel"}
             </button>
           </div>
         </div>
-      </div>
+      </nav>
 
       <div className="max-w-6xl mx-auto px-6 py-8 space-y-8">
-        {/* Title row */}
         <div className="flex items-start justify-between flex-wrap gap-4">
           <div>
-            <div className="flex items-center gap-3 mb-2">
-              <span className="inline-flex items-center gap-1.5 text-xs bg-accent-500/20 text-accent-400 border border-accent-500/30 px-2.5 py-1 rounded-full font-medium">
-                <Zap className="w-3 h-3" />
+            <div className="flex items-center gap-3 mb-2 flex-wrap">
+              <span className="inline-flex items-center gap-1.5 text-xs bg-blue-50 text-blue-700 border border-blue-100 px-2.5 py-1 rounded-full font-semibold">
+                <Sparkles className="w-3 h-3" />
                 Full Model — Pro
               </span>
-              <span className="text-xs text-white/30 capitalize">
+              <span className="text-xs text-gray-400 capitalize">
                 {answers.businessModel} · {answers.fundingStage.replace("-", " ")}
               </span>
             </div>
-            <h1 className="text-2xl font-bold text-white">{company} — 3-Year Financial Model</h1>
-            <p className="text-white/40 text-sm mt-1">
+            <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight">
+              {company} — 3-Year Financial Model
+            </h1>
+            <p className="text-gray-500 text-sm mt-1">
               Source: {model.sourceModel} · Generated {new Date(model.createdAt).toLocaleDateString()}
             </p>
           </div>
-          <p className="text-xs text-white/25 text-right hidden md:block">
+          <p className="text-xs text-gray-400 text-right hidden md:block">
             Open Excel file in Excel or Google Sheets
             <br />
             to auto-calculate formulas.
           </p>
         </div>
 
-        {/* KPI row */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <MetricCard
             label="Year 3 ARR"
@@ -283,22 +247,20 @@ export default function FullModelPage() {
           />
         </div>
 
-        {/* AI Funding Narrative */}
         <FundingNarrative narrative={fundingNarrative} />
 
-        {/* AI Insights */}
         {aiInsights.length > 0 && (
-          <div className="rounded-xl border border-white/10 bg-white/3 p-6">
+          <div className="rounded-xl border border-amber-200 bg-amber-50/40 p-6">
             <div className="flex items-center gap-2 mb-4">
-              <Lightbulb className="w-4 h-4 text-amber-400" />
-              <span className="text-xs font-semibold text-amber-400 uppercase tracking-wider">
+              <Lightbulb className="w-4 h-4 text-amber-600" />
+              <span className="text-xs font-bold text-amber-700 uppercase tracking-wider">
                 AI Model Insights
               </span>
             </div>
             <div className="space-y-3">
               {aiInsights.map((insight, i) => (
-                <div key={i} className="flex items-start gap-3 text-sm text-white/70">
-                  <span className="text-white/20 font-mono mt-0.5">{i + 1}.</span>
+                <div key={i} className="flex items-start gap-3 text-sm text-gray-700">
+                  <span className="text-amber-600 font-mono mt-0.5">{i + 1}.</span>
                   {insight}
                 </div>
               ))}
@@ -306,7 +268,6 @@ export default function FullModelPage() {
           </div>
         )}
 
-        {/* Main tabs */}
         <Tabs defaultValue="overview">
           <TabsList>
             <TabsTrigger value="overview">Overview</TabsTrigger>
@@ -318,20 +279,20 @@ export default function FullModelPage() {
 
           <TabsContent value="overview" className="space-y-4">
             <div className="grid md:grid-cols-2 gap-4">
-              <div className="rounded-xl border border-white/10 bg-navy-800/40 p-6">
+              <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
                 <RevenueChart monthly={monthly} annual={annual} />
               </div>
-              <div className="rounded-xl border border-white/10 bg-navy-800/40 p-6">
+              <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
                 <RunwayChart monthly={monthly} runway={runway} />
               </div>
             </div>
           </TabsContent>
 
           <TabsContent value="pl">
-            <div className="rounded-xl border border-white/10 overflow-hidden">
-              <div className="px-6 py-4 border-b border-white/8">
-                <h2 className="font-semibold text-white">Income Statement</h2>
-                <p className="text-xs text-white/40 mt-0.5">
+            <div className="rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+              <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/60">
+                <h2 className="font-semibold text-gray-900">Income Statement</h2>
+                <p className="text-xs text-gray-500 mt-0.5">
                   3-year annual projections · {answers.growthCurve} scenario
                 </p>
               </div>
@@ -340,9 +301,9 @@ export default function FullModelPage() {
           </TabsContent>
 
           <TabsContent value="unit-econ">
-            <div className="rounded-xl border border-white/10 p-6">
-              <h2 className="font-semibold text-white mb-1">Unit Economics</h2>
-              <p className="text-xs text-white/40 mb-6">
+            <div className="rounded-xl border border-gray-200 p-6 shadow-sm">
+              <h2 className="font-semibold text-gray-900 mb-1">Unit Economics</h2>
+              <p className="text-xs text-gray-500 mb-6">
                 Core metrics for business health and investor readiness
               </p>
               <UnitEconomicsDashboard ue={unitEconomics} />
@@ -350,9 +311,9 @@ export default function FullModelPage() {
           </TabsContent>
 
           <TabsContent value="scenarios">
-            <div className="rounded-xl border border-white/10 p-6">
-              <h2 className="font-semibold text-white mb-1">Scenario Comparison</h2>
-              <p className="text-xs text-white/40 mb-6">
+            <div className="rounded-xl border border-gray-200 p-6 shadow-sm">
+              <h2 className="font-semibold text-gray-900 mb-1">Scenario Comparison</h2>
+              <p className="text-xs text-gray-500 mb-6">
                 Conservative vs Base vs Aggressive across key metrics
               </p>
               <ScenarioComparison
@@ -364,9 +325,9 @@ export default function FullModelPage() {
           </TabsContent>
 
           <TabsContent value="captable">
-            <div className="rounded-xl border border-white/10 p-6">
-              <h2 className="font-semibold text-white mb-1">Cap Table</h2>
-              <p className="text-xs text-white/40 mb-6">
+            <div className="rounded-xl border border-gray-200 p-6 shadow-sm">
+              <h2 className="font-semibold text-gray-900 mb-1">Cap Table</h2>
+              <p className="text-xs text-gray-500 mb-6">
                 Pre/post-raise ownership structure
               </p>
               <CapTableSummary capTable={capTable} />
@@ -374,12 +335,11 @@ export default function FullModelPage() {
           </TabsContent>
         </Tabs>
 
-        {/* Excel download CTA */}
-        <div className="rounded-xl border border-white/8 bg-white/3 px-6 py-4 flex items-center gap-4">
-          <Download className="w-5 h-5 text-white/30 shrink-0" />
+        <div className="rounded-xl border border-gray-200 bg-gradient-to-br from-blue-50/40 to-white px-6 py-4 flex items-center gap-4 shadow-sm">
+          <Download className="w-5 h-5 text-blue-600 shrink-0" />
           <div className="flex-1">
-            <p className="text-sm text-white/70">
-              <span className="text-white font-medium">Excel model ready for download. </span>
+            <p className="text-sm text-gray-700">
+              <span className="text-gray-900 font-semibold">Excel model ready for download. </span>
               The populated {model.sourceModel} file includes all your inputs injected into the Scen sheet.
               Open in Excel or Google Sheets to auto-calculate every formula.
             </p>
@@ -387,7 +347,7 @@ export default function FullModelPage() {
           <button
             onClick={handleExport}
             disabled={exporting}
-            className="shrink-0 bg-accent-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-accent-600 transition-colors disabled:opacity-50"
+            className="shrink-0 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50"
           >
             {exporting ? "…" : "Download .xlsx"}
           </button>

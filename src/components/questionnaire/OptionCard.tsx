@@ -17,27 +17,27 @@ export function OptionCard({ label, description, icon, selected, onClick }: Opti
       onClick={onClick}
       className={cn(
         "w-full text-left rounded-xl border px-5 py-4 transition-all duration-150",
-        "focus:outline-none focus:ring-2 focus:ring-accent-500",
+        "focus:outline-none focus:ring-2 focus:ring-blue-500/40",
         selected
-          ? "border-accent-500 bg-accent-500/10 ring-1 ring-accent-500"
-          : "border-white/15 bg-navy-800/40 hover:border-white/30 hover:bg-navy-800/70"
+          ? "border-blue-500 bg-blue-50 ring-1 ring-blue-500"
+          : "border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50/60"
       )}
     >
       <div className="flex items-center gap-3">
         {icon && <span className="text-xl">{icon}</span>}
         <div>
-          <p className={cn("font-medium text-sm", selected ? "text-white" : "text-white/80")}>
+          <p className={cn("font-semibold text-sm", selected ? "text-gray-900" : "text-gray-800")}>
             {label}
           </p>
           {description && (
-            <p className="text-xs text-white/40 mt-0.5">{description}</p>
+            <p className="text-xs text-gray-500 mt-0.5">{description}</p>
           )}
         </div>
         <div className="ml-auto">
           <div
             className={cn(
               "w-4 h-4 rounded-full border-2 flex items-center justify-center",
-              selected ? "border-accent-500 bg-accent-500" : "border-white/30"
+              selected ? "border-blue-600 bg-blue-600" : "border-gray-300"
             )}
           >
             {selected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}

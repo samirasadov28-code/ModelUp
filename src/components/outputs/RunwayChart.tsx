@@ -16,11 +16,12 @@ import { formatCurrencyCompact } from "@/lib/utils";
 const fmtAxis = formatCurrencyCompact;
 
 const TOOLTIP_STYLE = {
-  backgroundColor: "#0f2040",
-  border: "1px solid rgba(255,255,255,0.1)",
+  backgroundColor: "#ffffff",
+  border: "1px solid #e5e7eb",
   borderRadius: "8px",
-  color: "#fff",
+  color: "#0f172a",
   fontSize: "12px",
+  boxShadow: "0 10px 30px rgba(15,23,42,0.08)",
 };
 
 interface RunwayChartProps {
@@ -42,9 +43,9 @@ export function RunwayChart({ monthly, runway }: RunwayChartProps) {
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-medium text-white/60">Cash Position</h3>
+        <h3 className="text-sm font-semibold text-gray-900">Cash Position</h3>
         {runway.breakEvenMonth && (
-          <span className="text-xs bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2.5 py-1 rounded-full">
+          <span className="text-xs bg-emerald-100 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-full font-semibold">
             EBITDA+ at month {runway.breakEvenMonth}
           </span>
         )}
@@ -54,30 +55,30 @@ export function RunwayChart({ monthly, runway }: RunwayChartProps) {
         <AreaChart data={data} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
           <defs>
             <linearGradient id="cashGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.25} />
-              <stop offset="95%" stopColor="#3B82F6" stopOpacity={0.02} />
+              <stop offset="5%" stopColor="#2563eb" stopOpacity={0.35} />
+              <stop offset="95%" stopColor="#2563eb" stopOpacity={0.02} />
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-          <XAxis dataKey="label" tick={{ fill: "rgba(255,255,255,0.35)", fontSize: 11 }} axisLine={false} tickLine={false} interval={5} />
-          <YAxis tickFormatter={fmtAxis} tick={{ fill: "rgba(255,255,255,0.35)", fontSize: 11 }} axisLine={false} tickLine={false} />
+          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+          <XAxis dataKey="label" tick={{ fill: "#64748b", fontSize: 11 }} axisLine={false} tickLine={false} interval={5} />
+          <YAxis tickFormatter={fmtAxis} tick={{ fill: "#64748b", fontSize: 11 }} axisLine={false} tickLine={false} />
           <Tooltip
             contentStyle={TOOLTIP_STYLE}
             formatter={(val: number, name: string) => [fmtAxis(val), name === "cash" ? "Closing Cash" : name]}
           />
-          <ReferenceLine y={0} stroke="rgba(239,68,68,0.4)" strokeDasharray="4 4" />
+          <ReferenceLine y={0} stroke="rgba(239,68,68,0.6)" strokeDasharray="4 4" />
           {breakEvenLabel && (
             <ReferenceLine
               x={breakEvenLabel}
-              stroke="rgba(16,185,129,0.5)"
+              stroke="rgba(16,185,129,0.7)"
               strokeDasharray="4 4"
-              label={{ value: "EBITDA+", fill: "rgba(16,185,129,0.7)", fontSize: 10 }}
+              label={{ value: "EBITDA+", fill: "#059669", fontSize: 10 }}
             />
           )}
           <Area
             type="monotone"
             dataKey="cash"
-            stroke="#3B82F6"
+            stroke="#2563eb"
             strokeWidth={2}
             fill="url(#cashGrad)"
             name="cash"

@@ -27,29 +27,29 @@ export function PLTable({ annual, compact = false }: PLTableProps) {
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-white/10">
-            <th className="text-left py-3 px-4 text-white/40 font-medium w-48">Metric</th>
+          <tr className="border-b border-gray-200 bg-gray-50">
+            <th className="text-left py-3 px-4 text-gray-500 font-semibold w-48">Metric</th>
             {annual.map((yr) => (
-              <th key={yr.year} className="text-right py-3 px-4 text-white/60 font-semibold">
+              <th key={yr.year} className="text-right py-3 px-4 text-gray-700 font-semibold">
                 {yr.label}
               </th>
             ))}
           </tr>
         </thead>
         <tbody>
-          {rows.map((row, i) => (
+          {rows.map((row) => (
             <tr
               key={row.key}
               className={cn(
-                "border-b border-white/5 transition-colors",
-                row.highlight ? "bg-accent-500/5" : "hover:bg-white/3"
+                "border-b border-gray-100 transition-colors",
+                row.highlight ? "bg-blue-50/40" : "hover:bg-gray-50/60"
               )}
             >
               <td
                 className={cn(
                   "py-3 px-4",
-                  row.indent ? "pl-8 text-white/50" : "text-white/80",
-                  row.bold && "font-semibold text-white"
+                  row.indent ? "pl-8 text-gray-500" : "text-gray-700",
+                  row.bold && "font-semibold text-gray-900"
                 )}
               >
                 {row.label}
@@ -62,9 +62,9 @@ export function PLTable({ annual, compact = false }: PLTableProps) {
                     key={yr.year}
                     className={cn(
                       "py-3 px-4 text-right font-mono tabular-nums",
-                      row.bold ? "font-semibold text-white" : "text-white/60",
-                      row.highlight && "text-accent-400 font-semibold",
-                      isNeg && !row.isPercent && "text-red-400"
+                      row.bold ? "font-semibold text-gray-900" : "text-gray-600",
+                      row.highlight && "text-blue-700 font-semibold",
+                      isNeg && !row.isPercent && "text-red-600"
                     )}
                   >
                     {row.isPercent ? fmtPct(raw) : fmt(raw)}
@@ -76,23 +76,23 @@ export function PLTable({ annual, compact = false }: PLTableProps) {
 
           {!compact && (
             <>
-              <tr className="border-b border-white/5">
-                <td className="py-3 px-4 text-white/40 text-xs uppercase tracking-wider" colSpan={annual.length + 1}>
+              <tr className="border-b border-gray-100 bg-gray-50/60">
+                <td className="py-3 px-4 text-gray-400 text-xs uppercase tracking-wider font-semibold" colSpan={annual.length + 1}>
                   Operational KPIs
                 </td>
               </tr>
-              <tr className="border-b border-white/5 hover:bg-white/3">
-                <td className="py-3 px-4 text-white/80">Paying Customers (EOP)</td>
+              <tr className="border-b border-gray-100 hover:bg-gray-50/60">
+                <td className="py-3 px-4 text-gray-700">Paying Customers (EOP)</td>
                 {annual.map((yr) => (
-                  <td key={yr.year} className="py-3 px-4 text-right font-mono text-white/60 tabular-nums">
+                  <td key={yr.year} className="py-3 px-4 text-right font-mono text-gray-600 tabular-nums">
                     {formatNumber(yr.endingUsers)}
                   </td>
                 ))}
               </tr>
-              <tr className="border-b border-white/5 hover:bg-white/3">
-                <td className="py-3 px-4 text-white/80 font-semibold">ARR (Year-end)</td>
+              <tr className="border-b border-gray-100 hover:bg-gray-50/60">
+                <td className="py-3 px-4 text-gray-900 font-semibold">ARR (Year-end)</td>
                 {annual.map((yr) => (
-                  <td key={yr.year} className="py-3 px-4 text-right font-mono text-white font-semibold tabular-nums">
+                  <td key={yr.year} className="py-3 px-4 text-right font-mono text-gray-900 font-semibold tabular-nums">
                     {fmt(yr.arr)}
                   </td>
                 ))}

@@ -55,13 +55,13 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <meta name="theme-color" content="#3B82F6" />
+        <meta name="theme-color" content="#2563eb" />
       </head>
-      <body className="bg-navy-900 text-white antialiased">
+      <body className="bg-white text-gray-900 antialiased">
         {children}
         <FeedbackButton />
 

@@ -1,9 +1,7 @@
 "use client";
 
 import {
-  BarChart,
   Bar,
-  LineChart,
   Line,
   XAxis,
   YAxis,
@@ -12,7 +10,6 @@ import {
   Legend,
   ResponsiveContainer,
   ComposedChart,
-  Area,
   ReferenceLine,
 } from "recharts";
 import { useState } from "react";
@@ -22,11 +19,12 @@ import { formatCurrencyCompact } from "@/lib/utils";
 const fmtAxis = formatCurrencyCompact;
 
 const TOOLTIP_STYLE = {
-  backgroundColor: "#0f2040",
-  border: "1px solid rgba(255,255,255,0.1)",
+  backgroundColor: "#ffffff",
+  border: "1px solid #e5e7eb",
   borderRadius: "8px",
-  color: "#fff",
+  color: "#0f172a",
   fontSize: "12px",
+  boxShadow: "0 10px 30px rgba(15,23,42,0.08)",
 };
 
 interface RevenueChartProps {
@@ -53,14 +51,14 @@ export function RevenueChart({ monthly, annual }: RevenueChartProps) {
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-medium text-white/60">Revenue & EBITDA</h3>
-        <div className="flex gap-1 bg-navy-900/60 rounded-lg p-1 border border-white/10">
+        <h3 className="text-sm font-semibold text-gray-900">Revenue & EBITDA</h3>
+        <div className="flex gap-1 bg-gray-100 rounded-lg p-1 border border-gray-200">
           {(["annual", "monthly"] as const).map((v) => (
             <button
               key={v}
               onClick={() => setView(v)}
               className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${
-                view === v ? "bg-navy-800 text-white" : "text-white/40 hover:text-white/70"
+                view === v ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"
               }`}
             >
               {v.charAt(0).toUpperCase() + v.slice(1)}
@@ -71,29 +69,27 @@ export function RevenueChart({ monthly, annual }: RevenueChartProps) {
 
       <ResponsiveContainer width="100%" height={240}>
         <ComposedChart data={view === "annual" ? annualData : monthlyData} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-          <XAxis dataKey="label" tick={{ fill: "rgba(255,255,255,0.35)", fontSize: 11 }} axisLine={false} tickLine={false} />
-          <YAxis tickFormatter={fmtAxis} tick={{ fill: "rgba(255,255,255,0.35)", fontSize: 11 }} axisLine={false} tickLine={false} />
+          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+          <XAxis dataKey="label" tick={{ fill: "#64748b", fontSize: 11 }} axisLine={false} tickLine={false} />
+          <YAxis tickFormatter={fmtAxis} tick={{ fill: "#64748b", fontSize: 11 }} axisLine={false} tickLine={false} />
           <Tooltip
             contentStyle={TOOLTIP_STYLE}
             formatter={(val: number, name: string) => [fmtAxis(val), name]}
           />
-          <Legend
-            wrapperStyle={{ fontSize: "12px", color: "rgba(255,255,255,0.5)" }}
-          />
-          <Bar dataKey="revenue" name="Revenue" fill="#3B82F6" opacity={0.85} radius={[3, 3, 0, 0]} />
+          <Legend wrapperStyle={{ fontSize: "12px", color: "#475569" }} />
+          <Bar dataKey="revenue" name="Revenue" fill="#2563eb" radius={[3, 3, 0, 0]} />
           {view === "annual" && (
-            <Bar dataKey="grossProfit" name="Gross Profit" fill="#10B981" opacity={0.7} radius={[3, 3, 0, 0]} />
+            <Bar dataKey="grossProfit" name="Gross Profit" fill="#10b981" radius={[3, 3, 0, 0]} />
           )}
           <Line
             type="monotone"
             dataKey="ebitda"
             name="EBITDA"
-            stroke="#F59E0B"
+            stroke="#f59e0b"
             strokeWidth={2}
             dot={false}
           />
-          <ReferenceLine y={0} stroke="rgba(255,255,255,0.15)" strokeDasharray="4 4" />
+          <ReferenceLine y={0} stroke="#cbd5e1" strokeDasharray="4 4" />
         </ComposedChart>
       </ResponsiveContainer>
     </div>
