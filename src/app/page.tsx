@@ -297,6 +297,7 @@ export default function LandingPage() {
                   "AI funding narrative",
                   "3-scenario comparison",
                   "Cap table with dilution",
+                  "Calculations panel — every formula shown",
                   "Populated Excel download",
                 ].map((item) => (
                   <div key={item} className="flex items-center gap-3 text-sm text-white/90">

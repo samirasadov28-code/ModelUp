@@ -12,13 +12,14 @@ import { UnitEconomicsDashboard } from "@/components/outputs/UnitEconomicsDashbo
 import { ScenarioComparison } from "@/components/outputs/ScenarioComparison";
 import { FundingNarrative } from "@/components/outputs/FundingNarrative";
 import { CapTableSummary } from "@/components/outputs/CapTableSummary";
+import { CalculationsPanel } from "@/components/outputs/CalculationsPanel";
 import { MetricCard } from "@/components/outputs/MetricCard";
 import { TrustBadge } from "@/components/outputs/TrustBadge";
 import { EarlyAccessForm } from "@/components/EarlyAccessForm";
 import { getModelLocally } from "@/lib/model-client-store";
 import { formatCurrencyCompact } from "@/lib/utils";
 import { hasEarlyAccess } from "@/lib/early-access";
-import { Download, Lightbulb, Lock, Sparkles } from "lucide-react";
+import { Calculator, Download, Eye, Lightbulb, Lock, Sparkles } from "lucide-react";
 import type { ModelOutputs } from "@/lib/types";
 
 const fmtCurrency = formatCurrencyCompact;
@@ -173,17 +174,27 @@ export default function FullModelPage() {
               Model<span className="text-blue-600">Up</span>
             </span>
           </Link>
-          <div className="flex items-center gap-3">
-            <div className="hidden md:block">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="hidden lg:block">
               <TrustBadge />
             </div>
+            <Link
+              href={`/model/${params.id}/preview`}
+              className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-gray-700 bg-white hover:bg-gray-50 border border-gray-200 px-3 py-2 rounded-lg transition-colors whitespace-nowrap"
+              title="See what a free user would see for this model"
+            >
+              <Eye className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">View as free</span>
+              <span className="sm:hidden">Free</span>
+            </Link>
             <button
               onClick={handleExport}
               disabled={exporting}
               className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-colors shadow-sm disabled:opacity-50 whitespace-nowrap"
             >
               <Download className="w-4 h-4" />
-              {exporting ? "Exporting…" : "Download Excel"}
+              <span className="hidden sm:inline">{exporting ? "Exporting…" : "Download Excel"}</span>
+              <span className="sm:hidden">{exporting ? "…" : "Excel"}</span>
             </button>
           </div>
         </div>
@@ -269,12 +280,16 @@ export default function FullModelPage() {
         )}
 
         <Tabs defaultValue="overview">
-          <TabsList>
+          <TabsList className="flex-wrap h-auto">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="pl">P&amp;L</TabsTrigger>
             <TabsTrigger value="unit-econ">Unit Economics</TabsTrigger>
             <TabsTrigger value="scenarios">Scenarios</TabsTrigger>
             <TabsTrigger value="captable">Cap Table</TabsTrigger>
+            <TabsTrigger value="calculations" className="gap-1.5">
+              <Calculator className="w-3.5 h-3.5" />
+              Calculations
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-4">
@@ -331,6 +346,16 @@ export default function FullModelPage() {
                 Pre/post-raise ownership structure
               </p>
               <CapTableSummary capTable={capTable} />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="calculations">
+            <div className="rounded-xl border border-gray-200 p-6 shadow-sm">
+              <h2 className="font-semibold text-gray-900 mb-1">Calculations</h2>
+              <p className="text-xs text-gray-500 mb-6">
+                Every formula behind the model, with your inputs plugged in
+              </p>
+              <CalculationsPanel model={model} />
             </div>
           </TabsContent>
         </Tabs>

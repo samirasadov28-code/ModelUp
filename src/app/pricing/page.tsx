@@ -22,6 +22,7 @@ const PRO_FEATURES = [
   "Funding ask narrative (investor-ready paragraph)",
   "3-scenario comparison (Base / Conservative / Aggressive)",
   "Cap table with pre/post-raise ownership",
+  "Calculations panel — every formula with your numbers",
   "Populated Excel model download (.xlsx)",
   "Unlimited models",
 ];

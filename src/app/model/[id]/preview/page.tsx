@@ -216,7 +216,7 @@ export default function PreviewPage() {
           </h2>
           <p className="text-gray-500 text-sm mb-6 max-w-md mx-auto">
             Interactive charts, unit economics, funding narrative, scenario comparison,
-            cap table, and the populated Excel file.
+            cap table, every formula plugged in with your numbers, and the populated Excel file.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
             <Link
