@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { Sparkles, ArrowRight } from "lucide-react";
 import { saveModelLocally } from "@/lib/model-client-store";
 import { ProgressBar } from "./ProgressBar";
 import { QuestionWrapper } from "./QuestionWrapper";
@@ -36,10 +37,17 @@ const tileOn = "border-blue-500 bg-blue-50 text-blue-700";
 
 export function QuestionnaireFlow() {
   const router = useRouter();
-  const [step, setStep] = useState(1);
+  // step 0 = intro/describe-your-startup screen, 1..10 = the questionnaire
+  const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Partial<QuestionnaireAnswers>>(DEFAULT_ANSWERS);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Intro state
+  const [description, setDescription] = useState("");
+  const [suggesting, setSuggesting] = useState(false);
+  const [suggestError, setSuggestError] = useState<string | null>(null);
+  const [aiNote, setAiNote] = useState<string | null>(null);
 
   const [tierCount, setTierCount] = useState(2);
 
@@ -80,7 +88,52 @@ export function QuestionnaireFlow() {
   }
 
   function handleBack() {
-    setStep((s) => Math.max(1, s - 1));
+    setStep((s) => Math.max(0, s - 1));
+  }
+
+  async function handleSuggest(e: FormEvent) {
+    e.preventDefault();
+    if (suggesting) return;
+    if (description.trim().length < 10) {
+      setSuggestError("Tell us a bit more — at least one sentence.");
+      return;
+    }
+    setSuggesting(true);
+    setSuggestError(null);
+    try {
+      const res = await fetch("/api/suggest", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ description }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "AI suggestions failed");
+
+      const s = (data.suggestions ?? {}) as Partial<QuestionnaireAnswers> & { reasoning?: string };
+      setAnswers((prev) => {
+        const merged: Partial<QuestionnaireAnswers> = { ...prev };
+        for (const [key, value] of Object.entries(s)) {
+          if (key === "reasoning") continue;
+          if (value === undefined || value === null) continue;
+          (merged as Record<string, unknown>)[key] = value;
+        }
+        return merged;
+      });
+      if (Array.isArray(s.tiers) && s.tiers.length > 0) {
+        setTierCount(Math.min(4, s.tiers.length));
+      }
+      setAiNote(s.reasoning ?? "Smart defaults applied — review and adjust each step.");
+      setStep(1);
+    } catch (err) {
+      setSuggestError(err instanceof Error ? err.message : "AI suggestions failed");
+    } finally {
+      setSuggesting(false);
+    }
+  }
+
+  function handleSkipIntro() {
+    setAiNote(null);
+    setStep(1);
   }
 
   async function handleSubmit() {
@@ -148,9 +201,95 @@ export function QuestionnaireFlow() {
     );
   }
 
+  if (step === 0) {
+    return (
+      <div className="w-full max-w-2xl mx-auto">
+        <div className="rounded-2xl border-2 border-blue-200 bg-gradient-to-br from-blue-50 via-white to-cyan-50 p-6 md:p-8 shadow-xl shadow-blue-500/10">
+          <div className="flex items-center gap-2 mb-3">
+            <Sparkles className="w-4 h-4 text-blue-600" />
+            <p className="text-xs font-bold text-blue-700 uppercase tracking-wider">Smart start</p>
+          </div>
+          <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900 mb-2 tracking-tight">
+            Describe your startup in a few words
+          </h2>
+          <p className="text-sm text-gray-600 mb-5 leading-relaxed">
+            One or two sentences is plenty. Our AI will pre-fill the next 10 questions with sensible
+            defaults — your business model, customer type, pricing, burn, CAC, raise size and more —
+            so you only review &amp; tweak instead of typing from scratch.
+          </p>
+          <form onSubmit={handleSuggest} className="space-y-3">
+            <textarea
+              required
+              rows={4}
+              value={description}
+              onChange={(e) => {
+                setDescription(e.target.value);
+                if (suggestError) setSuggestError(null);
+              }}
+              placeholder="e.g. We're building a B2B SaaS platform that helps law firms automate contract review with AI. Charging $200/seat/month, targeting US mid-market firms. Raising a seed round."
+              className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-400 resize-none"
+            />
+            {suggestError && (
+              <p className="text-xs text-red-600">{suggestError}</p>
+            )}
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                type="submit"
+                disabled={suggesting}
+                className="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition-colors shadow-sm shadow-blue-500/20"
+              >
+                {suggesting ? (
+                  <>
+                    <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Thinking…
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-4 h-4" />
+                    Get smart defaults
+                  </>
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={handleSkipIntro}
+                disabled={suggesting}
+                className="inline-flex items-center justify-center gap-2 border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 px-5 py-2.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+              >
+                Skip — I&apos;ll fill it in myself
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+          </form>
+          <p className="text-xs text-gray-500 mt-4">
+            Tip: the more you say (pricing, market, stage, headcount), the better the defaults. We
+            never share your description.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full max-w-2xl mx-auto space-y-8">
       <ProgressBar current={step} total={TOTAL_STEPS} />
+      {aiNote && (
+        <div className="rounded-xl border border-blue-100 bg-blue-50/60 px-4 py-3 flex items-start gap-2">
+          <Sparkles className="w-4 h-4 text-blue-600 mt-0.5 shrink-0" />
+          <div className="flex-1 text-xs text-gray-700">
+            <span className="font-semibold text-blue-700">Pre-filled from your description.</span>{" "}
+            {aiNote} Review every step — you can edit anything.
+          </div>
+          <button
+            type="button"
+            onClick={() => setAiNote(null)}
+            className="text-gray-400 hover:text-gray-700 text-xs"
+            aria-label="Dismiss"
+          >
+            ✕
+          </button>
+        </div>
+      )}
       {error && (
         <p className="text-red-600 text-sm text-center bg-red-50 border border-red-100 rounded-lg p-3">
           {error}
@@ -163,7 +302,7 @@ export function QuestionnaireFlow() {
           stepNumber={1} totalSteps={TOTAL_STEPS}
           title="What type of business are you building?"
           subtitle="This determines which financial model we use as the foundation."
-          onNext={handleNext} onBack={undefined}
+          onNext={handleNext} onBack={handleBack}
           nextDisabled={!canAdvance()}
         >
           {[

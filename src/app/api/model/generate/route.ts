@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { runFinancialEngine } from "@/lib/financial-engine";
 import { saveModel } from "@/lib/model-store";
 import { saveModelToDb } from "@/lib/supabase";
-import { generateNarrativeWithGrok, generateInsightsWithGrok } from "@/lib/grok";
+import { generateFundingNarrative, generateModelInsights } from "@/lib/groq";
 import type { QuestionnaireAnswers } from "@/lib/types";
 
 export async function POST(req: NextRequest) {
@@ -16,16 +16,16 @@ export async function POST(req: NextRequest) {
     // Run the core financial engine
     const outputs = runFinancialEngine(answers);
 
-    // Enhance narrative with Grok AI (falls back to template if no API key)
+    // Enhance narrative with Groq AI (falls back to template if no API key)
     const [aiNarrative, aiInsights] = await Promise.all([
-      generateNarrativeWithGrok({
+      generateFundingNarrative({
         answers,
         annual: outputs.annual,
         runway: outputs.runway,
         capTable: outputs.capTable,
         fallbackNarrative: outputs.fundingNarrative,
       }),
-      generateInsightsWithGrok({
+      generateModelInsights({
         answers,
         annual: outputs.annual,
         runway: outputs.runway,
