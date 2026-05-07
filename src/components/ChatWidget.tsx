@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { usePathname } from "next/navigation";
 import * as Dialog from "@radix-ui/react-dialog";
 import { MessageCircle, Send, Sparkles, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getModelLocally } from "@/lib/model-client-store";
 import type { ModelOutputs } from "@/lib/types";
 
 interface ChatMessage {
@@ -11,30 +13,63 @@ interface ChatMessage {
   content: string;
 }
 
-interface ModelChatProps {
-  model: ModelOutputs;
-}
-
-const SUGGESTIONS = [
+const MODEL_PROMPTS = [
   "What's my biggest financial risk?",
   "Is my LTV/CAC ratio healthy?",
   "What if I doubled my CAC — how does runway change?",
   "Explain my Year-3 EBITDA in plain English.",
 ];
 
-export function ModelChat({ model }: ModelChatProps) {
+const GENERAL_PROMPTS = [
+  "What does ModelUp do?",
+  "What's the difference between Free and Pro?",
+  "How do I think about CAC vs LTV?",
+  "How do investors evaluate my runway?",
+];
+
+function extractModelIdFromPath(pathname: string | null): string | null {
+  if (!pathname) return null;
+  const match = pathname.match(/^\/model\/([^/]+)\//);
+  return match ? match[1] : null;
+}
+
+export function ChatWidget() {
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [activeModel, setActiveModel] = useState<ModelOutputs | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Load the active model from localStorage when on a /model/[id]/* route
+  useEffect(() => {
+    const id = extractModelIdFromPath(pathname);
+    if (!id) {
+      setActiveModel(null);
+      return;
+    }
+    const m = getModelLocally(id);
+    setActiveModel(m ?? null);
+  }, [pathname]);
+
+  // Reset thread when the active model changes (so context doesn't bleed)
+  useEffect(() => {
+    setMessages([]);
+    setError(null);
+  }, [activeModel?.modelId]);
 
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages, pending]);
+
+  const suggestions = useMemo(
+    () => (activeModel ? MODEL_PROMPTS : GENERAL_PROMPTS),
+    [activeModel]
+  );
 
   async function send(text: string) {
     const trimmed = text.trim();
@@ -50,12 +85,13 @@ export function ModelChat({ model }: ModelChatProps) {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ model, messages: next }),
+        body: JSON.stringify({
+          model: activeModel ?? undefined,
+          messages: next,
+        }),
       });
       const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || "Chat request failed");
-      }
+      if (!res.ok) throw new Error(data.error || "Chat request failed");
       setMessages([...next, { role: "assistant", content: data.reply }]);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Chat request failed";
@@ -70,29 +106,36 @@ export function ModelChat({ model }: ModelChatProps) {
     send(input);
   };
 
+  const headerLabel = activeModel
+    ? `Ask about ${activeModel.answers.companyName ?? "your model"}`
+    : "Ask the ModelUp assistant";
+
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
       <Dialog.Trigger asChild>
         <button
-          className="fixed bottom-6 left-6 z-40 inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2.5 rounded-full shadow-lg shadow-blue-500/30 transition-all hover:scale-105 active:scale-95"
-          aria-label="Chat with your model"
+          className="fixed bottom-6 right-6 z-40 inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2.5 rounded-full shadow-lg shadow-blue-500/30 transition-all hover:scale-105 active:scale-95"
+          aria-label="Chat with the ModelUp assistant"
         >
           <MessageCircle className="w-4 h-4" />
-          <span className="hidden sm:inline">Ask the model</span>
+          <span className="hidden sm:inline">{activeModel ? "Ask the model" : "Chat"}</span>
         </button>
       </Dialog.Trigger>
 
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-gray-900/30 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
 
-        <Dialog.Content className="fixed bottom-4 left-4 right-4 sm:bottom-6 sm:left-6 sm:right-auto z-50 w-auto sm:w-[420px] max-h-[85vh] flex flex-col rounded-2xl border border-gray-200 bg-white shadow-2xl data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:slide-out-to-bottom-4 data-[state=open]:slide-in-from-bottom-4">
+        <Dialog.Content className="fixed bottom-4 left-4 right-4 sm:bottom-6 sm:right-6 sm:left-auto z-50 w-auto sm:w-[420px] max-h-[85vh] flex flex-col rounded-2xl border border-gray-200 bg-white shadow-2xl data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:slide-out-to-bottom-4 data-[state=open]:slide-in-from-bottom-4">
           <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-blue-600" />
-              <div>
-                <Dialog.Title className="text-gray-900 font-semibold text-sm">Ask your model</Dialog.Title>
+            <div className="flex items-center gap-2 min-w-0">
+              <Sparkles className="w-4 h-4 text-blue-600 shrink-0" />
+              <div className="min-w-0">
+                <Dialog.Title className="text-gray-900 font-semibold text-sm truncate">
+                  {headerLabel}
+                </Dialog.Title>
                 <Dialog.Description className="text-gray-500 text-xs mt-0.5">
-                  Powered by Groq · uses your actual numbers
+                  Powered by Groq
+                  {activeModel ? " · uses your actual numbers" : " · Llama 3.3 70B"}
                 </Dialog.Description>
               </div>
             </div>
@@ -107,11 +150,12 @@ export function ModelChat({ model }: ModelChatProps) {
             {messages.length === 0 && (
               <div className="space-y-3">
                 <p className="text-sm text-gray-600">
-                  I&apos;m looking at your model now. Ask anything — runway, scenarios, what
-                  investors will push back on, what to fix first.
+                  {activeModel
+                    ? "I'm looking at your model now. Ask anything — runway, scenarios, what investors will push back on, what to fix first."
+                    : "Hi! I can help you understand ModelUp or answer general financial-modelling questions. Build a model first and I'll be able to reason about your specific numbers."}
                 </p>
                 <div className="space-y-2">
-                  {SUGGESTIONS.map((s) => (
+                  {suggestions.map((s) => (
                     <button
                       key={s}
                       type="button"
@@ -160,7 +204,7 @@ export function ModelChat({ model }: ModelChatProps) {
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask about your model…"
+              placeholder={activeModel ? "Ask about your model…" : "Ask anything about ModelUp…"}
               disabled={pending}
               className="flex-1 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-400 disabled:opacity-50"
             />

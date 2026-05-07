@@ -50,7 +50,7 @@ export function FeedbackButton() {
     <Dialog.Root open={open} onOpenChange={setOpen}>
       <Dialog.Trigger asChild>
         <button
-          className="fixed bottom-6 right-6 z-50 inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2.5 rounded-full shadow-lg shadow-blue-500/30 transition-all hover:scale-105 active:scale-95"
+          className="fixed bottom-6 left-6 z-40 inline-flex items-center gap-2 bg-white hover:bg-gray-50 text-gray-700 text-sm font-semibold px-4 py-2.5 rounded-full shadow-lg border border-gray-200 transition-all hover:scale-105 active:scale-95"
           aria-label="Give feedback"
         >
           <MessageSquarePlus className="w-4 h-4" />
@@ -61,7 +61,7 @@ export function FeedbackButton() {
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-gray-900/30 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
 
-        <Dialog.Content className="fixed bottom-20 right-6 z-50 w-full max-w-sm rounded-2xl border border-gray-200 bg-white shadow-2xl p-6 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:slide-out-to-bottom-4 data-[state=open]:slide-in-from-bottom-4">
+        <Dialog.Content className="fixed bottom-20 left-4 right-4 sm:bottom-20 sm:left-6 sm:right-auto z-50 w-auto sm:w-[360px] max-w-sm rounded-2xl border border-gray-200 bg-white shadow-2xl p-6 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:slide-out-to-bottom-4 data-[state=open]:slide-in-from-bottom-4">
           <div className="flex items-center justify-between mb-5">
             <div>
               <Dialog.Title className="text-gray-900 font-semibold">Share your feedback</Dialog.Title>

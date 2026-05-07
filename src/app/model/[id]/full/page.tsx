@@ -16,7 +16,6 @@ import { CalculationsPanel } from "@/components/outputs/CalculationsPanel";
 import { MetricCard } from "@/components/outputs/MetricCard";
 import { TrustBadge } from "@/components/outputs/TrustBadge";
 import { EarlyAccessForm } from "@/components/EarlyAccessForm";
-import { ModelChat } from "@/components/ModelChat";
 import { getModelLocally } from "@/lib/model-client-store";
 import { formatCurrencyCompact } from "@/lib/utils";
 import { hasEarlyAccess } from "@/lib/early-access";
@@ -379,8 +378,6 @@ export default function FullModelPage() {
           </button>
         </div>
       </div>
-
-      <ModelChat model={model} />
     </main>
   );
 }

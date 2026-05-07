@@ -185,7 +185,7 @@ CAP TABLE (post-raise)
 }
 
 export async function chatWithModel(params: {
-  model: ModelOutputs;
+  model?: ModelOutputs;
   messages: ChatMessage[];
 }): Promise<string> {
   const client = getClient();
@@ -193,9 +193,18 @@ export async function chatWithModel(params: {
     throw new Error("AI chat is not configured. Set GROQ_API_KEY in environment.");
   }
 
-  const systemPrompt = `You are an experienced startup CFO and fundraising advisor speaking to the founder. Be direct, concise, and use the founder's actual numbers. Prefer 1–3 short paragraphs unless the user asks for more. If a question asks "what if X", reason from the formulas: revenue depends on customers × ARPU, EBITDA = gross profit − OpEx, runway = cash ÷ net burn, LTV = (ARPU × gross margin) ÷ churn, etc. If the question can't be answered from the data, say so plainly.
+  const systemPrompt = params.model
+    ? `You are an experienced startup CFO and fundraising advisor speaking to the founder. Be direct, concise, and use the founder's actual numbers. Prefer 1–3 short paragraphs unless the user asks for more. If a question asks "what if X", reason from the formulas: revenue depends on customers × ARPU, EBITDA = gross profit − OpEx, runway = cash ÷ net burn, LTV = (ARPU × gross margin) ÷ churn, etc. If the question can't be answered from the data, say so plainly.
 
-${buildModelContext(params.model)}`;
+${buildModelContext(params.model)}`
+    : `You are a friendly startup financial-modelling expert and ModelUp product guide. ModelUp helps founders generate a 3-year financial model from a 10-question intake; Pro is $4.99/mo and unlocks interactive charts, unit economics, scenarios, cap table, calculations panel, AI chat, and an Excel download.
+
+Help the user with:
+• Questions about ModelUp — what it does, how to use it, what's free vs Pro.
+• General fundraising and financial-model questions — CAC, LTV, runway, dilution, valuations, scenarios.
+• Encouraging them to build a model when relevant ("you can answer 10 quick questions and have one in 30 seconds").
+
+Be concise (1–3 short paragraphs). If the question really needs the user's specific numbers and they haven't built a model yet, suggest they build one.`;
 
   const response = await client.chat.completions.create({
     model: CHAT_MODEL,
