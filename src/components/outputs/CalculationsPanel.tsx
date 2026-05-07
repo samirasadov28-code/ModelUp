@@ -164,9 +164,22 @@ export function CalculationsPanel({ model }: CalculationsPanelProps) {
       >
         <Formula
           label="Monthly revenue"
-          expression="revenue = Σ tier_users × tier_price"
-          plugged={`Σ over ${answers.tiers.length || 1} tier${answers.tiers.length === 1 ? "" : "s"}`}
+          expression={
+            answers.revenueStreams && answers.revenueStreams.length > 0
+              ? "revenue = Σ tier_users × tier_price + Σ stream_revenue × stream_factor"
+              : "revenue = Σ tier_users × tier_price"
+          }
+          plugged={
+            answers.revenueStreams && answers.revenueStreams.length > 0
+              ? `Σ over ${answers.tiers.length || 1} tier${answers.tiers.length === 1 ? "" : "s"} + ${answers.revenueStreams.length} extra stream${answers.revenueStreams.length === 1 ? "" : "s"}`
+              : `Σ over ${answers.tiers.length || 1} tier${answers.tiers.length === 1 ? "" : "s"}`
+          }
           result={`Month 12: ${formatCurrency(m12Revenue)}`}
+          note={
+            answers.revenueStreams && answers.revenueStreams.length > 0
+              ? "Streams marked 'scales with users' grow proportionally with the customer base; flat streams add the same amount each month."
+              : undefined
+          }
         />
         <Formula
           label="Year-end ARR"
