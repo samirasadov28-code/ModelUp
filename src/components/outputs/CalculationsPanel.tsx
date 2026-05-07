@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { ChevronDown, ChevronRight, Calculator } from "lucide-react";
-import { formatCurrency, formatNumber, formatPercent } from "@/lib/utils";
+import { formatCurrency as fmtRaw, formatNumber, formatPercent } from "@/lib/utils";
 import type { ModelOutputs } from "@/lib/types";
 
 const COGS_RATES: Record<string, number> = {
@@ -94,7 +94,8 @@ interface CalculationsPanelProps {
 }
 
 export function CalculationsPanel({ model }: CalculationsPanelProps) {
-  const { answers, annual, monthly, unitEconomics, runway, capTable } = model;
+  const { answers, annual, monthly, unitEconomics, runway, capTable, currency } = model;
+  const formatCurrency = (v: number, fd: 0 | 2 = 0) => fmtRaw(v, fd, currency);
   const cogsRate = COGS_RATES[answers.businessModel] ?? 0.25;
   const grossMarginRate = 1 - cogsRate;
   const growthRate = GROWTH_RATES[answers.growthCurve];

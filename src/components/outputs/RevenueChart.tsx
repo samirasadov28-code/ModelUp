@@ -13,10 +13,8 @@ import {
   ReferenceLine,
 } from "recharts";
 import { useState } from "react";
-import type { MonthlyDataPoint, AnnualSummary } from "@/lib/types";
+import type { MonthlyDataPoint, AnnualSummary, Currency } from "@/lib/types";
 import { formatCurrencyCompact } from "@/lib/utils";
-
-const fmtAxis = formatCurrencyCompact;
 
 const TOOLTIP_STYLE = {
   backgroundColor: "#ffffff",
@@ -30,10 +28,12 @@ const TOOLTIP_STYLE = {
 interface RevenueChartProps {
   monthly: MonthlyDataPoint[];
   annual: AnnualSummary[];
+  currency?: Currency;
 }
 
-export function RevenueChart({ monthly, annual }: RevenueChartProps) {
+export function RevenueChart({ monthly, annual, currency }: RevenueChartProps) {
   const [view, setView] = useState<"annual" | "monthly">("annual");
+  const fmtAxis = (v: number) => formatCurrencyCompact(v, currency);
 
   const annualData = annual.map((yr) => ({
     label: yr.label,

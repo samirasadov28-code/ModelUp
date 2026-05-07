@@ -23,8 +23,6 @@ import { hasEarlyAccess } from "@/lib/early-access";
 import { Calculator, Download, Eye, Lightbulb, Lock, Sliders, Sparkles } from "lucide-react";
 import type { ModelOutputs } from "@/lib/types";
 
-const fmtCurrency = formatCurrencyCompact;
-
 const GATE_ENABLED = process.env.NEXT_PUBLIC_GATE_ENABLED === "true";
 
 export default function FullModelPage() {
@@ -161,9 +159,10 @@ export default function FullModelPage() {
     );
   }
 
-  const { annual, monthly, unitEconomics, runway, scenarios, capTable, fundingNarrative, answers } = model;
+  const { annual, monthly, unitEconomics, runway, scenarios, capTable, fundingNarrative, answers, currency } = model;
   const aiInsights = (model as ModelOutputs & { aiInsights?: string[] }).aiInsights ?? [];
   const company = answers.companyName ?? "Your business";
+  const fmt = (v: number) => formatCurrencyCompact(v, currency);
 
   return (
     <main className="min-h-screen bg-white text-gray-900">
@@ -230,14 +229,14 @@ export default function FullModelPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <MetricCard
             label="Year 3 ARR"
-            value={fmtCurrency(annual[2].arr)}
+            value={fmt(annual[2].arr)}
             variant="highlight"
             sub="Annual recurring revenue"
           />
           <MetricCard
             label="Runway"
             value={runway.cashPositive ? "36mo+" : `${runway.runwayMonths}mo`}
-            sub={`Raise: ${fmtCurrency(answers.fundingAsk)}`}
+            sub={`Raise: ${fmt(answers.fundingAsk)}`}
           />
           <MetricCard
             label="Break-even"
@@ -300,10 +299,10 @@ export default function FullModelPage() {
           <TabsContent value="overview" className="space-y-4">
             <div className="grid md:grid-cols-2 gap-4">
               <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-                <RevenueChart monthly={monthly} annual={annual} />
+                <RevenueChart monthly={monthly} annual={annual} currency={currency} />
               </div>
               <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-                <RunwayChart monthly={monthly} runway={runway} />
+                <RunwayChart monthly={monthly} runway={runway} currency={currency} />
               </div>
             </div>
           </TabsContent>
@@ -316,7 +315,7 @@ export default function FullModelPage() {
                   3-year annual projections · {answers.growthCurve} scenario
                 </p>
               </div>
-              <PLTable annual={annual} />
+              <PLTable annual={annual} currency={currency} />
             </div>
           </TabsContent>
 
@@ -326,7 +325,7 @@ export default function FullModelPage() {
               <p className="text-xs text-gray-500 mb-6">
                 Core metrics for business health and investor readiness
               </p>
-              <UnitEconomicsDashboard ue={unitEconomics} />
+              <UnitEconomicsDashboard ue={unitEconomics} currency={currency} />
             </div>
           </TabsContent>
 
@@ -340,6 +339,7 @@ export default function FullModelPage() {
                 base={scenarios.base}
                 conservative={scenarios.conservative}
                 aggressive={scenarios.aggressive}
+                currency={currency}
               />
             </div>
           </TabsContent>
@@ -350,7 +350,7 @@ export default function FullModelPage() {
               <p className="text-xs text-gray-500 mb-6">
                 Pre/post-raise ownership structure
               </p>
-              <CapTableSummary capTable={capTable} />
+              <CapTableSummary capTable={capTable} currency={currency} />
             </div>
           </TabsContent>
 

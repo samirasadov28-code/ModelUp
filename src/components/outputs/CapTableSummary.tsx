@@ -1,17 +1,18 @@
 "use client";
 
-import type { CapTableData } from "@/lib/types";
+import type { CapTableData, Currency } from "@/lib/types";
 import { formatCurrency, formatCurrencyCompact, formatNumber, formatPercent } from "@/lib/utils";
 
-const fmt = formatCurrencyCompact;
-const fmtPrice = (value: number) => formatCurrency(value, 2);
 const fmtPct = (value: number) => formatPercent(value, 1);
 
 interface CapTableSummaryProps {
   capTable: CapTableData;
+  currency?: Currency;
 }
 
-export function CapTableSummary({ capTable }: CapTableSummaryProps) {
+export function CapTableSummary({ capTable, currency }: CapTableSummaryProps) {
+  const fmt = (v: number) => formatCurrencyCompact(v, currency);
+  const fmtPrice = (v: number) => formatCurrency(v, 2, currency);
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-3 gap-3">

@@ -1,25 +1,27 @@
 "use client";
 
 import { cn, formatCurrencyCompact, formatNumber } from "@/lib/utils";
-import type { ScenarioMetrics } from "@/lib/types";
-
-const fmt = formatCurrencyCompact;
+import type { ScenarioMetrics, Currency } from "@/lib/types";
 
 interface ScenarioComparisonProps {
   base: ScenarioMetrics;
   conservative: ScenarioMetrics;
   aggressive: ScenarioMetrics;
+  currency?: Currency;
 }
 
-const COLS = [
-  { key: "revenueY1" as keyof ScenarioMetrics, label: "Revenue Y1", format: fmt },
-  { key: "revenueY2" as keyof ScenarioMetrics, label: "Revenue Y2", format: fmt },
-  { key: "revenueY3" as keyof ScenarioMetrics, label: "Revenue Y3", format: fmt },
-  { key: "arrY3" as keyof ScenarioMetrics, label: "ARR (EoY3)", format: fmt },
-  { key: "ebitdaY3" as keyof ScenarioMetrics, label: "EBITDA Y3", format: fmt },
-  { key: "totalUsersY3" as keyof ScenarioMetrics, label: "Customers Y3", format: (v: number) => formatNumber(v) },
-  { key: "runwayMonths" as keyof ScenarioMetrics, label: "Runway", format: (v: number) => v >= 36 ? "36mo+" : `${v}mo` },
-];
+function buildCols(currency?: Currency) {
+  const fmt = (v: number) => formatCurrencyCompact(v, currency);
+  return [
+    { key: "revenueY1" as keyof ScenarioMetrics, label: "Revenue Y1", format: fmt },
+    { key: "revenueY2" as keyof ScenarioMetrics, label: "Revenue Y2", format: fmt },
+    { key: "revenueY3" as keyof ScenarioMetrics, label: "Revenue Y3", format: fmt },
+    { key: "arrY3" as keyof ScenarioMetrics, label: "ARR (EoY3)", format: fmt },
+    { key: "ebitdaY3" as keyof ScenarioMetrics, label: "EBITDA Y3", format: fmt },
+    { key: "totalUsersY3" as keyof ScenarioMetrics, label: "Customers Y3", format: (v: number) => formatNumber(v) },
+    { key: "runwayMonths" as keyof ScenarioMetrics, label: "Runway", format: (v: number) => v >= 36 ? "36mo+" : `${v}mo` },
+  ];
+}
 
 const SCENARIO_STYLES = {
   Conservative: "border-gray-200 bg-white",
@@ -33,7 +35,8 @@ const HEADER_STYLES = {
   Aggressive: "text-cyan-700",
 };
 
-export function ScenarioComparison({ base, conservative, aggressive }: ScenarioComparisonProps) {
+export function ScenarioComparison({ base, conservative, aggressive, currency }: ScenarioComparisonProps) {
+  const COLS = buildCols(currency);
   const scenarios = [
     { data: conservative, name: "Conservative" as const },
     { data: base, name: "Base" as const },

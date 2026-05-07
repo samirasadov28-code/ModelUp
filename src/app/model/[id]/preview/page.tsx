@@ -20,8 +20,6 @@ import { formatCurrencyCompact, formatNumber } from "@/lib/utils";
 import { hasEarlyAccess } from "@/lib/early-access";
 import type { ModelOutputs } from "@/lib/types";
 
-const fmtCurrency = formatCurrencyCompact;
-
 export default function PreviewPage() {
   const params = useParams<{ id: string }>();
   const [model, setModel] = useState<ModelOutputs | null>(null);
@@ -77,8 +75,12 @@ export default function PreviewPage() {
   }
 
   const { annual, runway, unitEconomics, answers } = model;
+  // Older models in localStorage may pre-date the currency field — fall back
+  // to USD so we never crash on stale data.
+  const currency = model.currency;
   const company = answers.companyName ?? "Your business";
   const breakEvenText = runway.breakEvenYear ? `Year ${runway.breakEvenYear}` : "Year 3+";
+  const fmtCurrency = (v: number) => formatCurrencyCompact(v, currency);
   const upgradeLabel = earlyAccess ? "Open full model" : "Get Pro — $4.99/mo";
 
   return (
@@ -177,7 +179,7 @@ export default function PreviewPage() {
               Annual projections · {answers.growthCurve} growth scenario
             </p>
           </div>
-          <PLTable annual={annual} compact />
+          <PLTable annual={annual} compact currency={currency} />
         </div>
 
         {/* Pro teasers — dimmed examples */}
@@ -201,7 +203,7 @@ export default function PreviewPage() {
             </div>
           </div>
           <div className="p-6">
-            <UnitEconomicsDashboard ue={unitEconomics} blurValues />
+            <UnitEconomicsDashboard ue={unitEconomics} blurValues currency={currency} />
           </div>
         </div>
 

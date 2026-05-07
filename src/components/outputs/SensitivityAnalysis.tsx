@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { Sliders, RotateCcw } from "lucide-react";
 import { runFinancialEngine } from "@/lib/financial-engine";
 import { formatCurrency, formatCurrencyCompact, formatNumber, formatPercent } from "@/lib/utils";
-import type { ModelOutputs, QuestionnaireAnswers, GrowthCurve, ChurnEstimate } from "@/lib/types";
+import type { ModelOutputs, QuestionnaireAnswers, GrowthCurve, ChurnEstimate, Currency } from "@/lib/types";
 
 interface SensitivityAnalysisProps {
   baseModel: ModelOutputs;
@@ -128,6 +128,7 @@ function MetricChange({ label, value, baseValue, delta, positive = true, highlig
 
 export function SensitivityAnalysis({ baseModel }: SensitivityAnalysisProps) {
   const a = baseModel.answers;
+  const currency: Currency | undefined = baseModel.currency;
   const baseChurnRate =
     a.monthlyChurnRate > 0
       ? a.monthlyChurnRate
@@ -274,16 +275,16 @@ export function SensitivityAnalysis({ baseModel }: SensitivityAnalysisProps) {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <MetricChange
             label="Year 3 ARR"
-            value={formatCurrencyCompact(sY3.arr)}
-            baseValue={formatCurrencyCompact(baseY3.arr)}
+            value={formatCurrencyCompact(sY3.arr, currency)}
+            baseValue={formatCurrencyCompact(baseY3.arr, currency)}
             delta={pctDelta(sY3.arr, baseY3.arr)}
             positive
             highlight
           />
           <MetricChange
             label="Year 3 EBITDA"
-            value={formatCurrencyCompact(sY3.ebitda)}
-            baseValue={formatCurrencyCompact(baseY3.ebitda)}
+            value={formatCurrencyCompact(sY3.ebitda, currency)}
+            baseValue={formatCurrencyCompact(baseY3.ebitda, currency)}
             delta={pctDelta(sY3.ebitda, baseY3.ebitda)}
             positive
           />
@@ -338,7 +339,7 @@ export function SensitivityAnalysis({ baseModel }: SensitivityAnalysisProps) {
           max={Math.round(a.monthlyBurn * 2.5)}
           step={500}
           baseValue={a.monthlyBurn}
-          format={(v) => formatCurrencyCompact(v)}
+          format={(v) => formatCurrencyCompact(v, currency)}
           onChange={(v) => set("monthlyBurn", v)}
           hint="All-in cash spend per month"
         />
@@ -349,7 +350,7 @@ export function SensitivityAnalysis({ baseModel }: SensitivityAnalysisProps) {
           max={Math.round((a.cac || 250) * 3)}
           step={10}
           baseValue={a.cac || 250}
-          format={(v) => formatCurrency(v)}
+          format={(v) => formatCurrency(v, 0, currency)}
           onChange={(v) => set("cac", v)}
           hint="Cost to acquire a single paying customer"
         />
@@ -382,7 +383,7 @@ export function SensitivityAnalysis({ baseModel }: SensitivityAnalysisProps) {
           max={Math.round(a.fundingAsk * 4)}
           step={25000}
           baseValue={a.fundingAsk}
-          format={(v) => formatCurrencyCompact(v)}
+          format={(v) => formatCurrencyCompact(v, currency)}
           onChange={(v) => set("fundingAsk", v)}
           hint="Capital raised in this round"
         />

@@ -7,6 +7,28 @@ export type ChurnEstimate = "lt2" | "2to5" | "5to10" | "gt10" | "unknown";
 export type ModelType = "saas" | "alternative" | "project_finance";
 export type SubscriptionStatus = "free" | "trialing" | "active" | "canceled";
 
+export type TaxJurisdiction =
+  | "us"
+  | "uk"
+  | "ireland"
+  | "germany"
+  | "france"
+  | "netherlands"
+  | "canada"
+  | "australia"
+  | "singapore"
+  | "india"
+  | "uae"
+  | "other";
+
+export type CurrencyCode = "USD" | "GBP" | "EUR" | "CAD" | "AUD" | "SGD" | "INR" | "AED";
+
+export interface Currency {
+  code: CurrencyCode;
+  symbol: string;   // "$", "£", "€", "S$", "₹", …
+  locale: string;   // "en-US", "en-GB", "de-DE", …
+}
+
 export interface TierConfig {
   name: string;
   monthlyPrice: number;
@@ -61,6 +83,9 @@ export interface QuestionnaireAnswers {
   fundingAsk: number;
   useOfProceeds: string[];
   targetRunway: 12 | 18 | 24 | 36;
+  // Where the company is incorporated for corporate tax purposes.
+  // Defaults to whatever maps cleanly from `geography` if not supplied.
+  taxJurisdiction?: TaxJurisdiction;
   // Optional PF-specific
   pricePerUnit?: number;
   constructionCost?: number;
@@ -170,6 +195,8 @@ export interface ModelOutputs {
   };
   capTable: CapTableData;
   fundingNarrative: string;
+  currency: Currency;
+  taxRate: number;
 }
 
 // ── UI/Page types ──────────────────────────────────────────────────────────

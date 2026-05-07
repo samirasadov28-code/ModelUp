@@ -22,7 +22,14 @@ import type {
   ChurnEstimate,
   TierConfig,
   RevenueStream,
+  TaxJurisdiction,
 } from "@/lib/types";
+import {
+  TAX_JURISDICTION_LABELS,
+  TAX_JURISDICTION_FLAGS,
+  defaultJurisdictionForGeography,
+  taxRateForJurisdiction,
+} from "@/lib/regional";
 
 const TOTAL_STEPS = 10;
 
@@ -43,6 +50,7 @@ const DEFAULT_ANSWERS: Partial<QuestionnaireAnswers> = {
   businessModel: "saas",
   customerType: "b2b",
   geography: "us",
+  taxJurisdiction: "us",
   fundingStage: "seed",
   headcount: "2–5",
   monthlyBurn: 30000,
@@ -89,7 +97,7 @@ export function QuestionnaireFlow() {
     switch (step) {
       case 1: return !!answers.businessModel;
       case 2: return !!answers.customerType;
-      case 3: return !!answers.geography;
+      case 3: return !!answers.geography && !!answers.taxJurisdiction;
       case 4: return !!answers.fundingStage;
       case 5: return (answers.tiers?.length ?? 0) > 0 && answers.tiers!.every((t) => t.monthlyPrice > 0);
       case 6: return !!answers.cac && answers.cac > 0;
@@ -171,6 +179,8 @@ export function QuestionnaireFlow() {
         businessModel: answers.businessModel ?? "saas",
         customerType: answers.customerType ?? "b2b",
         geography: answers.geography ?? "us",
+        taxJurisdiction:
+          answers.taxJurisdiction ?? defaultJurisdictionForGeography(answers.geography ?? "us"),
         fundingStage: answers.fundingStage ?? "seed",
         tiers: answers.tiers ?? [],
         revenueStreams: answers.revenueStreams ?? [],
@@ -372,29 +382,87 @@ export function QuestionnaireFlow() {
         </QuestionWrapper>
       )}
 
-      {/* Q3 — Geography */}
+      {/* Q3 — Geography + tax jurisdiction */}
       {step === 3 && (
         <QuestionWrapper
           stepNumber={3} totalSteps={TOTAL_STEPS}
-          title="Where is your primary market?"
+          title="Where do you operate?"
+          subtitle="Primary market drives currency and acquisition assumptions. Tax base drives corporate tax and valuation multiples."
           onNext={handleNext} onBack={handleBack}
           nextDisabled={!canAdvance()}
         >
-          {[
-            { value: "us", label: "United States", icon: "🇺🇸" },
-            { value: "uk", label: "United Kingdom", icon: "🇬🇧" },
-            { value: "eu", label: "Europe (EU)", icon: "🇪🇺" },
-            { value: "asia", label: "Asia Pacific", icon: "🌏" },
-            { value: "global", label: "Global / Multi-market", icon: "🌍" },
-          ].map((opt) => (
-            <OptionCard
-              key={opt.value}
-              label={opt.label}
-              icon={opt.icon}
-              selected={answers.geography === opt.value}
-              onClick={() => update("geography", opt.value as Geography)}
-            />
-          ))}
+          <div>
+            <Label className="text-gray-500 text-xs uppercase tracking-wider font-semibold">
+              Primary market
+            </Label>
+            <div className="mt-2 space-y-2">
+              {[
+                { value: "us", label: "United States", icon: "🇺🇸" },
+                { value: "uk", label: "United Kingdom", icon: "🇬🇧" },
+                { value: "eu", label: "Europe (EU)", icon: "🇪🇺" },
+                { value: "asia", label: "Asia Pacific", icon: "🌏" },
+                { value: "global", label: "Global / Multi-market", icon: "🌍" },
+              ].map((opt) => (
+                <OptionCard
+                  key={opt.value}
+                  label={opt.label}
+                  icon={opt.icon}
+                  selected={answers.geography === opt.value}
+                  onClick={() => {
+                    const geo = opt.value as Geography;
+                    update("geography", geo);
+                    // Auto-fill tax jurisdiction the first time the user picks a market.
+                    if (!answers.taxJurisdiction) {
+                      update("taxJurisdiction", defaultJurisdictionForGeography(geo));
+                    }
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className="pt-4 mt-4 border-t border-gray-100">
+            <Label className="text-gray-500 text-xs uppercase tracking-wider font-semibold">
+              Tax base — where the company pays corporate tax
+            </Label>
+            <p className="text-xs text-gray-500 mt-1 mb-3">
+              Drives the corporate-tax line in your P&amp;L and the valuation multiple in the cap
+              table. Most US founders pick &quot;United States&quot; (Delaware C-corp); EU founders
+              often pick Ireland for tech.
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              {(Object.keys(TAX_JURISDICTION_LABELS) as TaxJurisdiction[]).map((j) => {
+                const selected = answers.taxJurisdiction === j;
+                const rate = taxRateForJurisdiction(j);
+                return (
+                  <button
+                    key={j}
+                    type="button"
+                    onClick={() => update("taxJurisdiction", j)}
+                    className={cn(
+                      "flex items-center justify-between gap-2 rounded-xl border px-3 py-2.5 text-left transition-all",
+                      selected ? tileOn : tileOff
+                    )}
+                  >
+                    <span className="flex items-center gap-2 min-w-0">
+                      <span className="text-base shrink-0">{TAX_JURISDICTION_FLAGS[j]}</span>
+                      <span className="text-sm font-medium truncate">
+                        {TAX_JURISDICTION_LABELS[j]}
+                      </span>
+                    </span>
+                    <span
+                      className={cn(
+                        "text-[10px] font-mono shrink-0 tabular-nums",
+                        selected ? "text-blue-700" : "text-gray-400"
+                      )}
+                    >
+                      {(rate * 100).toFixed(1)}%
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </QuestionWrapper>
       )}
 

@@ -22,6 +22,7 @@ import type {
   TierConfig,
   RevenueStream,
   RevenueStreamType,
+  TaxJurisdiction,
 } from "./types";
 import { formatCurrencyCompact, formatNumber } from "./utils";
 
@@ -53,27 +54,31 @@ export async function generateFundingNarrative(params: {
   runway: RunwayData;
   capTable: CapTableData;
   fallbackNarrative: string;
+  currency?: import("./types").Currency;
 }): Promise<string> {
   const client = getClient();
   if (!client) return params.fallbackNarrative;
 
-  const { answers, annual, runway, capTable } = params;
+  const { answers, annual, runway, capTable, currency } = params;
   const company = answers.companyName || "The company";
+  const c = (v: number) => fmtCurrency(v, currency);
+  const code = currency?.code ?? "USD";
 
   const context = `
 Business: ${company}
-Type: ${answers.businessModel} | Stage: ${answers.fundingStage} | Market: ${answers.geography.toUpperCase()}
-Raise: ${fmtCurrency(answers.fundingAsk)} | Use of proceeds: ${answers.useOfProceeds.join(", ")}
+Type: ${answers.businessModel} | Stage: ${answers.fundingStage} | Market: ${answers.geography.toUpperCase()} | Tax base: ${(answers.taxJurisdiction ?? "us").toUpperCase()}
+Reporting currency: ${code} (use this in the narrative)
+Raise: ${c(answers.fundingAsk)} | Use of proceeds: ${answers.useOfProceeds.join(", ")}
 Growth scenario: ${answers.growthCurve}
 
-Year 1 Revenue: ${fmtCurrency(annual[0].revenue)} | ARR: ${fmtCurrency(annual[0].arr)} | Customers: ${formatNumber(annual[0].endingUsers)}
-Year 2 Revenue: ${fmtCurrency(annual[1].revenue)} | ARR: ${fmtCurrency(annual[1].arr)} | Customers: ${formatNumber(annual[1].endingUsers)}
-Year 3 Revenue: ${fmtCurrency(annual[2].revenue)} | ARR: ${fmtCurrency(annual[2].arr)} | Customers: ${formatNumber(annual[2].endingUsers)}
-Year 3 EBITDA: ${fmtCurrency(annual[2].ebitda)} | Margin: ${(annual[2].ebitdaMargin * 100).toFixed(1)}%
+Year 1 Revenue: ${c(annual[0].revenue)} | ARR: ${c(annual[0].arr)} | Customers: ${formatNumber(annual[0].endingUsers)}
+Year 2 Revenue: ${c(annual[1].revenue)} | ARR: ${c(annual[1].arr)} | Customers: ${formatNumber(annual[1].endingUsers)}
+Year 3 Revenue: ${c(annual[2].revenue)} | ARR: ${c(annual[2].arr)} | Customers: ${formatNumber(annual[2].endingUsers)}
+Year 3 EBITDA: ${c(annual[2].ebitda)} | Margin: ${(annual[2].ebitdaMargin * 100).toFixed(1)}%
 
 Runway: ${runway.cashPositive ? "36+ months" : `${runway.runwayMonths} months`}
 Break-even: ${runway.breakEvenYear ? `Year ${runway.breakEvenYear}` : "beyond forecast period"}
-Pre-money valuation: ${fmtCurrency(capTable.preMoneyValuation)}
+Pre-money valuation: ${c(capTable.preMoneyValuation)}
 Investor equity: ${(capTable.newEquityPercent * 100).toFixed(1)}%
   `.trim();
 
@@ -106,16 +111,19 @@ export async function generateModelInsights(params: {
   answers: QuestionnaireAnswers;
   annual: AnnualSummary[];
   runway: RunwayData;
+  currency?: import("./types").Currency;
 }): Promise<string[]> {
   const client = getClient();
   if (!client) return [];
 
-  const { answers, annual, runway } = params;
+  const { answers, annual, runway, currency } = params;
+  const sym = currency?.symbol ?? "$";
 
   const context = `
-Business: ${answers.businessModel}, ${answers.fundingStage}, CAC=$${answers.cac}
-Monthly burn: $${answers.monthlyBurn}, Runway: ${runway.runwayMonths}mo
-Y3 Revenue: ${fmtCurrency(annual[2].revenue)}, Y3 EBITDA: ${fmtCurrency(annual[2].ebitda)}
+Business: ${answers.businessModel}, ${answers.fundingStage}, CAC=${sym}${answers.cac}
+Tax base: ${(answers.taxJurisdiction ?? "us").toUpperCase()}
+Monthly burn: ${sym}${answers.monthlyBurn}, Runway: ${runway.runwayMonths}mo
+Y3 Revenue: ${fmtCurrency(annual[2].revenue, currency)}, Y3 EBITDA: ${fmtCurrency(annual[2].ebitda, currency)}
 Churn: ${answers.monthlyChurnRate}%/mo, Growth: ${answers.growthCurve}
   `.trim();
 
@@ -154,39 +162,40 @@ export interface ChatMessage {
 }
 
 function buildModelContext(model: ModelOutputs): string {
-  const { answers, annual, runway, unitEconomics, capTable } = model;
+  const { answers, annual, runway, unitEconomics, capTable, currency, taxRate } = model;
   const company = answers.companyName || "the company";
+  const c = (v: number) => fmtCurrency(v, currency);
   return `
-You are reviewing ${company}'s financial model. Reference these numbers when answering:
+You are reviewing ${company}'s financial model. Reference these numbers when answering. ALL CURRENCY IS IN ${currency.code} (${currency.symbol}). Quote figures in ${currency.code}.
 
 INPUTS
-- Business: ${answers.businessModel} (${answers.customerType}), ${answers.fundingStage} stage, market ${answers.geography.toUpperCase()}
-- Pricing tiers: ${answers.tiers.map((t) => `${t.name}=$${t.monthlyPrice}/mo (${t.allocationPercent}% of users)`).join("; ") || "(default)"}
+- Business: ${answers.businessModel} (${answers.customerType}), ${answers.fundingStage} stage, market ${answers.geography.toUpperCase()}, tax base ${(answers.taxJurisdiction ?? "us").toUpperCase()} (corporate tax ${(taxRate * 100).toFixed(1)}%)
+- Pricing tiers: ${answers.tiers.map((t) => `${t.name}=${currency.symbol}${t.monthlyPrice}/mo (${t.allocationPercent}% of users)`).join("; ") || "(default)"}
 - Other revenue streams: ${
     answers.revenueStreams && answers.revenueStreams.length > 0
-      ? answers.revenueStreams.map((s) => `${s.name || s.type} (${s.type}, $${formatNumber(s.monthlyRevenue)}/mo${s.scalesWithUsers ? ", scales w/ users" : ", flat"})`).join("; ")
+      ? answers.revenueStreams.map((s) => `${s.name || s.type} (${s.type}, ${currency.symbol}${formatNumber(s.monthlyRevenue)}/mo${s.scalesWithUsers ? ", scales w/ users" : ", flat"})`).join("; ")
       : "none"
   }
-- CAC: $${answers.cac} | Year-1 user target: ${formatNumber(answers.year1UserTarget)}
-- Monthly burn: ${fmtCurrency(answers.monthlyBurn)} | Headcount: ${answers.headcount}
-- Funding ask: ${fmtCurrency(answers.fundingAsk)} | Use of proceeds: ${answers.useOfProceeds.join(", ") || "n/a"}
+- CAC: ${c(answers.cac)} | Year-1 user target: ${formatNumber(answers.year1UserTarget)}
+- Monthly burn: ${c(answers.monthlyBurn)} | Headcount: ${answers.headcount}
+- Funding ask: ${c(answers.fundingAsk)} | Use of proceeds: ${answers.useOfProceeds.join(", ") || "n/a"}
 - Growth scenario: ${answers.growthCurve} | Churn: ${answers.churnEstimate}
 
 PROJECTIONS (3 years)
-- Revenue: Y1 ${fmtCurrency(annual[0].revenue)} → Y2 ${fmtCurrency(annual[1].revenue)} → Y3 ${fmtCurrency(annual[2].revenue)}
-- ARR (year-end): Y1 ${fmtCurrency(annual[0].arr)} → Y2 ${fmtCurrency(annual[1].arr)} → Y3 ${fmtCurrency(annual[2].arr)}
-- Gross margin Y3: ${(annual[2].grossMargin * 100).toFixed(1)}% | EBITDA Y3: ${fmtCurrency(annual[2].ebitda)} (${(annual[2].ebitdaMargin * 100).toFixed(1)}%)
+- Revenue: Y1 ${c(annual[0].revenue)} → Y2 ${c(annual[1].revenue)} → Y3 ${c(annual[2].revenue)}
+- ARR (year-end): Y1 ${c(annual[0].arr)} → Y2 ${c(annual[1].arr)} → Y3 ${c(annual[2].arr)}
+- Gross margin Y3: ${(annual[2].grossMargin * 100).toFixed(1)}% | EBITDA Y3: ${c(annual[2].ebitda)} (${(annual[2].ebitdaMargin * 100).toFixed(1)}%)
 - Customers Y3: ${formatNumber(annual[2].endingUsers)}
 
 UNIT ECONOMICS
-- Blended ARPU: ${fmtCurrency(Math.round(unitEconomics.blendedArpu))}/mo | LTV: ${fmtCurrency(unitEconomics.ltv)} | LTV/CAC: ${unitEconomics.ltvCacRatio.toFixed(2)}x | Payback: ${unitEconomics.paybackMonths.toFixed(1)} months
+- Blended ARPU: ${c(Math.round(unitEconomics.blendedArpu))}/mo | LTV: ${c(unitEconomics.ltv)} | LTV/CAC: ${unitEconomics.ltvCacRatio.toFixed(2)}x | Payback: ${unitEconomics.paybackMonths.toFixed(1)} months
 
 RUNWAY
 - ${runway.cashPositive ? "Cash positive across the full forecast." : `Runway ${runway.runwayMonths} months from start.`}
 - Break-even: ${runway.breakEvenYear ? `Year ${runway.breakEvenYear} (month ${runway.breakEvenMonth})` : "beyond the 3-year forecast"}
 
 CAP TABLE (post-raise)
-- Pre-money: ${fmtCurrency(capTable.preMoneyValuation)} | Raise: ${fmtCurrency(capTable.raiseAmount)} | Post-money: ${fmtCurrency(capTable.postMoneyValuation)}
+- Pre-money: ${c(capTable.preMoneyValuation)} | Raise: ${c(capTable.raiseAmount)} | Post-money: ${c(capTable.postMoneyValuation)}
 - New investor equity: ${(capTable.newEquityPercent * 100).toFixed(1)}%
   `.trim();
 }
@@ -232,6 +241,7 @@ export interface SuggestedAnswers {
   businessModel?: BusinessModel;
   customerType?: CustomerType;
   geography?: Geography;
+  taxJurisdiction?: TaxJurisdiction;
   fundingStage?: FundingStage;
   growthCurve?: GrowthCurve;
   churnEstimate?: ChurnEstimate;
@@ -257,6 +267,10 @@ const GEOGRAPHIES: Geography[] = ["us", "uk", "eu", "asia", "global"];
 const FUNDING_STAGES: FundingStage[] = ["pre-seed", "seed", "series-a", "series-b"];
 const GROWTH_CURVES: GrowthCurve[] = ["conservative", "base", "aggressive"];
 const CHURN_ESTIMATES: ChurnEstimate[] = ["lt2", "2to5", "5to10", "gt10", "unknown"];
+const TAX_JURISDICTIONS: TaxJurisdiction[] = [
+  "us", "uk", "ireland", "germany", "france", "netherlands",
+  "canada", "australia", "singapore", "india", "uae", "other",
+];
 const HEADCOUNTS = ["1", "2–5", "6–15", "15+"] as const;
 const TARGET_RUNWAYS = [12, 18, 24, 36] as const;
 const REVENUE_STREAM_TYPES: RevenueStreamType[] = [
@@ -352,6 +366,7 @@ function sanitizeSuggestions(raw: Record<string, unknown>): SuggestedAnswers {
     businessModel: pick(raw.businessModel, BUSINESS_MODELS),
     customerType: pick(raw.customerType, CUSTOMER_TYPES),
     geography: pick(raw.geography, GEOGRAPHIES),
+    taxJurisdiction: pick(raw.taxJurisdiction, TAX_JURISDICTIONS),
     fundingStage: pick(raw.fundingStage, FUNDING_STAGES),
     growthCurve: pick(raw.growthCurve, GROWTH_CURVES),
     churnEstimate: pick(raw.churnEstimate, CHURN_ESTIMATES),
@@ -393,7 +408,8 @@ Return ONLY a JSON object with these keys. Try to fill EVERY field — only omit
 REQUIRED — pick one of the listed values:
 - businessModel: "saas" | "marketplace" | "product" | "service" | "other"
 - customerType:  "b2b" | "b2c" | "both"
-- geography:     "us" | "uk" | "eu" | "asia" | "global"
+- geography:     "us" | "uk" | "eu" | "asia" | "global"   (PRIMARY MARKET — where customers live)
+- taxJurisdiction: "us" | "uk" | "ireland" | "germany" | "france" | "netherlands" | "canada" | "australia" | "singapore" | "india" | "uae" | "other"   (where the company is incorporated for corporate tax — drives the tax line and valuation multiple. Default to the most likely match for the founder's market: US founders → "us"; UK founders → "uk"; EU SaaS → "ireland"; Singapore-based APAC → "singapore"; India team → "india".)
 - fundingStage:  "pre-seed" | "seed" | "series-a" | "series-b"
 - growthCurve:   "conservative" | "base" | "aggressive"   (consumer-viral or PLG → aggressive; enterprise sales-led → base/conservative)
 - churnEstimate: "lt2" | "2to5" | "5to10" | "gt10" | "unknown"   (enterprise SaaS lt2/2to5; SMB SaaS 2to5/5to10; consumer 5to10/gt10)

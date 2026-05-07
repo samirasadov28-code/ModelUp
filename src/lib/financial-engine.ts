@@ -10,7 +10,15 @@ import type {
   CapTableData,
   ModelType,
   GrowthCurve,
+  Currency,
 } from "./types";
+import {
+  defaultJurisdictionForGeography,
+  resolveCurrency,
+  taxRateForJurisdiction,
+  valuationMultipleForStage,
+} from "./regional";
+import { formatCurrency as fmt } from "./utils";
 
 const MONTHS = 36;
 
@@ -49,7 +57,8 @@ function monthLabel(startDate: Date, offset: number): string {
 function computeMonthly(
   answers: QuestionnaireAnswers,
   curve: GrowthCurve,
-  openingCashOverride?: number
+  openingCashOverride?: number,
+  taxRateOverride?: number
 ): MonthlyDataPoint[] {
   const monthlyGrowth = GROWTH_RATES[curve];
   const monthlyChurn = resolveChurnRate(answers);
@@ -77,6 +86,10 @@ function computeMonthly(
   const initialCash = openingCashOverride ?? answers.fundingAsk;
   let cash = initialCash;
   const data: MonthlyDataPoint[] = [];
+
+  const jurisdiction =
+    answers.taxJurisdiction ?? defaultJurisdictionForGeography(answers.geography);
+  const taxRate = taxRateOverride ?? taxRateForJurisdiction(jurisdiction);
 
   // OpEx scaling — starts at burn, grows slowly with headcount additions
   const headcountMultiplier =
@@ -109,7 +122,7 @@ function computeMonthly(
     const cogs = revenue * cogsRate;
     const grossProfit = revenue - cogs;
     const ebitda = grossProfit - opex;
-    const tax = ebitda > 0 ? ebitda * 0.2 : 0;
+    const tax = ebitda > 0 ? ebitda * taxRate : 0;
     const netIncome = ebitda - tax;
 
     const openingCash = cash;
@@ -268,11 +281,9 @@ function buildScenario(
 
 function buildCapTable(answers: QuestionnaireAnswers, annual: AnnualSummary[]): CapTableData {
   const arrY1 = annual[0].arr;
-  const revenueMultiple =
-    answers.fundingStage === "pre-seed" ? 8
-    : answers.fundingStage === "seed" ? 10
-    : answers.fundingStage === "series-a" ? 12
-    : 15;
+  const jurisdiction =
+    answers.taxJurisdiction ?? defaultJurisdictionForGeography(answers.geography);
+  const revenueMultiple = valuationMultipleForStage(answers.fundingStage, jurisdiction);
 
   const preMoneyValuation = arrY1 > 0
     ? arrY1 * revenueMultiple
@@ -315,10 +326,11 @@ function buildFundingNarrative(
   answers: QuestionnaireAnswers,
   annual: AnnualSummary[],
   runway: RunwayData,
-  capTable: CapTableData
+  capTable: CapTableData,
+  currency: Currency
 ): string {
   const company = answers.companyName || "The company";
-  const raise = formatCurrency(answers.fundingAsk);
+  const raise = fmt(answers.fundingAsk, 0, currency);
   const stage = answers.fundingStage.replace("-", " ").replace(/\b\w/g, (c) => c.toUpperCase());
   const proceedsText = answers.useOfProceeds.join(", ").toLowerCase();
   const runwayText = runway.cashPositive
@@ -328,9 +340,9 @@ function buildFundingNarrative(
     ? `Year ${runway.breakEvenYear}`
     : "within the forecast period";
   const y3Users = annual[2].endingUsers.toLocaleString("en-US");
-  const y3Arr = formatCurrency(annual[2].arr);
+  const y3Arr = fmt(annual[2].arr, 0, currency);
 
-  return `${company} is raising ${raise} at ${stage}. The raise provides ${runwayText} of runway and funds ${proceedsText}. At target growth, the business reaches EBITDA breakeven in ${breakEvenText} with ${y3Users} paying customers generating ${y3Arr} ARR. Post-raise, new investors receive ${(capTable.newEquityPercent * 100).toFixed(1)}% equity at a ${formatCurrency(capTable.preMoneyValuation)} pre-money valuation.`;
+  return `${company} is raising ${raise} at ${stage}. The raise provides ${runwayText} of runway and funds ${proceedsText}. At target growth, the business reaches EBITDA breakeven in ${breakEvenText} with ${y3Users} paying customers generating ${y3Arr} ARR. Post-raise, new investors receive ${(capTable.newEquityPercent * 100).toFixed(1)}% equity at a ${fmt(capTable.preMoneyValuation, 0, currency)} pre-money valuation.`;
 }
 
 function selectModelType(answers: QuestionnaireAnswers): ModelType {
@@ -357,28 +369,24 @@ function sourceModelFile(modelType: ModelType): string {
   }
 }
 
-export function formatCurrency(value: number, compact = false): string {
-  if (compact) {
-    if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`;
-    if (value >= 1_000) return `$${(value / 1_000).toFixed(0)}K`;
-  }
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(value);
-}
-
 export function runFinancialEngine(answers: QuestionnaireAnswers): ModelOutputs {
   const modelType = selectModelType(answers);
   const sourceModel = sourceModelFile(modelType);
+
+  const jurisdiction =
+    answers.taxJurisdiction ?? defaultJurisdictionForGeography(answers.geography);
+  const taxRate = taxRateForJurisdiction(jurisdiction);
+  const currency = resolveCurrency({
+    geography: answers.geography,
+    taxJurisdiction: jurisdiction,
+  });
 
   const monthly = computeMonthly(answers, answers.growthCurve);
   const annual = aggregateAnnual(monthly);
   const unitEconomics = computeUnitEconomics(answers, monthly, annual);
   const runway = computeRunway(answers, monthly);
   const capTable = buildCapTable(answers, annual);
-  const fundingNarrative = buildFundingNarrative(answers, annual, runway, capTable);
+  const fundingNarrative = buildFundingNarrative(answers, annual, runway, capTable, currency);
 
   const scenarios = {
     base: buildScenario(answers, "base"),
@@ -391,7 +399,7 @@ export function runFinancialEngine(answers: QuestionnaireAnswers): ModelOutputs 
     modelType,
     sourceModel,
     createdAt: new Date().toISOString(),
-    answers,
+    answers: { ...answers, taxJurisdiction: jurisdiction },
     monthly,
     annual,
     unitEconomics,
@@ -399,5 +407,7 @@ export function runFinancialEngine(answers: QuestionnaireAnswers): ModelOutputs 
     scenarios,
     capTable,
     fundingNarrative,
+    currency,
+    taxRate,
   };
 }

@@ -1,9 +1,7 @@
 "use client";
 
 import { cn, formatCurrencyCompact } from "@/lib/utils";
-import type { UnitEconomics } from "@/lib/types";
-
-const fmt = formatCurrencyCompact;
+import type { UnitEconomics, Currency } from "@/lib/types";
 
 interface MetricCardProps {
   label: string;
@@ -67,9 +65,11 @@ function MetricCard({ label, value, sub, status = "neutral", blurred = false }: 
 interface UnitEconomicsDashboardProps {
   ue: UnitEconomics;
   blurValues?: boolean;
+  currency?: Currency;
 }
 
-export function UnitEconomicsDashboard({ ue, blurValues = false }: UnitEconomicsDashboardProps) {
+export function UnitEconomicsDashboard({ ue, blurValues = false, currency }: UnitEconomicsDashboardProps) {
+  const fmt = (v: number) => formatCurrencyCompact(v, currency);
   const ltvLabel =
     ue.ltvCacRatio >= 3 ? "Healthy — investors will like this" :
     ue.ltvCacRatio >= 1 ? "Acceptable — room to improve" :
