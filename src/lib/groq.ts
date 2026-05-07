@@ -160,6 +160,11 @@ You are reviewing ${company}'s financial model. Reference these numbers when ans
 INPUTS
 - Business: ${answers.businessModel} (${answers.customerType}), ${answers.fundingStage} stage, market ${answers.geography.toUpperCase()}
 - Pricing tiers: ${answers.tiers.map((t) => `${t.name}=$${t.monthlyPrice}/mo (${t.allocationPercent}% of users)`).join("; ") || "(default)"}
+- Other revenue streams: ${
+    answers.revenueStreams && answers.revenueStreams.length > 0
+      ? answers.revenueStreams.map((s) => `${s.name || s.type} (${s.type}, $${formatNumber(s.monthlyRevenue)}/mo${s.scalesWithUsers ? ", scales w/ users" : ", flat"})`).join("; ")
+      : "none"
+  }
 - CAC: $${answers.cac} | Year-1 user target: ${formatNumber(answers.year1UserTarget)}
 - Monthly burn: ${fmtCurrency(answers.monthlyBurn)} | Headcount: ${answers.headcount}
 - Funding ask: ${fmtCurrency(answers.fundingAsk)} | Use of proceeds: ${answers.useOfProceeds.join(", ") || "n/a"}

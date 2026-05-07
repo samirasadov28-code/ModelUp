@@ -13,6 +13,22 @@ export interface TierConfig {
   allocationPercent: number;
 }
 
+export type RevenueStreamType =
+  | "transaction"   // marketplace fees, % of GMV
+  | "service"       // consulting, implementation, retainers
+  | "one-time"      // setup fees, hardware, licenses
+  | "usage"         // per-API-call, per-event, metered
+  | "ads"           // sponsorships, ad inventory
+  | "other";
+
+export interface RevenueStream {
+  id: string;
+  type: RevenueStreamType;
+  name: string;
+  monthlyRevenue: number;     // expected starting $/month from this stream
+  scalesWithUsers: boolean;   // if true, grows proportionally with the customer base
+}
+
 export interface QuestionnaireAnswers {
   // Q1
   businessModel: BusinessModel;
@@ -26,6 +42,7 @@ export interface QuestionnaireAnswers {
   pricingModel?: string;
   tiers: TierConfig[];
   takeRate?: number;
+  revenueStreams?: RevenueStream[];
   // Q6
   acquisitionChannels: string[];
   cac: number;

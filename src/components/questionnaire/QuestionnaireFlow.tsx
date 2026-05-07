@@ -10,6 +10,7 @@ import { OptionCard } from "./OptionCard";
 import { Input } from "@/components/ui/input";
 import { MoneyInput } from "@/components/ui/money-input";
 import { Label } from "@/components/ui/label";
+import { RevenueStreamsEditor } from "./RevenueStreamsEditor";
 import { cn } from "@/lib/utils";
 import type {
   QuestionnaireAnswers,
@@ -20,6 +21,7 @@ import type {
   GrowthCurve,
   ChurnEstimate,
   TierConfig,
+  RevenueStream,
 } from "@/lib/types";
 
 const TOTAL_STEPS = 10;
@@ -28,6 +30,7 @@ const DEFAULT_ANSWERS: Partial<QuestionnaireAnswers> = {
   tiers: [],
   acquisitionChannels: [],
   useOfProceeds: [],
+  revenueStreams: [],
   monthlyChurnRate: 0,
   growthCurve: "base",
 };
@@ -151,6 +154,7 @@ export function QuestionnaireFlow() {
         geography: answers.geography ?? "us",
         fundingStage: answers.fundingStage ?? "seed",
         tiers: answers.tiers ?? [],
+        revenueStreams: answers.revenueStreams ?? [],
         acquisitionChannels: answers.acquisitionChannels ?? [],
         cac: answers.cac ?? 0,
         acv: answers.acv,
@@ -406,8 +410,8 @@ export function QuestionnaireFlow() {
       {step === 5 && (
         <QuestionWrapper
           stepNumber={5} totalSteps={TOTAL_STEPS}
-          title="How do you price your product?"
-          subtitle="Define your pricing tiers. Total allocation should add up to 100%."
+          title="How do you make money?"
+          subtitle="Start with your subscription pricing tiers (allocation should total 100%). Pro lets you mix in transaction fees, services, ads and more below."
           onNext={handleNext} onBack={handleBack}
           nextDisabled={!canAdvance()}
         >
@@ -474,6 +478,13 @@ export function QuestionnaireFlow() {
               <span className="text-amber-600 ml-1 font-medium">(should total 100%)</span>
             )}
           </p>
+
+          <div className="mt-6 pt-6 border-t border-gray-200">
+            <RevenueStreamsEditor
+              value={answers.revenueStreams ?? []}
+              onChange={(next: RevenueStream[]) => update("revenueStreams", next)}
+            />
+          </div>
         </QuestionWrapper>
       )}
 

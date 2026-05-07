@@ -71,6 +71,8 @@ function computeMonthly(
   let users = answers.year1UserTarget > 0
     ? Math.round(answers.year1UserTarget * 0.05)
     : 50;
+  const startingUsers = Math.max(1, users);
+  const extraStreams = answers.revenueStreams ?? [];
 
   const initialCash = openingCashOverride ?? answers.fundingAsk;
   let cash = initialCash;
@@ -97,7 +99,13 @@ function computeMonthly(
       return { name: t.name, users: tierUsers, revenue: tierRevenue };
     });
 
-    const revenue = tierBreakdown.reduce((s, t) => s + t.revenue, 0);
+    const tierRevenue = tierBreakdown.reduce((s, t) => s + t.revenue, 0);
+    const userScale = endUsers / startingUsers;
+    const otherStreamsRevenue = extraStreams.reduce((s, stream) => {
+      const factor = stream.scalesWithUsers ? userScale : 1;
+      return s + Math.max(0, stream.monthlyRevenue) * factor;
+    }, 0);
+    const revenue = tierRevenue + otherStreamsRevenue;
     const cogs = revenue * cogsRate;
     const grossProfit = revenue - cogs;
     const ebitda = grossProfit - opex;
