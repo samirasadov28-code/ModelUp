@@ -20,6 +20,8 @@ import type {
   GrowthCurve,
   ChurnEstimate,
   TierConfig,
+  RevenueStream,
+  RevenueStreamType,
 } from "./types";
 import { formatCurrencyCompact, formatNumber } from "./utils";
 
@@ -236,11 +238,16 @@ export interface SuggestedAnswers {
   companyName?: string;
   monthlyBurn?: number;
   cac?: number;
+  acv?: number;
+  avgMonthlySpend?: number;
   year1UserTarget?: number;
   fundingAsk?: number;
+  headcount?: string;
+  targetRunway?: 12 | 18 | 24 | 36;
   acquisitionChannels?: string[];
   useOfProceeds?: string[];
   tiers?: TierConfig[];
+  revenueStreams?: RevenueStream[];
   reasoning?: string;
 }
 
@@ -250,6 +257,16 @@ const GEOGRAPHIES: Geography[] = ["us", "uk", "eu", "asia", "global"];
 const FUNDING_STAGES: FundingStage[] = ["pre-seed", "seed", "series-a", "series-b"];
 const GROWTH_CURVES: GrowthCurve[] = ["conservative", "base", "aggressive"];
 const CHURN_ESTIMATES: ChurnEstimate[] = ["lt2", "2to5", "5to10", "gt10", "unknown"];
+const HEADCOUNTS = ["1", "2–5", "6–15", "15+"] as const;
+const TARGET_RUNWAYS = [12, 18, 24, 36] as const;
+const REVENUE_STREAM_TYPES: RevenueStreamType[] = [
+  "transaction",
+  "service",
+  "one-time",
+  "usage",
+  "ads",
+  "other",
+];
 
 function pick<T extends string>(value: unknown, allowed: readonly T[]): T | undefined {
   return typeof value === "string" && (allowed as readonly string[]).includes(value)
@@ -288,10 +305,49 @@ function tiersArray(value: unknown): TierConfig[] | undefined {
     }
     if (out.length >= 4) break;
   }
+  // Normalise allocations to 100 if close.
+  if (out.length > 0) {
+    const total = out.reduce((s, t) => s + t.allocationPercent, 0);
+    if (total > 0 && Math.abs(total - 100) > 1) {
+      const scale = 100 / total;
+      out.forEach((t) => (t.allocationPercent = Math.round(t.allocationPercent * scale)));
+    }
+  }
+  return out.length > 0 ? out : undefined;
+}
+
+function revenueStreamsArray(value: unknown): RevenueStream[] | undefined {
+  if (!Array.isArray(value)) return undefined;
+  const out: RevenueStream[] = [];
+  for (const s of value) {
+    if (!s || typeof s !== "object") continue;
+    const obj = s as Record<string, unknown>;
+    const type = pick(obj.type, REVENUE_STREAM_TYPES);
+    const name = typeof obj.name === "string" ? obj.name.slice(0, 60) : undefined;
+    const monthlyRevenue = num(obj.monthlyRevenue);
+    const scalesWithUsers = obj.scalesWithUsers === true || obj.scalesWithUsers === "true";
+    if (type && name && monthlyRevenue != null) {
+      out.push({
+        id: `s_${out.length}_${Date.now()}`,
+        type,
+        name,
+        monthlyRevenue,
+        scalesWithUsers,
+      });
+    }
+    if (out.length >= 4) break;
+  }
   return out.length > 0 ? out : undefined;
 }
 
 function sanitizeSuggestions(raw: Record<string, unknown>): SuggestedAnswers {
+  const headcount = pick(raw.headcount, HEADCOUNTS);
+  const targetRunwayNum = num(raw.targetRunway);
+  const targetRunway =
+    targetRunwayNum != null && (TARGET_RUNWAYS as readonly number[]).includes(targetRunwayNum)
+      ? (targetRunwayNum as 12 | 18 | 24 | 36)
+      : undefined;
+
   const cleaned: SuggestedAnswers = {
     businessModel: pick(raw.businessModel, BUSINESS_MODELS),
     customerType: pick(raw.customerType, CUSTOMER_TYPES),
@@ -302,12 +358,17 @@ function sanitizeSuggestions(raw: Record<string, unknown>): SuggestedAnswers {
     companyName: typeof raw.companyName === "string" ? raw.companyName.slice(0, 80) : undefined,
     monthlyBurn: num(raw.monthlyBurn),
     cac: num(raw.cac),
+    acv: num(raw.acv),
+    avgMonthlySpend: num(raw.avgMonthlySpend),
     year1UserTarget: num(raw.year1UserTarget),
     fundingAsk: num(raw.fundingAsk),
+    headcount,
+    targetRunway,
     acquisitionChannels: strArray(raw.acquisitionChannels, 6),
     useOfProceeds: strArray(raw.useOfProceeds, 5),
     tiers: tiersArray(raw.tiers),
-    reasoning: typeof raw.reasoning === "string" ? raw.reasoning.slice(0, 280) : undefined,
+    revenueStreams: revenueStreamsArray(raw.revenueStreams),
+    reasoning: typeof raw.reasoning === "string" ? raw.reasoning.slice(0, 320) : undefined,
   };
 
   // Strip undefined keys for a clean merge on the client.
@@ -320,43 +381,57 @@ export async function suggestAnswersFromDescription(description: string): Promis
     throw new Error("AI suggestions are not configured. Set GROQ_API_KEY in environment.");
   }
 
-  const prompt = `A founder described their startup. Infer reasonable defaults for their financial model.
+  const prompt = `A founder described their startup below. Read it carefully and infer realistic, industry-appropriate defaults for EVERY question in our 10-step financial-model intake.
 
 Founder's description:
 """
 ${description.trim().slice(0, 1500)}
 """
 
-Return ONLY a JSON object with these optional keys (omit any you can't reasonably infer):
+Return ONLY a JSON object with these keys. Try to fill EVERY field — only omit a field if the description gives zero signal and no industry default applies. Use industry knowledge to vary defaults: a B2B enterprise SaaS has very different CAC, churn, ACV, pricing, and burn than a consumer mobile app or a marketplace.
 
-- businessModel: one of "saas" | "marketplace" | "product" | "service" | "other"
-- customerType: one of "b2b" | "b2c" | "both"
-- geography: one of "us" | "uk" | "eu" | "asia" | "global"
-- fundingStage: one of "pre-seed" | "seed" | "series-a" | "series-b"
-- growthCurve: one of "conservative" | "base" | "aggressive"
-- churnEstimate: one of "lt2" | "2to5" | "5to10" | "gt10" | "unknown"
-- companyName: string (only if explicitly mentioned)
-- monthlyBurn: integer USD per month (typical pre-seed 8-20k, seed 30-80k, A 150-400k)
-- cac: integer USD per customer
-- year1UserTarget: integer customers at end of year 1
-- fundingAsk: integer USD raised in this round
-- acquisitionChannels: subset of ["paid-ads","seo","sales","partnerships","word-of-mouth","product-led"]
-- useOfProceeds: subset of ["product-dev","hiring","marketing","operations","working-capital"]
-- tiers: array of {name: string, monthlyPrice: number, allocationPercent: number} summing to 100
-- reasoning: <= 240 chars on why these defaults make sense
+REQUIRED — pick one of the listed values:
+- businessModel: "saas" | "marketplace" | "product" | "service" | "other"
+- customerType:  "b2b" | "b2c" | "both"
+- geography:     "us" | "uk" | "eu" | "asia" | "global"
+- fundingStage:  "pre-seed" | "seed" | "series-a" | "series-b"
+- growthCurve:   "conservative" | "base" | "aggressive"   (consumer-viral or PLG → aggressive; enterprise sales-led → base/conservative)
+- churnEstimate: "lt2" | "2to5" | "5to10" | "gt10" | "unknown"   (enterprise SaaS lt2/2to5; SMB SaaS 2to5/5to10; consumer 5to10/gt10)
+- headcount:     "1" | "2–5" | "6–15" | "15+"  (pre-seed usually 1 or 2–5; seed 2–5 or 6–15; A 6–15 or 15+)
+- targetRunway:  12 | 18 | 24 | 36  (most seed rounds aim for 18–24 months)
 
-Be realistic. If the description is vague, return only the fields you're confident about.`;
+NUMBERS — give a concrete integer:
+- monthlyBurn:     pre-seed $8–20k, seed $30–80k, series-a $150–400k, series-b $400k+. Adjust by headcount.
+- cac:             B2B enterprise $1,000–10,000+; B2B SMB $200–800; B2C $20–80; marketplace $5–40.
+- acv:             B2B only — annual contract value (ACV = monthlyPrice × 12 × seats × tier-mix). Omit for pure B2C.
+- avgMonthlySpend: B2C only — typical consumer spend per month. Omit for pure B2B.
+- year1UserTarget: realistic year-1 ending customers. Enterprise B2B 20–200; SMB B2B 200–2,000; B2C 5,000–100,000+; marketplace mid range.
+- fundingAsk:      pre-seed $250k–$1M; seed $1–4M; series-a $8–20M; series-b $20–60M.
+
+LISTS:
+- acquisitionChannels: subset of ["paid-ads","seo","sales","partnerships","word-of-mouth","product-led"]. Pick what FITS the business — e.g. enterprise SaaS = ["sales","partnerships"]; PLG SaaS = ["product-led","seo","word-of-mouth"]; consumer = ["paid-ads","seo","word-of-mouth"]; marketplace = ["seo","paid-ads","partnerships"].
+- useOfProceeds: subset of ["product-dev","hiring","marketing","operations","working-capital"]. Most early-stage rounds include "product-dev" + "hiring"; growth rounds add "marketing".
+
+PRICING — return tiers AND optional revenueStreams:
+- tiers: 1–4 objects {name, monthlyPrice, allocationPercent} summing to 100. Tier names should be specific to the business if hinted (e.g. "Solo / Team / Business / Enterprise" for SaaS, "Free / Plus / Pro" for consumer). Adjust prices by customer type — enterprise tiers can be $500–$5,000+/mo per seat.
+- revenueStreams: optional 0–4 objects {type, name, monthlyRevenue, scalesWithUsers}. Use this when the description hints at non-subscription revenue: marketplaces should add a "transaction" stream, agencies a "service" stream, hardware companies a "one-time" stream, ad-supported apps an "ads" stream, API products a "usage" stream. Estimate a reasonable starting monthlyRevenue and set scalesWithUsers true if it grows with the customer base.
+
+CONTEXT FIELDS:
+- companyName: only if explicitly mentioned by name in the description.
+- reasoning:   <= 280 chars explaining the 2–3 most important inferences you made (e.g. "Enterprise B2B → high CAC ($2.5k), low churn (lt2), 15+ seats × $400/mo tier, sales-led GTM, 24-month runway target.")
+
+Output strictly a JSON object. No prose, no markdown.`;
 
   const response = await client.chat.completions.create({
     model: NARRATIVE_MODEL,
-    max_tokens: 700,
-    temperature: 0.2,
+    max_tokens: 1400,
+    temperature: 0.35,
     response_format: { type: "json_object" },
     messages: [
       {
         role: "system",
         content:
-          "You are a startup financial-modeling assistant. Output strictly a JSON object — no prose, no markdown.",
+          "You are a startup financial-modeling assistant with deep knowledge of SaaS, marketplaces, consumer apps, agencies, hardware, and project finance unit economics. You translate a one-sentence pitch into concrete, industry-appropriate model defaults across pricing tiers, revenue streams, CAC, churn, burn, headcount, and fundraising. Output strictly a JSON object — no prose, no markdown.",
       },
       { role: "user", content: prompt },
     ],

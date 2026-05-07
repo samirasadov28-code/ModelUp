@@ -26,13 +26,30 @@ import type {
 
 const TOTAL_STEPS = 10;
 
+// Sensible starting defaults so every input appears pre-filled even when the
+// user skips the AI intro. The Q5 tier scaffold gets replaced as soon as a
+// business model / customer type is chosen.
 const DEFAULT_ANSWERS: Partial<QuestionnaireAnswers> = {
-  tiers: [],
-  acquisitionChannels: [],
-  useOfProceeds: [],
+  tiers: [
+    { name: "Starter", monthlyPrice: 49, allocationPercent: 60 },
+    { name: "Pro", monthlyPrice: 199, allocationPercent: 40 },
+  ],
+  acquisitionChannels: ["seo", "word-of-mouth"],
+  useOfProceeds: ["product-dev", "hiring"],
   revenueStreams: [],
   monthlyChurnRate: 0,
+  churnEstimate: "2to5",
   growthCurve: "base",
+  businessModel: "saas",
+  customerType: "b2b",
+  geography: "us",
+  fundingStage: "seed",
+  headcount: "2–5",
+  monthlyBurn: 30000,
+  cac: 500,
+  year1UserTarget: 500,
+  fundingAsk: 1500000,
+  targetRunway: 18,
 };
 
 const tileOff = "border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50";
@@ -52,7 +69,9 @@ export function QuestionnaireFlow() {
   const [suggestError, setSuggestError] = useState<string | null>(null);
   const [aiNote, setAiNote] = useState<string | null>(null);
 
-  const [tierCount, setTierCount] = useState(2);
+  const [tierCount, setTierCount] = useState(
+    DEFAULT_ANSWERS.tiers && DEFAULT_ANSWERS.tiers.length > 0 ? DEFAULT_ANSWERS.tiers.length : 2
+  );
 
   const update = <K extends keyof QuestionnaireAnswers>(
     key: K,

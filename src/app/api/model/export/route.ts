@@ -1,47 +1,43 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getModel } from "@/lib/model-store";
+import { generateExcelBuffer } from "@/lib/excel-generator";
+import type { ModelOutputs } from "@/lib/types";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
   try {
-    const { modelId } = await req.json();
+    const body = (await req.json()) as { modelId?: string; model?: ModelOutputs };
 
-    if (!modelId) {
-      return NextResponse.json({ error: "modelId is required" }, { status: 400 });
+    let model: ModelOutputs | null = null;
+    if (body.model && body.model.modelId) {
+      model = body.model;
+    } else if (body.modelId) {
+      model = getModel(body.modelId);
     }
 
-    const model = getModel(modelId);
     if (!model) {
-      return NextResponse.json({ error: "Model not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Model not found. Pass either a stored modelId or the full model in the request body." },
+        { status: 404 }
+      );
     }
 
-    const pythonServiceUrl = process.env.PYTHON_SERVICE_URL ?? "http://localhost:8000";
-
-    const res = await fetch(`${pythonServiceUrl}/generate`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        answers: model.answers,
-        model_type: model.modelType,
-      }),
-    });
-
-    if (!res.ok) {
-      const err = await res.text();
-      console.error("Python service error:", err);
-      return NextResponse.json({ error: "Excel generation failed" }, { status: 502 });
-    }
-
-    const buffer = await res.arrayBuffer();
-    const filename = `ModelUp_${model.answers.companyName ?? "Model"}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+    const buffer = await generateExcelBuffer(model);
+    const safeName = (model.answers.companyName ?? "Model").replace(/[^a-z0-9_-]+/gi, "_");
+    const filename = `ModelUp_${safeName}_${new Date().toISOString().slice(0, 10)}.xlsx`;
 
     return new NextResponse(buffer, {
       headers: {
         "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         "Content-Disposition": `attachment; filename="${filename}"`,
+        "Content-Length": String(buffer.byteLength),
       },
     });
   } catch (err) {
     console.error("Export error:", err);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    const message = err instanceof Error ? err.message : "Internal server error";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

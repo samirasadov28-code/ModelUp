@@ -13,13 +13,14 @@ import { ScenarioComparison } from "@/components/outputs/ScenarioComparison";
 import { FundingNarrative } from "@/components/outputs/FundingNarrative";
 import { CapTableSummary } from "@/components/outputs/CapTableSummary";
 import { CalculationsPanel } from "@/components/outputs/CalculationsPanel";
+import { SensitivityAnalysis } from "@/components/outputs/SensitivityAnalysis";
 import { MetricCard } from "@/components/outputs/MetricCard";
 import { TrustBadge } from "@/components/outputs/TrustBadge";
 import { EarlyAccessForm } from "@/components/EarlyAccessForm";
 import { getModelLocally } from "@/lib/model-client-store";
 import { formatCurrencyCompact } from "@/lib/utils";
 import { hasEarlyAccess } from "@/lib/early-access";
-import { Calculator, Download, Eye, Lightbulb, Lock, Sparkles } from "lucide-react";
+import { Calculator, Download, Eye, Lightbulb, Lock, Sliders, Sparkles } from "lucide-react";
 import type { ModelOutputs } from "@/lib/types";
 
 const fmtCurrency = formatCurrencyCompact;
@@ -66,9 +67,12 @@ export default function FullModelPage() {
       const res = await fetch("/api/model/export", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ modelId: params.id }),
+        body: JSON.stringify({ modelId: params.id, model }),
       });
-      if (!res.ok) throw new Error();
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error ?? "Export failed");
+      }
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -76,12 +80,9 @@ export default function FullModelPage() {
       a.download = `ModelUp_${model?.answers.companyName ?? "Model"}.xlsx`;
       a.click();
       URL.revokeObjectURL(url);
-    } catch {
-      alert(
-        "Excel export requires the Python microservice.\n\n" +
-          "Run it locally:\n  cd excel-service && pip install -r requirements.txt && uvicorn main:app\n\n" +
-          "Or deploy to Railway/Fly.io and set PYTHON_SERVICE_URL."
-      );
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Excel export failed.";
+      alert(`${message}\n\nTry refreshing the page and downloading again.`);
     } finally {
       setExporting(false);
     }
@@ -286,6 +287,10 @@ export default function FullModelPage() {
             <TabsTrigger value="unit-econ">Unit Economics</TabsTrigger>
             <TabsTrigger value="scenarios">Scenarios</TabsTrigger>
             <TabsTrigger value="captable">Cap Table</TabsTrigger>
+            <TabsTrigger value="sensitivity" className="gap-1.5">
+              <Sliders className="w-3.5 h-3.5" />
+              Sensitivity
+            </TabsTrigger>
             <TabsTrigger value="calculations" className="gap-1.5">
               <Calculator className="w-3.5 h-3.5" />
               Calculations
@@ -346,6 +351,17 @@ export default function FullModelPage() {
                 Pre/post-raise ownership structure
               </p>
               <CapTableSummary capTable={capTable} />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="sensitivity">
+            <div className="rounded-xl border border-gray-200 p-6 shadow-sm">
+              <h2 className="font-semibold text-gray-900 mb-1">Sensitivity analysis</h2>
+              <p className="text-xs text-gray-500 mb-6">
+                Stress-test every input — burn, CAC, churn, pricing, growth, runway — and see live
+                impact on Year-3 ARR, EBITDA, runway, and unit economics.
+              </p>
+              <SensitivityAnalysis baseModel={model} />
             </div>
           </TabsContent>
 
