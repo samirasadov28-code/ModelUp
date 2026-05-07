@@ -20,6 +20,9 @@ import type {
   GrowthCurve,
   ChurnEstimate,
   TierConfig,
+  RevenueStream,
+  RevenueStreamType,
+  TaxJurisdiction,
 } from "./types";
 import { formatCurrencyCompact, formatNumber } from "./utils";
 
@@ -51,27 +54,31 @@ export async function generateFundingNarrative(params: {
   runway: RunwayData;
   capTable: CapTableData;
   fallbackNarrative: string;
+  currency?: import("./types").Currency;
 }): Promise<string> {
   const client = getClient();
   if (!client) return params.fallbackNarrative;
 
-  const { answers, annual, runway, capTable } = params;
+  const { answers, annual, runway, capTable, currency } = params;
   const company = answers.companyName || "The company";
+  const c = (v: number) => fmtCurrency(v, currency);
+  const code = currency?.code ?? "USD";
 
   const context = `
 Business: ${company}
-Type: ${answers.businessModel} | Stage: ${answers.fundingStage} | Market: ${answers.geography.toUpperCase()}
-Raise: ${fmtCurrency(answers.fundingAsk)} | Use of proceeds: ${answers.useOfProceeds.join(", ")}
+Type: ${answers.businessModel} | Stage: ${answers.fundingStage} | Market: ${answers.geography.toUpperCase()} | Tax base: ${(answers.taxJurisdiction ?? "us").toUpperCase()}
+Reporting currency: ${code} (use this in the narrative)
+Raise: ${c(answers.fundingAsk)} | Use of proceeds: ${answers.useOfProceeds.join(", ")}
 Growth scenario: ${answers.growthCurve}
 
-Year 1 Revenue: ${fmtCurrency(annual[0].revenue)} | ARR: ${fmtCurrency(annual[0].arr)} | Customers: ${formatNumber(annual[0].endingUsers)}
-Year 2 Revenue: ${fmtCurrency(annual[1].revenue)} | ARR: ${fmtCurrency(annual[1].arr)} | Customers: ${formatNumber(annual[1].endingUsers)}
-Year 3 Revenue: ${fmtCurrency(annual[2].revenue)} | ARR: ${fmtCurrency(annual[2].arr)} | Customers: ${formatNumber(annual[2].endingUsers)}
-Year 3 EBITDA: ${fmtCurrency(annual[2].ebitda)} | Margin: ${(annual[2].ebitdaMargin * 100).toFixed(1)}%
+Year 1 Revenue: ${c(annual[0].revenue)} | ARR: ${c(annual[0].arr)} | Customers: ${formatNumber(annual[0].endingUsers)}
+Year 2 Revenue: ${c(annual[1].revenue)} | ARR: ${c(annual[1].arr)} | Customers: ${formatNumber(annual[1].endingUsers)}
+Year 3 Revenue: ${c(annual[2].revenue)} | ARR: ${c(annual[2].arr)} | Customers: ${formatNumber(annual[2].endingUsers)}
+Year 3 EBITDA: ${c(annual[2].ebitda)} | Margin: ${(annual[2].ebitdaMargin * 100).toFixed(1)}%
 
 Runway: ${runway.cashPositive ? "36+ months" : `${runway.runwayMonths} months`}
 Break-even: ${runway.breakEvenYear ? `Year ${runway.breakEvenYear}` : "beyond forecast period"}
-Pre-money valuation: ${fmtCurrency(capTable.preMoneyValuation)}
+Pre-money valuation: ${c(capTable.preMoneyValuation)}
 Investor equity: ${(capTable.newEquityPercent * 100).toFixed(1)}%
   `.trim();
 
@@ -104,16 +111,19 @@ export async function generateModelInsights(params: {
   answers: QuestionnaireAnswers;
   annual: AnnualSummary[];
   runway: RunwayData;
+  currency?: import("./types").Currency;
 }): Promise<string[]> {
   const client = getClient();
   if (!client) return [];
 
-  const { answers, annual, runway } = params;
+  const { answers, annual, runway, currency } = params;
+  const sym = currency?.symbol ?? "$";
 
   const context = `
-Business: ${answers.businessModel}, ${answers.fundingStage}, CAC=$${answers.cac}
-Monthly burn: $${answers.monthlyBurn}, Runway: ${runway.runwayMonths}mo
-Y3 Revenue: ${fmtCurrency(annual[2].revenue)}, Y3 EBITDA: ${fmtCurrency(annual[2].ebitda)}
+Business: ${answers.businessModel}, ${answers.fundingStage}, CAC=${sym}${answers.cac}
+Tax base: ${(answers.taxJurisdiction ?? "us").toUpperCase()}
+Monthly burn: ${sym}${answers.monthlyBurn}, Runway: ${runway.runwayMonths}mo
+Y3 Revenue: ${fmtCurrency(annual[2].revenue, currency)}, Y3 EBITDA: ${fmtCurrency(annual[2].ebitda, currency)}
 Churn: ${answers.monthlyChurnRate}%/mo, Growth: ${answers.growthCurve}
   `.trim();
 
@@ -152,39 +162,40 @@ export interface ChatMessage {
 }
 
 function buildModelContext(model: ModelOutputs): string {
-  const { answers, annual, runway, unitEconomics, capTable } = model;
+  const { answers, annual, runway, unitEconomics, capTable, currency, taxRate } = model;
   const company = answers.companyName || "the company";
+  const c = (v: number) => fmtCurrency(v, currency);
   return `
-You are reviewing ${company}'s financial model. Reference these numbers when answering:
+You are reviewing ${company}'s financial model. Reference these numbers when answering. ALL CURRENCY IS IN ${currency.code} (${currency.symbol}). Quote figures in ${currency.code}.
 
 INPUTS
-- Business: ${answers.businessModel} (${answers.customerType}), ${answers.fundingStage} stage, market ${answers.geography.toUpperCase()}
-- Pricing tiers: ${answers.tiers.map((t) => `${t.name}=$${t.monthlyPrice}/mo (${t.allocationPercent}% of users)`).join("; ") || "(default)"}
+- Business: ${answers.businessModel} (${answers.customerType}), ${answers.fundingStage} stage, market ${answers.geography.toUpperCase()}, tax base ${(answers.taxJurisdiction ?? "us").toUpperCase()} (corporate tax ${(taxRate * 100).toFixed(1)}%)
+- Pricing tiers: ${answers.tiers.map((t) => `${t.name}=${currency.symbol}${t.monthlyPrice}/mo (${t.allocationPercent}% of users)`).join("; ") || "(default)"}
 - Other revenue streams: ${
     answers.revenueStreams && answers.revenueStreams.length > 0
-      ? answers.revenueStreams.map((s) => `${s.name || s.type} (${s.type}, $${formatNumber(s.monthlyRevenue)}/mo${s.scalesWithUsers ? ", scales w/ users" : ", flat"})`).join("; ")
+      ? answers.revenueStreams.map((s) => `${s.name || s.type} (${s.type}, ${currency.symbol}${formatNumber(s.monthlyRevenue)}/mo${s.scalesWithUsers ? ", scales w/ users" : ", flat"})`).join("; ")
       : "none"
   }
-- CAC: $${answers.cac} | Year-1 user target: ${formatNumber(answers.year1UserTarget)}
-- Monthly burn: ${fmtCurrency(answers.monthlyBurn)} | Headcount: ${answers.headcount}
-- Funding ask: ${fmtCurrency(answers.fundingAsk)} | Use of proceeds: ${answers.useOfProceeds.join(", ") || "n/a"}
+- CAC: ${c(answers.cac)} | Year-1 user target: ${formatNumber(answers.year1UserTarget)}
+- Monthly burn: ${c(answers.monthlyBurn)} | Headcount: ${answers.headcount}
+- Funding ask: ${c(answers.fundingAsk)} | Use of proceeds: ${answers.useOfProceeds.join(", ") || "n/a"}
 - Growth scenario: ${answers.growthCurve} | Churn: ${answers.churnEstimate}
 
 PROJECTIONS (3 years)
-- Revenue: Y1 ${fmtCurrency(annual[0].revenue)} → Y2 ${fmtCurrency(annual[1].revenue)} → Y3 ${fmtCurrency(annual[2].revenue)}
-- ARR (year-end): Y1 ${fmtCurrency(annual[0].arr)} → Y2 ${fmtCurrency(annual[1].arr)} → Y3 ${fmtCurrency(annual[2].arr)}
-- Gross margin Y3: ${(annual[2].grossMargin * 100).toFixed(1)}% | EBITDA Y3: ${fmtCurrency(annual[2].ebitda)} (${(annual[2].ebitdaMargin * 100).toFixed(1)}%)
+- Revenue: Y1 ${c(annual[0].revenue)} → Y2 ${c(annual[1].revenue)} → Y3 ${c(annual[2].revenue)}
+- ARR (year-end): Y1 ${c(annual[0].arr)} → Y2 ${c(annual[1].arr)} → Y3 ${c(annual[2].arr)}
+- Gross margin Y3: ${(annual[2].grossMargin * 100).toFixed(1)}% | EBITDA Y3: ${c(annual[2].ebitda)} (${(annual[2].ebitdaMargin * 100).toFixed(1)}%)
 - Customers Y3: ${formatNumber(annual[2].endingUsers)}
 
 UNIT ECONOMICS
-- Blended ARPU: ${fmtCurrency(Math.round(unitEconomics.blendedArpu))}/mo | LTV: ${fmtCurrency(unitEconomics.ltv)} | LTV/CAC: ${unitEconomics.ltvCacRatio.toFixed(2)}x | Payback: ${unitEconomics.paybackMonths.toFixed(1)} months
+- Blended ARPU: ${c(Math.round(unitEconomics.blendedArpu))}/mo | LTV: ${c(unitEconomics.ltv)} | LTV/CAC: ${unitEconomics.ltvCacRatio.toFixed(2)}x | Payback: ${unitEconomics.paybackMonths.toFixed(1)} months
 
 RUNWAY
 - ${runway.cashPositive ? "Cash positive across the full forecast." : `Runway ${runway.runwayMonths} months from start.`}
 - Break-even: ${runway.breakEvenYear ? `Year ${runway.breakEvenYear} (month ${runway.breakEvenMonth})` : "beyond the 3-year forecast"}
 
 CAP TABLE (post-raise)
-- Pre-money: ${fmtCurrency(capTable.preMoneyValuation)} | Raise: ${fmtCurrency(capTable.raiseAmount)} | Post-money: ${fmtCurrency(capTable.postMoneyValuation)}
+- Pre-money: ${c(capTable.preMoneyValuation)} | Raise: ${c(capTable.raiseAmount)} | Post-money: ${c(capTable.postMoneyValuation)}
 - New investor equity: ${(capTable.newEquityPercent * 100).toFixed(1)}%
   `.trim();
 }
@@ -230,17 +241,23 @@ export interface SuggestedAnswers {
   businessModel?: BusinessModel;
   customerType?: CustomerType;
   geography?: Geography;
+  taxJurisdiction?: TaxJurisdiction;
   fundingStage?: FundingStage;
   growthCurve?: GrowthCurve;
   churnEstimate?: ChurnEstimate;
   companyName?: string;
   monthlyBurn?: number;
   cac?: number;
+  acv?: number;
+  avgMonthlySpend?: number;
   year1UserTarget?: number;
   fundingAsk?: number;
+  headcount?: string;
+  targetRunway?: 12 | 18 | 24 | 36;
   acquisitionChannels?: string[];
   useOfProceeds?: string[];
   tiers?: TierConfig[];
+  revenueStreams?: RevenueStream[];
   reasoning?: string;
 }
 
@@ -250,6 +267,20 @@ const GEOGRAPHIES: Geography[] = ["us", "uk", "eu", "asia", "global"];
 const FUNDING_STAGES: FundingStage[] = ["pre-seed", "seed", "series-a", "series-b"];
 const GROWTH_CURVES: GrowthCurve[] = ["conservative", "base", "aggressive"];
 const CHURN_ESTIMATES: ChurnEstimate[] = ["lt2", "2to5", "5to10", "gt10", "unknown"];
+const TAX_JURISDICTIONS: TaxJurisdiction[] = [
+  "us", "uk", "ireland", "germany", "france", "netherlands",
+  "canada", "australia", "singapore", "india", "uae", "other",
+];
+const HEADCOUNTS = ["1", "2–5", "6–15", "15+"] as const;
+const TARGET_RUNWAYS = [12, 18, 24, 36] as const;
+const REVENUE_STREAM_TYPES: RevenueStreamType[] = [
+  "transaction",
+  "service",
+  "one-time",
+  "usage",
+  "ads",
+  "other",
+];
 
 function pick<T extends string>(value: unknown, allowed: readonly T[]): T | undefined {
   return typeof value === "string" && (allowed as readonly string[]).includes(value)
@@ -288,26 +319,71 @@ function tiersArray(value: unknown): TierConfig[] | undefined {
     }
     if (out.length >= 4) break;
   }
+  // Normalise allocations to 100 if close.
+  if (out.length > 0) {
+    const total = out.reduce((s, t) => s + t.allocationPercent, 0);
+    if (total > 0 && Math.abs(total - 100) > 1) {
+      const scale = 100 / total;
+      out.forEach((t) => (t.allocationPercent = Math.round(t.allocationPercent * scale)));
+    }
+  }
+  return out.length > 0 ? out : undefined;
+}
+
+function revenueStreamsArray(value: unknown): RevenueStream[] | undefined {
+  if (!Array.isArray(value)) return undefined;
+  const out: RevenueStream[] = [];
+  for (const s of value) {
+    if (!s || typeof s !== "object") continue;
+    const obj = s as Record<string, unknown>;
+    const type = pick(obj.type, REVENUE_STREAM_TYPES);
+    const name = typeof obj.name === "string" ? obj.name.slice(0, 60) : undefined;
+    const monthlyRevenue = num(obj.monthlyRevenue);
+    const scalesWithUsers = obj.scalesWithUsers === true || obj.scalesWithUsers === "true";
+    if (type && name && monthlyRevenue != null) {
+      out.push({
+        id: `s_${out.length}_${Date.now()}`,
+        type,
+        name,
+        monthlyRevenue,
+        scalesWithUsers,
+      });
+    }
+    if (out.length >= 4) break;
+  }
   return out.length > 0 ? out : undefined;
 }
 
 function sanitizeSuggestions(raw: Record<string, unknown>): SuggestedAnswers {
+  const headcount = pick(raw.headcount, HEADCOUNTS);
+  const targetRunwayNum = num(raw.targetRunway);
+  const targetRunway =
+    targetRunwayNum != null && (TARGET_RUNWAYS as readonly number[]).includes(targetRunwayNum)
+      ? (targetRunwayNum as 12 | 18 | 24 | 36)
+      : undefined;
+
   const cleaned: SuggestedAnswers = {
     businessModel: pick(raw.businessModel, BUSINESS_MODELS),
     customerType: pick(raw.customerType, CUSTOMER_TYPES),
     geography: pick(raw.geography, GEOGRAPHIES),
+    taxJurisdiction: pick(raw.taxJurisdiction, TAX_JURISDICTIONS),
     fundingStage: pick(raw.fundingStage, FUNDING_STAGES),
     growthCurve: pick(raw.growthCurve, GROWTH_CURVES),
     churnEstimate: pick(raw.churnEstimate, CHURN_ESTIMATES),
     companyName: typeof raw.companyName === "string" ? raw.companyName.slice(0, 80) : undefined,
     monthlyBurn: num(raw.monthlyBurn),
     cac: num(raw.cac),
+    acv: num(raw.acv),
+    avgMonthlySpend: num(raw.avgMonthlySpend),
     year1UserTarget: num(raw.year1UserTarget),
     fundingAsk: num(raw.fundingAsk),
+    headcount,
+    targetRunway,
     acquisitionChannels: strArray(raw.acquisitionChannels, 6),
     useOfProceeds: strArray(raw.useOfProceeds, 5),
     tiers: tiersArray(raw.tiers),
-    reasoning: typeof raw.reasoning === "string" ? raw.reasoning.slice(0, 280) : undefined,
+    revenueStreams: revenueStreamsArray(raw.revenueStreams),
+    reasoning: typeof raw.reasoning === "string" ? raw.reasoning.slice(0, 320) : undefined,
   };
 
   // Strip undefined keys for a clean merge on the client.
@@ -320,43 +396,58 @@ export async function suggestAnswersFromDescription(description: string): Promis
     throw new Error("AI suggestions are not configured. Set GROQ_API_KEY in environment.");
   }
 
-  const prompt = `A founder described their startup. Infer reasonable defaults for their financial model.
+  const prompt = `A founder described their startup below. Read it carefully and infer realistic, industry-appropriate defaults for EVERY question in our 10-step financial-model intake.
 
 Founder's description:
 """
 ${description.trim().slice(0, 1500)}
 """
 
-Return ONLY a JSON object with these optional keys (omit any you can't reasonably infer):
+Return ONLY a JSON object with these keys. Try to fill EVERY field — only omit a field if the description gives zero signal and no industry default applies. Use industry knowledge to vary defaults: a B2B enterprise SaaS has very different CAC, churn, ACV, pricing, and burn than a consumer mobile app or a marketplace.
 
-- businessModel: one of "saas" | "marketplace" | "product" | "service" | "other"
-- customerType: one of "b2b" | "b2c" | "both"
-- geography: one of "us" | "uk" | "eu" | "asia" | "global"
-- fundingStage: one of "pre-seed" | "seed" | "series-a" | "series-b"
-- growthCurve: one of "conservative" | "base" | "aggressive"
-- churnEstimate: one of "lt2" | "2to5" | "5to10" | "gt10" | "unknown"
-- companyName: string (only if explicitly mentioned)
-- monthlyBurn: integer USD per month (typical pre-seed 8-20k, seed 30-80k, A 150-400k)
-- cac: integer USD per customer
-- year1UserTarget: integer customers at end of year 1
-- fundingAsk: integer USD raised in this round
-- acquisitionChannels: subset of ["paid-ads","seo","sales","partnerships","word-of-mouth","product-led"]
-- useOfProceeds: subset of ["product-dev","hiring","marketing","operations","working-capital"]
-- tiers: array of {name: string, monthlyPrice: number, allocationPercent: number} summing to 100
-- reasoning: <= 240 chars on why these defaults make sense
+REQUIRED — pick one of the listed values:
+- businessModel: "saas" | "marketplace" | "product" | "service" | "other"
+- customerType:  "b2b" | "b2c" | "both"
+- geography:     "us" | "uk" | "eu" | "asia" | "global"   (PRIMARY MARKET — where customers live)
+- taxJurisdiction: "us" | "uk" | "ireland" | "germany" | "france" | "netherlands" | "canada" | "australia" | "singapore" | "india" | "uae" | "other"   (where the company is incorporated for corporate tax — drives the tax line and valuation multiple. Default to the most likely match for the founder's market: US founders → "us"; UK founders → "uk"; EU SaaS → "ireland"; Singapore-based APAC → "singapore"; India team → "india".)
+- fundingStage:  "pre-seed" | "seed" | "series-a" | "series-b"
+- growthCurve:   "conservative" | "base" | "aggressive"   (consumer-viral or PLG → aggressive; enterprise sales-led → base/conservative)
+- churnEstimate: "lt2" | "2to5" | "5to10" | "gt10" | "unknown"   (enterprise SaaS lt2/2to5; SMB SaaS 2to5/5to10; consumer 5to10/gt10)
+- headcount:     "1" | "2–5" | "6–15" | "15+"  (pre-seed usually 1 or 2–5; seed 2–5 or 6–15; A 6–15 or 15+)
+- targetRunway:  12 | 18 | 24 | 36  (most seed rounds aim for 18–24 months)
 
-Be realistic. If the description is vague, return only the fields you're confident about.`;
+NUMBERS — give a concrete integer:
+- monthlyBurn:     pre-seed $8–20k, seed $30–80k, series-a $150–400k, series-b $400k+. Adjust by headcount.
+- cac:             B2B enterprise $1,000–10,000+; B2B SMB $200–800; B2C $20–80; marketplace $5–40.
+- acv:             B2B only — annual contract value (ACV = monthlyPrice × 12 × seats × tier-mix). Omit for pure B2C.
+- avgMonthlySpend: B2C only — typical consumer spend per month. Omit for pure B2B.
+- year1UserTarget: realistic year-1 ending customers. Enterprise B2B 20–200; SMB B2B 200–2,000; B2C 5,000–100,000+; marketplace mid range.
+- fundingAsk:      pre-seed $250k–$1M; seed $1–4M; series-a $8–20M; series-b $20–60M.
+
+LISTS:
+- acquisitionChannels: subset of ["paid-ads","seo","sales","partnerships","word-of-mouth","product-led"]. Pick what FITS the business — e.g. enterprise SaaS = ["sales","partnerships"]; PLG SaaS = ["product-led","seo","word-of-mouth"]; consumer = ["paid-ads","seo","word-of-mouth"]; marketplace = ["seo","paid-ads","partnerships"].
+- useOfProceeds: subset of ["product-dev","hiring","marketing","operations","working-capital"]. Most early-stage rounds include "product-dev" + "hiring"; growth rounds add "marketing".
+
+PRICING — return tiers AND optional revenueStreams:
+- tiers: 1–4 objects {name, monthlyPrice, allocationPercent} summing to 100. Tier names should be specific to the business if hinted (e.g. "Solo / Team / Business / Enterprise" for SaaS, "Free / Plus / Pro" for consumer). Adjust prices by customer type — enterprise tiers can be $500–$5,000+/mo per seat.
+- revenueStreams: optional 0–4 objects {type, name, monthlyRevenue, scalesWithUsers}. Use this when the description hints at non-subscription revenue: marketplaces should add a "transaction" stream, agencies a "service" stream, hardware companies a "one-time" stream, ad-supported apps an "ads" stream, API products a "usage" stream. Estimate a reasonable starting monthlyRevenue and set scalesWithUsers true if it grows with the customer base.
+
+CONTEXT FIELDS:
+- companyName: only if explicitly mentioned by name in the description.
+- reasoning:   <= 280 chars explaining the 2–3 most important inferences you made (e.g. "Enterprise B2B → high CAC ($2.5k), low churn (lt2), 15+ seats × $400/mo tier, sales-led GTM, 24-month runway target.")
+
+Output strictly a JSON object. No prose, no markdown.`;
 
   const response = await client.chat.completions.create({
     model: NARRATIVE_MODEL,
-    max_tokens: 700,
-    temperature: 0.2,
+    max_tokens: 1400,
+    temperature: 0.35,
     response_format: { type: "json_object" },
     messages: [
       {
         role: "system",
         content:
-          "You are a startup financial-modeling assistant. Output strictly a JSON object — no prose, no markdown.",
+          "You are a startup financial-modeling assistant with deep knowledge of SaaS, marketplaces, consumer apps, agencies, hardware, and project finance unit economics. You translate a one-sentence pitch into concrete, industry-appropriate model defaults across pricing tiers, revenue streams, CAC, churn, burn, headcount, and fundraising. Output strictly a JSON object — no prose, no markdown.",
       },
       { role: "user", content: prompt },
     ],

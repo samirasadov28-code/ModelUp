@@ -1,14 +1,14 @@
 "use client";
 
 import { cn, formatCurrencyCompact, formatNumber, formatPercent } from "@/lib/utils";
-import type { AnnualSummary } from "@/lib/types";
+import type { AnnualSummary, Currency } from "@/lib/types";
 
 interface PLTableProps {
   annual: AnnualSummary[];
   compact?: boolean;
+  currency?: Currency;
 }
 
-const fmt = formatCurrencyCompact;
 const fmtPct = (value: number) => formatPercent(value, 1);
 
 const rows: { key: keyof AnnualSummary; label: string; indent?: boolean; bold?: boolean; isPercent?: boolean; highlight?: boolean }[] = [
@@ -22,7 +22,8 @@ const rows: { key: keyof AnnualSummary; label: string; indent?: boolean; bold?: 
   { key: "netIncome", label: "Net Income", bold: true },
 ];
 
-export function PLTable({ annual, compact = false }: PLTableProps) {
+export function PLTable({ annual, compact = false, currency }: PLTableProps) {
+  const fmt = (v: number) => formatCurrencyCompact(v, currency);
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm">

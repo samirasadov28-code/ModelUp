@@ -24,11 +24,13 @@ export async function POST(req: NextRequest) {
         runway: outputs.runway,
         capTable: outputs.capTable,
         fallbackNarrative: outputs.fundingNarrative,
+        currency: outputs.currency,
       }),
       generateModelInsights({
         answers,
         annual: outputs.annual,
         runway: outputs.runway,
+        currency: outputs.currency,
       }),
     ]);
 

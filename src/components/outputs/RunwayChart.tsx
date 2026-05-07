@@ -10,10 +10,8 @@ import {
   ReferenceLine,
   ResponsiveContainer,
 } from "recharts";
-import type { MonthlyDataPoint, RunwayData } from "@/lib/types";
+import type { MonthlyDataPoint, RunwayData, Currency } from "@/lib/types";
 import { formatCurrencyCompact } from "@/lib/utils";
-
-const fmtAxis = formatCurrencyCompact;
 
 const TOOLTIP_STYLE = {
   backgroundColor: "#ffffff",
@@ -27,9 +25,11 @@ const TOOLTIP_STYLE = {
 interface RunwayChartProps {
   monthly: MonthlyDataPoint[];
   runway: RunwayData;
+  currency?: Currency;
 }
 
-export function RunwayChart({ monthly, runway }: RunwayChartProps) {
+export function RunwayChart({ monthly, runway, currency }: RunwayChartProps) {
+  const fmtAxis = (v: number) => formatCurrencyCompact(v, currency);
   const data = monthly.map((m) => ({
     label: m.label,
     cash: Math.round(m.closingCash),
