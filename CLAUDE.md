@@ -15,7 +15,12 @@ The full loop is:
 5. Netlify auto-deploys from the push to baseline (see `netlify.toml` — `@netlify/plugin-nextjs`,
    build command `npm run build`). No separate deploy step is needed.
 
-Bump `package.json` version to match the release tag in the PR title (e.g. v1.7.0).
+Bump **both** version files to match the release tag in the PR title (e.g. v1.7.0):
+
+- `package.json` → `"version"` field.
+- `src/lib/version.ts` → `APP_VERSION` constant. **This is the version the UI displays**
+  (footer of `src/app/page.tsx` via `VERSION_LABEL`). If you forget this one, the deployed
+  site will keep showing the old version even though the code is current.
 
 Don't ask for confirmation each round — this preference is durable. Still confirm before
 anything destructive (force-push, branch deletion, dropping data, rewriting public history).
