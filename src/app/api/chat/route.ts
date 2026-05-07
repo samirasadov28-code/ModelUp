@@ -12,8 +12,8 @@ export async function POST(req: NextRequest) {
       messages?: ChatMessage[];
     };
 
-    if (!body.model || !Array.isArray(body.messages) || body.messages.length === 0) {
-      return NextResponse.json({ error: "model and messages are required" }, { status: 400 });
+    if (!Array.isArray(body.messages) || body.messages.length === 0) {
+      return NextResponse.json({ error: "messages are required" }, { status: 400 });
     }
 
     const trimmed = body.messages

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import "./globals.css";
 import { FeedbackButton } from "@/components/FeedbackButton";
+import { ChatWidget } from "@/components/ChatWidget";
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID ?? "G-P2KEZWEVZ8";
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://modelups.netlify.app";
@@ -64,6 +65,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="bg-white text-gray-900 antialiased">
         {children}
         <FeedbackButton />
+        <ChatWidget />
 
         {/* Google Analytics */}
         <Script
