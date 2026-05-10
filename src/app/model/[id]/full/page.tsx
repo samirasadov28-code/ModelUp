@@ -213,7 +213,7 @@ export default function FullModelPage() {
               </span>
             </div>
             <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight">
-              {company} — 3-Year Financial Model
+              {company} — {annual.length}-Year Financial Model
             </h1>
             <p className="text-gray-500 text-sm mt-1">
               Source: {model.sourceModel} · Generated {new Date(model.createdAt).toLocaleDateString()}
@@ -228,14 +228,14 @@ export default function FullModelPage() {
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <MetricCard
-            label="Year 3 ARR"
-            value={fmt(annual[2].arr)}
+            label={`Year ${annual.length} ARR`}
+            value={fmt(annual[annual.length - 1].arr)}
             variant="highlight"
             sub="Annual recurring revenue"
           />
           <MetricCard
             label="Runway"
-            value={runway.cashPositive ? "36mo+" : `${runway.runwayMonths}mo`}
+            value={runway.cashPositive ? `${monthly.length}mo+` : `${runway.runwayMonths}mo`}
             sub={`Raise: ${fmt(answers.fundingAsk)}`}
           />
           <MetricCard
@@ -312,7 +312,7 @@ export default function FullModelPage() {
               <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/60">
                 <h2 className="font-semibold text-gray-900">Income Statement</h2>
                 <p className="text-xs text-gray-500 mt-0.5">
-                  3-year annual projections · {answers.growthCurve} scenario
+                  5-year annual projections · {answers.growthCurve} scenario
                 </p>
               </div>
               <PLTable annual={annual} currency={currency} />

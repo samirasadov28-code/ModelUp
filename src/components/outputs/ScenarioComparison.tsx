@@ -15,11 +15,11 @@ function buildCols(currency?: Currency) {
   return [
     { key: "revenueY1" as keyof ScenarioMetrics, label: "Revenue Y1", format: fmt },
     { key: "revenueY2" as keyof ScenarioMetrics, label: "Revenue Y2", format: fmt },
-    { key: "revenueY3" as keyof ScenarioMetrics, label: "Revenue Y3", format: fmt },
-    { key: "arrY3" as keyof ScenarioMetrics, label: "ARR (EoY3)", format: fmt },
-    { key: "ebitdaY3" as keyof ScenarioMetrics, label: "EBITDA Y3", format: fmt },
-    { key: "totalUsersY3" as keyof ScenarioMetrics, label: "Customers Y3", format: (v: number) => formatNumber(v) },
-    { key: "runwayMonths" as keyof ScenarioMetrics, label: "Runway", format: (v: number) => v >= 36 ? "36mo+" : `${v}mo` },
+    { key: "revenueLast" as keyof ScenarioMetrics, label: "Revenue (last year)", format: fmt },
+    { key: "arrLast" as keyof ScenarioMetrics, label: "ARR (end of last year)", format: fmt },
+    { key: "ebitdaLast" as keyof ScenarioMetrics, label: "EBITDA (last year)", format: fmt },
+    { key: "totalUsersLast" as keyof ScenarioMetrics, label: "Customers (last year)", format: (v: number) => formatNumber(v) },
+    { key: "runwayMonths" as keyof ScenarioMetrics, label: "Runway", format: (v: number) => v >= 60 ? "60mo+" : `${v}mo` },
   ];
 }
 

@@ -35,7 +35,7 @@ export const metadata: Metadata = {
     siteName: "ModelUp",
     title: "ModelUp — Professional Financial Models for Startups",
     description:
-      "Answer 10 questions. Get a professional 3-year financial model for fundraising in seconds.",
+      "Answer 10 questions. Get a professional 5-year financial model for fundraising in seconds.",
     url: APP_URL,
     images: [
       {
@@ -49,7 +49,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary",
     title: "ModelUp — Financial Models for Startups",
-    description: "Answer 10 questions. Get a professional 3-year financial model instantly.",
+    description: "Answer 10 questions. Get a professional 5-year financial model instantly.",
     images: ["/Logo_512.png"],
   },
 };

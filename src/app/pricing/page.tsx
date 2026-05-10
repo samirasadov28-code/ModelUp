@@ -8,7 +8,7 @@ export const metadata = {
 };
 
 const FREE_FEATURES = [
-  "3-year P&L summary table",
+  "5-year P&L summary table",
   "Cash runway calculation",
   "Break-even year",
   "Model generated in seconds",

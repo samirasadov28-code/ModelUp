@@ -186,7 +186,7 @@ export function CalculationsPanel({ model }: CalculationsPanelProps) {
           label="Year-end ARR"
           expression="ARR = last_month_revenue × 12"
           plugged={`${formatCurrency(lastMonth?.revenue ?? 0)} × 12`}
-          result={formatCurrency(annual[2].arr)}
+          result={formatCurrency(annual[annual.length - 1].arr)}
           note={`Year 3 ARR captures the run-rate at the end of the forecast.`}
         />
         <Formula
@@ -199,14 +199,14 @@ export function CalculationsPanel({ model }: CalculationsPanelProps) {
         <Formula
           label="Gross profit (Year 3)"
           expression="gross_profit = revenue × (1 − cogs_rate)"
-          plugged={`${formatCurrency(annual[2].revenue)} × ${formatPercent(grossMarginRate, 0)}`}
-          result={formatCurrency(annual[2].grossProfit)}
+          plugged={`${formatCurrency(annual[annual.length - 1].revenue)} × ${formatPercent(grossMarginRate, 0)}`}
+          result={formatCurrency(annual[annual.length - 1].grossProfit)}
         />
         <Formula
           label="Gross margin (Year 3)"
           expression="gross_margin = gross_profit / revenue"
-          plugged={`${formatCurrency(annual[2].grossProfit)} / ${formatCurrency(annual[2].revenue)}`}
-          result={formatPercent(annual[2].grossMargin, 1)}
+          plugged={`${formatCurrency(annual[annual.length - 1].grossProfit)} / ${formatCurrency(annual[annual.length - 1].revenue)}`}
+          result={formatPercent(annual[annual.length - 1].grossMargin, 1)}
         />
       </Section>
 
@@ -230,20 +230,20 @@ export function CalculationsPanel({ model }: CalculationsPanelProps) {
         <Formula
           label="EBITDA"
           expression="ebitda = gross_profit − opex"
-          plugged={`Year 3: ${formatCurrency(annual[2].grossProfit)} − ${formatCurrency(annual[2].opex)}`}
-          result={formatCurrency(annual[2].ebitda)}
+          plugged={`Year 3: ${formatCurrency(annual[annual.length - 1].grossProfit)} − ${formatCurrency(annual[annual.length - 1].opex)}`}
+          result={formatCurrency(annual[annual.length - 1].ebitda)}
         />
         <Formula
           label="Tax"
           expression="tax = max(0, ebitda × 20%)"
-          plugged={`max(0, ${formatCurrency(annual[2].ebitda)} × 20%)`}
-          result={formatCurrency(Math.max(0, annual[2].ebitda * 0.2))}
+          plugged={`max(0, ${formatCurrency(annual[annual.length - 1].ebitda)} × 20%)`}
+          result={formatCurrency(Math.max(0, annual[annual.length - 1].ebitda * 0.2))}
         />
         <Formula
           label="Net income"
           expression="net_income = ebitda − tax"
-          plugged={`Year 3: ${formatCurrency(annual[2].ebitda)} − ${formatCurrency(Math.max(0, annual[2].ebitda * 0.2))}`}
-          result={formatCurrency(annual[2].netIncome)}
+          plugged={`Year 3: ${formatCurrency(annual[annual.length - 1].ebitda)} − ${formatCurrency(Math.max(0, annual[annual.length - 1].ebitda * 0.2))}`}
+          result={formatCurrency(annual[annual.length - 1].netIncome)}
         />
       </Section>
 
@@ -299,13 +299,13 @@ export function CalculationsPanel({ model }: CalculationsPanelProps) {
           label="Monthly cash flow"
           expression="cash_t = max(0, cash_(t−1) + net_income_t)"
           plugged="Month-by-month rollforward"
-          result={runway.cashPositive ? "Stays positive across 36 months" : `Cash runs out at month ${runway.runwayMonths}`}
+          result={runway.cashPositive ? `Stays positive across ${monthly.length} months` : `Cash runs out at month ${runway.runwayMonths}`}
         />
         <Formula
           label="Cash runway"
           expression="runway = months until closing_cash ≤ 0"
           plugged={runway.cashPositive ? "Cash never depletes in the forecast" : `${runway.runwayMonths} months from start`}
-          result={runway.cashPositive ? "36mo+" : `${runway.runwayMonths} months`}
+          result={runway.cashPositive ? `${monthly.length}mo+` : `${runway.runwayMonths} months`}
         />
         <Formula
           label="Break-even month"

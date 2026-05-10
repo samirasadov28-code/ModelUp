@@ -24,6 +24,7 @@ import type {
   TierConfig,
   RevenueStream,
   TaxJurisdiction,
+  RevenueModel,
 } from "@/lib/types";
 import {
   TAX_JURISDICTION_LABELS,
@@ -62,6 +63,8 @@ const DEFAULT_ANSWERS: Partial<QuestionnaireAnswers> = {
   year1UserTarget: 500,
   fundingAsk: 1500000,
   targetRunway: 18,
+  revenueModel: "subscription",
+  unitMonthlyVolumeGrowth: 0.05,
 };
 
 const tileOff = "border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50";
@@ -193,7 +196,14 @@ export function QuestionnaireFlow() {
       case 2: return !!answers.customerType;
       case 3: return !!answers.geography && !!answers.taxJurisdiction;
       case 4: return !!answers.fundingStage;
-      case 5: return (answers.tiers?.length ?? 0) > 0 && answers.tiers!.every((t) => t.monthlyPrice > 0);
+      case 5: {
+        const model = answers.revenueModel ?? "subscription";
+        const subsOk = (answers.tiers?.length ?? 0) > 0 && answers.tiers!.every((t) => t.monthlyPrice > 0);
+        const prodOk = (answers.unitsYear1 ?? 0) > 0 && (answers.unitPrice ?? 0) > 0 && (answers.unitCost ?? -1) >= 0;
+        if (model === "production") return prodOk;
+        if (model === "hybrid") return subsOk && prodOk;
+        return subsOk;
+      }
       case 6: return !!answers.cac && answers.cac > 0;
       case 7: return !!answers.churnEstimate;
       case 8: return !!answers.headcount && !!answers.monthlyBurn && answers.monthlyBurn > 0;
@@ -282,8 +292,13 @@ export function QuestionnaireFlow() {
         taxJurisdiction:
           answers.taxJurisdiction ?? defaultJurisdictionForGeography(answers.geography ?? "us"),
         fundingStage: answers.fundingStage ?? "seed",
+        revenueModel: answers.revenueModel ?? "subscription",
         tiers: trimmedTiers,
         revenueStreams: answers.revenueStreams ?? [],
+        unitsYear1: answers.unitsYear1,
+        unitPrice: answers.unitPrice,
+        unitCost: answers.unitCost,
+        unitMonthlyVolumeGrowth: answers.unitMonthlyVolumeGrowth ?? 0.05,
         acquisitionChannels: answers.acquisitionChannels ?? [],
         cac: answers.cac ?? 0,
         acv: answers.acv,
@@ -690,82 +705,194 @@ export function QuestionnaireFlow() {
         </QuestionWrapper>
       )}
 
-      {/* Q5 — Pricing tiers */}
+      {/* Q5 — Revenue model */}
       {step === 5 && (
         <QuestionWrapper
           stepNumber={5} totalSteps={TOTAL_STEPS}
           title="How do you make money?"
-          subtitle="Start with your subscription pricing tiers (allocation should total 100%). Pro lets you mix in transaction fees, services, ads and more below."
+          subtitle="Choose the primary revenue model. Subscription is users × tiers. Production is units × unit price. Hybrid runs both."
           onNext={handleNext} onBack={handleBack}
           nextDisabled={!canAdvance()}
         >
-          <div className="mb-4">
-            <Label className="text-gray-500 text-xs uppercase tracking-wider font-semibold">Number of pricing tiers</Label>
-            <div className="flex gap-2 mt-2">
-              {[1, 2, 3, 4].map((n) => (
-                <button
-                  key={n}
-                  type="button"
-                  onClick={() => setTierCount(n)}
-                  className={cn(
-                    "flex-1 py-2 rounded-lg text-sm font-medium border transition-all",
-                    tierCount === n ? tileOn : tileOff
-                  )}
-                >
-                  {n} tier{n > 1 ? "s" : ""}
-                </button>
-              ))}
+          <div>
+            <Label className="text-gray-500 text-xs uppercase tracking-wider font-semibold">
+              Revenue model
+            </Label>
+            <div className="grid grid-cols-3 gap-2 mt-2">
+              {[
+                { value: "subscription", label: "Subscription", desc: "Users × tier prices", icon: "🔁" },
+                { value: "production", label: "Production", desc: "Units × unit price", icon: "🏭" },
+                { value: "hybrid", label: "Hybrid", desc: "Both", icon: "🔀" },
+              ].map((opt) => {
+                const selected = (answers.revenueModel ?? "subscription") === opt.value;
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => update("revenueModel", opt.value as RevenueModel)}
+                    className={cn(
+                      "rounded-xl border px-3 py-3 text-left transition-all",
+                      selected ? tileOn : tileOff
+                    )}
+                  >
+                    <p className="text-sm font-semibold flex items-center gap-1.5">
+                      <span>{opt.icon}</span> {opt.label}
+                    </p>
+                    <p className="text-[11px] text-gray-500 mt-0.5">{opt.desc}</p>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
-          {Array.from({ length: tierCount }, (_, i) => (
-            <div key={i} className="rounded-xl border border-gray-200 bg-gray-50/60 p-4 space-y-3">
-              <p className="text-xs text-gray-500 font-semibold uppercase tracking-wider">Tier {i + 1}</p>
-              <div className="grid grid-cols-3 gap-3">
-                <div className="col-span-1">
-                  <Label className="text-xs text-gray-600 mb-1 block font-medium">Name</Label>
-                  <Input
-                    placeholder={["Free", "Basic", "Pro", "Enterprise"][i] ?? `Tier ${i + 1}`}
-                    value={answers.tiers?.[i]?.name ?? ""}
-                    onChange={(e) => updateTier(i, "name", e.target.value || (["Free", "Basic", "Pro", "Enterprise"][i] ?? `Tier ${i + 1}`))}
-                    className="text-sm h-9"
-                  />
-                </div>
-                <div>
-                  <Label className="text-xs text-gray-600 mb-1 block font-medium">$/month</Label>
-                  <MoneyInput
-                    placeholder="49"
-                    value={answers.tiers?.[i]?.monthlyPrice || undefined}
-                    onValueChange={(v) => updateTier(i, "monthlyPrice", v ?? 0)}
-                    className="text-sm h-9"
-                  />
-                </div>
-                <div>
-                  <Label className="text-xs text-gray-600 mb-1 block font-medium">% of users</Label>
-                  <Input
-                    type="number"
-                    min={0}
-                    max={100}
-                    placeholder={String(Math.floor(100 / tierCount))}
-                    value={answers.tiers?.[i]?.allocationPercent ?? ""}
-                    onChange={(e) => updateTier(i, "allocationPercent", Number(e.target.value))}
-                    disabled={tierCount === 1}
-                    className={cn("text-sm h-9", tierCount === 1 && "bg-gray-50 text-gray-500")}
-                  />
-                  {tierCount === 1 && (
-                    <p className="text-[10px] text-gray-400 mt-1">Locked at 100% with one tier</p>
-                  )}
+          {((answers.revenueModel ?? "subscription") === "subscription"
+            || answers.revenueModel === "hybrid") && (
+            <div className="pt-4 mt-4 border-t border-gray-100">
+              <Label className="text-gray-500 text-xs uppercase tracking-wider font-semibold">
+                Subscription tiers
+              </Label>
+              <div className="mt-2 mb-4">
+                <Label className="text-xs text-gray-500 font-medium">Number of pricing tiers</Label>
+                <div className="flex gap-2 mt-2">
+                  {[1, 2, 3, 4].map((n) => (
+                    <button
+                      key={n}
+                      type="button"
+                      onClick={() => setTierCount(n)}
+                      className={cn(
+                        "flex-1 py-2 rounded-lg text-sm font-medium border transition-all",
+                        tierCount === n ? tileOn : tileOff
+                      )}
+                    >
+                      {n} tier{n > 1 ? "s" : ""}
+                    </button>
+                  ))}
                 </div>
               </div>
-            </div>
-          ))}
 
-          <p className="text-xs text-gray-500 mt-2">
-            Allocation total: {answers.tiers?.reduce((s, t) => s + (t.allocationPercent || 0), 0) ?? 0}%
-            {answers.tiers?.reduce((s, t) => s + (t.allocationPercent || 0), 0) !== 100 && (
-              <span className="text-amber-600 ml-1 font-medium">(should total 100%)</span>
-            )}
-          </p>
+              {Array.from({ length: tierCount }, (_, i) => (
+                <div key={i} className="rounded-xl border border-gray-200 bg-gray-50/60 p-4 space-y-3 mb-2">
+                  <p className="text-xs text-gray-500 font-semibold uppercase tracking-wider">Tier {i + 1}</p>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="col-span-1">
+                      <Label className="text-xs text-gray-600 mb-1 block font-medium">Name</Label>
+                      <Input
+                        placeholder={["Free", "Basic", "Pro", "Enterprise"][i] ?? `Tier ${i + 1}`}
+                        value={answers.tiers?.[i]?.name ?? ""}
+                        onChange={(e) => updateTier(i, "name", e.target.value || (["Free", "Basic", "Pro", "Enterprise"][i] ?? `Tier ${i + 1}`))}
+                        className="text-sm h-9"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-gray-600 mb-1 block font-medium">$/month</Label>
+                      <MoneyInput
+                        placeholder="49"
+                        value={answers.tiers?.[i]?.monthlyPrice || undefined}
+                        onValueChange={(v) => updateTier(i, "monthlyPrice", v ?? 0)}
+                        className="text-sm h-9"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-gray-600 mb-1 block font-medium">% of users</Label>
+                      <Input
+                        type="number"
+                        min={0}
+                        max={100}
+                        placeholder={String(Math.floor(100 / tierCount))}
+                        value={answers.tiers?.[i]?.allocationPercent ?? ""}
+                        onChange={(e) => updateTier(i, "allocationPercent", Number(e.target.value))}
+                        disabled={tierCount === 1}
+                        className={cn("text-sm h-9", tierCount === 1 && "bg-gray-50 text-gray-500")}
+                      />
+                      {tierCount === 1 && (
+                        <p className="text-[10px] text-gray-400 mt-1">Locked at 100% with one tier</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+              <p className="text-xs text-gray-500 mt-2">
+                Allocation total: {answers.tiers?.reduce((s, t) => s + (t.allocationPercent || 0), 0) ?? 0}%
+                {answers.tiers?.reduce((s, t) => s + (t.allocationPercent || 0), 0) !== 100 && (
+                  <span className="text-amber-600 ml-1 font-medium">(should total 100%)</span>
+                )}
+              </p>
+            </div>
+          )}
+
+          {(answers.revenueModel === "production" || answers.revenueModel === "hybrid") && (
+            <div className="pt-4 mt-4 border-t border-gray-100">
+              <Label className="text-gray-500 text-xs uppercase tracking-wider font-semibold">
+                Production / unit economics
+              </Label>
+              <p className="text-xs text-gray-500 mt-1 mb-3">
+                Revenue = units sold × unit price. Direct cost flows through cost-per-unit, so margin
+                = (price − cost) ÷ price.
+              </p>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-xs text-gray-600 mb-1 block font-medium">
+                    Units sold in year 1 <span className="text-red-500">*</span>
+                  </Label>
+                  <MoneyInput
+                    prefix=""
+                    placeholder="10,000"
+                    value={answers.unitsYear1}
+                    onValueChange={(v) => update("unitsYear1", v ?? 0)}
+                    className="h-10"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs text-gray-600 mb-1 block font-medium">
+                    Monthly volume growth
+                  </Label>
+                  <Input
+                    type="number"
+                    step="0.5"
+                    placeholder="5"
+                    value={answers.unitMonthlyVolumeGrowth != null ? (answers.unitMonthlyVolumeGrowth * 100).toFixed(1) : ""}
+                    onChange={(e) =>
+                      update("unitMonthlyVolumeGrowth", Number(e.target.value) / 100)
+                    }
+                    className="h-10"
+                  />
+                  <p className="text-[10px] text-gray-400 mt-1">% per month, e.g. 5 = 5%/mo</p>
+                </div>
+                <div>
+                  <Label className="text-xs text-gray-600 mb-1 block font-medium">
+                    Unit price <span className="text-red-500">*</span>
+                  </Label>
+                  <MoneyInput
+                    placeholder="49"
+                    value={answers.unitPrice}
+                    onValueChange={(v) => update("unitPrice", v ?? 0)}
+                    className="h-10"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs text-gray-600 mb-1 block font-medium">
+                    Direct cost per unit <span className="text-red-500">*</span>
+                  </Label>
+                  <MoneyInput
+                    placeholder="22"
+                    value={answers.unitCost}
+                    onValueChange={(v) => update("unitCost", v ?? 0)}
+                    className="h-10"
+                  />
+                  <p className="text-[10px] text-gray-400 mt-1">Raw materials + direct labor</p>
+                </div>
+              </div>
+              {(answers.unitPrice ?? 0) > 0 && (answers.unitCost ?? 0) >= 0 && (
+                <p className="text-xs text-gray-600 mt-3">
+                  Unit margin:{" "}
+                  <span className="font-semibold text-blue-700">
+                    {(((answers.unitPrice! - (answers.unitCost ?? 0)) / answers.unitPrice!) * 100).toFixed(1)}%
+                  </span>{" "}
+                  · contribution per unit: ${(answers.unitPrice! - (answers.unitCost ?? 0)).toFixed(2)}
+                </p>
+              )}
+            </div>
+          )}
 
           <div className="mt-6 pt-6 border-t border-gray-200">
             <RevenueStreamsEditor
@@ -774,8 +901,8 @@ export function QuestionnaireFlow() {
             />
           </div>
           <ProUpsell
-            headline="Per-tier churn, expansion revenue, and upgrade paths"
-            body="Pro models churn and expansion separately for each tier and lets you set monthly upgrade rates between tiers — Free → Pro → Enterprise — instead of a flat blend."
+            headline="Per-tier churn, expansion revenue & dynamic unit pricing"
+            body="Pro models tier-level churn / upgrades, ramping unit prices over time, and segmented production lines (multiple SKUs with their own cost & volume curves)."
           />
         </QuestionWrapper>
       )}

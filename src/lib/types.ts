@@ -52,6 +52,13 @@ export interface RevenueStream {
   scalesWithUsers: boolean;   // if true, grows proportionally with the customer base
 }
 
+/**
+ * How the business primarily makes money. Subscription is the default and uses
+ * the tier-based engine (price × allocation × customer base). Production uses
+ * unit economics (units × unit price). Hybrid runs both and adds them.
+ */
+export type RevenueModel = "subscription" | "production" | "hybrid";
+
 export interface QuestionnaireAnswers {
   // Q1
   businessModel: BusinessModel;
@@ -63,9 +70,15 @@ export interface QuestionnaireAnswers {
   fundingStage: FundingStage;
   // Q5
   pricingModel?: string;
+  revenueModel?: RevenueModel; // defaults to "subscription"
   tiers: TierConfig[];
   takeRate?: number;
   revenueStreams?: RevenueStream[];
+  // Production / unit-based revenue (used when revenueModel is "production" or "hybrid")
+  unitsYear1?: number;            // units sold in year 1
+  unitPrice?: number;             // price per unit
+  unitCost?: number;              // direct cost per unit (raw materials + direct labor)
+  unitMonthlyVolumeGrowth?: number; // 0.05 = +5% units per month
   // Q6
   acquisitionChannels: string[];
   cac: number;
@@ -153,13 +166,56 @@ export interface RunwayData {
 
 export interface ScenarioMetrics {
   label: string;
+  // Per-year revenue + ARR + customer count + EBITDA. Engines that target the
+  // 5-year horizon should fill Y1..Y5; older models filled Y1..Y3. Components
+  // should rely on `revenueLast`, `ebitdaLast`, `arrLast`, `totalUsersLast`
+  // (= the last forecast year) instead of hardcoded Y3 fields.
   revenueY1: number;
   revenueY2: number;
   revenueY3: number;
+  revenueY5?: number;
   ebitdaY3: number;
+  ebitdaY5?: number;
   runwayMonths: number;
   totalUsersY3: number;
+  totalUsersY5?: number;
   arrY3: number;
+  arrY5?: number;
+  revenueLast: number;     // last forecast year — alias for whichever Yn is the horizon
+  ebitdaLast: number;
+  totalUsersLast: number;
+  arrLast: number;
+}
+
+export interface CostComponent {
+  /** Display name shown to the user, e.g. "Hosting", "Salaries", "Payroll taxes & benefits". */
+  label: string;
+  /** Either an absolute monthly amount or null when the engine prefers % below. */
+  monthlyAmount: number;
+  /** Optional — what the line is a % of (revenue for COGS, burn for OpEx). */
+  share: number;
+  /** Optional explanation surfaced in the calculations panel. */
+  note?: string;
+}
+
+export interface CostBreakdown {
+  /**
+   * Direct-cost components that sum to the engine's COGS line. Varies by
+   * business model — SaaS gets hosting + payment processing + support;
+   * marketplace gets payment processing + insurance + ops; product gets
+   * unit cost + shipping + fulfillment; production gets materials + labor.
+   */
+  cogsComponents: CostComponent[];
+  /** Engine's COGS rate (or 0 for production where COGS is per-unit). */
+  cogsRate: number;
+  /**
+   * OpEx breakdown — the user's all-in monthly burn split into salaries,
+   * payroll-loading uplift (region-specific NI/FICA/etc.), tools, marketing,
+   * and a residual "other" bucket so the math actually adds up.
+   */
+  opexComponents: CostComponent[];
+  payrollLoadingRate: number;   // e.g. 0.138 for UK, 0.20 for Germany, 0.0765 for US
+  payrollLoadingLabel: string;  // e.g. "UK National Insurance (13.8%)"
 }
 
 export interface CapTableEntry {
@@ -198,6 +254,8 @@ export interface ModelOutputs {
   fundingNarrative: string;
   currency: Currency;
   taxRate: number;
+  costBreakdown: CostBreakdown;
+  horizonMonths: number;   // 36 or 60 — the actual model horizon
 }
 
 // ── UI/Page types ──────────────────────────────────────────────────────────

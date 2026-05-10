@@ -237,8 +237,11 @@ export function SensitivityAnalysis({ baseModel }: SensitivityAnalysisProps) {
     return stressed;
   }, [a, overrides]);
 
-  const baseY3 = baseModel.annual[2];
-  const sY3 = stressedModel.annual[2];
+  const lastIdx = baseModel.annual.length - 1;
+  const lastLabel = baseModel.annual[lastIdx]?.label ?? `Year ${baseModel.annual.length}`;
+  const baseY3 = baseModel.annual[lastIdx];
+  const sY3 = stressedModel.annual[stressedModel.annual.length - 1];
+  const horizonMonths = baseModel.horizonMonths ?? baseModel.monthly.length;
   const baseUE = baseModel.unitEconomics;
   const sUE = stressedModel.unitEconomics;
   const baseRunway = baseModel.runway;
@@ -274,7 +277,7 @@ export function SensitivityAnalysis({ baseModel }: SensitivityAnalysisProps) {
         </p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <MetricChange
-            label="Year 3 ARR"
+            label={`${lastLabel} ARR`}
             value={formatCurrencyCompact(sY3.arr, currency)}
             baseValue={formatCurrencyCompact(baseY3.arr, currency)}
             delta={pctDelta(sY3.arr, baseY3.arr)}
@@ -282,7 +285,7 @@ export function SensitivityAnalysis({ baseModel }: SensitivityAnalysisProps) {
             highlight
           />
           <MetricChange
-            label="Year 3 EBITDA"
+            label={`${lastLabel} EBITDA`}
             value={formatCurrencyCompact(sY3.ebitda, currency)}
             baseValue={formatCurrencyCompact(baseY3.ebitda, currency)}
             delta={pctDelta(sY3.ebitda, baseY3.ebitda)}
@@ -290,13 +293,13 @@ export function SensitivityAnalysis({ baseModel }: SensitivityAnalysisProps) {
           />
           <MetricChange
             label="Runway"
-            value={sRunway.cashPositive ? "36mo+" : `${sRunway.runwayMonths}mo`}
-            baseValue={baseRunway.cashPositive ? "36mo+" : `${baseRunway.runwayMonths}mo`}
+            value={sRunway.cashPositive ? `${horizonMonths}mo+` : `${sRunway.runwayMonths}mo`}
+            baseValue={baseRunway.cashPositive ? `${horizonMonths}mo+` : `${baseRunway.runwayMonths}mo`}
             delta={pctDelta(sRunway.runwayMonths, baseRunway.runwayMonths)}
             positive
           />
           <MetricChange
-            label="Customers Y3"
+            label={`Customers (${lastLabel})`}
             value={formatNumber(sY3.endingUsers)}
             baseValue={formatNumber(baseY3.endingUsers)}
             delta={pctDelta(sY3.endingUsers, baseY3.endingUsers)}
@@ -317,7 +320,7 @@ export function SensitivityAnalysis({ baseModel }: SensitivityAnalysisProps) {
             positive={false}
           />
           <MetricChange
-            label="Gross margin Y3"
+            label={`Gross margin (${lastLabel})`}
             value={formatPercent(sY3.grossMargin)}
             baseValue={formatPercent(baseY3.grossMargin)}
             delta={(sY3.grossMargin - baseY3.grossMargin) * 100}

@@ -181,7 +181,7 @@ INPUTS
 - Funding ask: ${c(answers.fundingAsk)} | Use of proceeds: ${answers.useOfProceeds.join(", ") || "n/a"}
 - Growth scenario: ${answers.growthCurve} | Churn: ${answers.churnEstimate}
 
-PROJECTIONS (3 years)
+PROJECTIONS (${annual.length} years)
 - Revenue: Y1 ${c(annual[0].revenue)} → Y2 ${c(annual[1].revenue)} → Y3 ${c(annual[2].revenue)}
 - ARR (year-end): Y1 ${c(annual[0].arr)} → Y2 ${c(annual[1].arr)} → Y3 ${c(annual[2].arr)}
 - Gross margin Y3: ${(annual[2].grossMargin * 100).toFixed(1)}% | EBITDA Y3: ${c(annual[2].ebitda)} (${(annual[2].ebitdaMargin * 100).toFixed(1)}%)
@@ -192,7 +192,7 @@ UNIT ECONOMICS
 
 RUNWAY
 - ${runway.cashPositive ? "Cash positive across the full forecast." : `Runway ${runway.runwayMonths} months from start.`}
-- Break-even: ${runway.breakEvenYear ? `Year ${runway.breakEvenYear} (month ${runway.breakEvenMonth})` : "beyond the 3-year forecast"}
+- Break-even: ${runway.breakEvenYear ? `Year ${runway.breakEvenYear} (month ${runway.breakEvenMonth})` : `beyond the ${annual.length}-year forecast`}
 
 CAP TABLE (post-raise)
 - Pre-money: ${c(capTable.preMoneyValuation)} | Raise: ${c(capTable.raiseAmount)} | Post-money: ${c(capTable.postMoneyValuation)}
@@ -213,7 +213,7 @@ export async function chatWithModel(params: {
     ? `You are an experienced startup CFO and fundraising advisor speaking to the founder. Be direct, concise, and use the founder's actual numbers. Prefer 1–3 short paragraphs unless the user asks for more. If a question asks "what if X", reason from the formulas: revenue depends on customers × ARPU, EBITDA = gross profit − OpEx, runway = cash ÷ net burn, LTV = (ARPU × gross margin) ÷ churn, etc. If the question can't be answered from the data, say so plainly.
 
 ${buildModelContext(params.model)}`
-    : `You are a friendly startup financial-modelling expert and ModelUp product guide. ModelUp helps founders generate a 3-year financial model from a 10-question intake; Pro is $4.99/mo and unlocks interactive charts, unit economics, scenarios, cap table, calculations panel, AI chat, and an Excel download.
+    : `You are a friendly startup financial-modelling expert and ModelUp product guide. ModelUp helps founders generate a 5-year financial model from a 10-question intake; Pro is $4.99/mo and unlocks interactive charts, unit economics, scenarios, cap table, calculations panel, AI chat, and an Excel download.
 
 Help the user with:
 • Questions about ModelUp — what it does, how to use it, what's free vs Pro.
@@ -258,6 +258,11 @@ export interface SuggestedAnswers {
   useOfProceeds?: string[];
   tiers?: TierConfig[];
   revenueStreams?: RevenueStream[];
+  revenueModel?: "subscription" | "production" | "hybrid";
+  unitsYear1?: number;
+  unitPrice?: number;
+  unitCost?: number;
+  unitMonthlyVolumeGrowth?: number;
   reasoning?: string;
 }
 
@@ -383,6 +388,16 @@ function sanitizeSuggestions(raw: Record<string, unknown>): SuggestedAnswers {
     useOfProceeds: strArray(raw.useOfProceeds, 5),
     tiers: tiersArray(raw.tiers),
     revenueStreams: revenueStreamsArray(raw.revenueStreams),
+    revenueModel: pick(raw.revenueModel, ["subscription", "production", "hybrid"] as const),
+    unitsYear1: num(raw.unitsYear1),
+    unitPrice: num(raw.unitPrice),
+    unitCost: num(raw.unitCost),
+    unitMonthlyVolumeGrowth: (() => {
+      const v = num(raw.unitMonthlyVolumeGrowth);
+      if (v == null) return undefined;
+      // Accept both 0.05 and 5 (% form) — normalise to decimal.
+      return v > 1 ? v / 100 : v;
+    })(),
     reasoning: typeof raw.reasoning === "string" ? raw.reasoning.slice(0, 320) : undefined,
   };
 
@@ -427,6 +442,16 @@ NUMBERS — give a concrete integer:
 LISTS:
 - acquisitionChannels: subset of ["paid-ads","seo","sales","partnerships","word-of-mouth","product-led"]. Pick what FITS the business — e.g. enterprise SaaS = ["sales","partnerships"]; PLG SaaS = ["product-led","seo","word-of-mouth"]; consumer = ["paid-ads","seo","word-of-mouth"]; marketplace = ["seo","paid-ads","partnerships"].
 - useOfProceeds: subset of ["product-dev","hiring","marketing","operations","working-capital"]. Most early-stage rounds include "product-dev" + "hiring"; growth rounds add "marketing".
+
+REVENUE MODEL — decide first, then fill the matching pricing fields:
+- revenueModel: "subscription" | "production" | "hybrid"
+   • subscription — software, SaaS, consumer apps, marketplaces with recurring fees. Use tiers.
+   • production — anything sold as discrete units: hardware, manufactured goods, batched B2B sales, energy/MWh, per-event services. Use unitsYear1 / unitPrice / unitCost / unitMonthlyVolumeGrowth.
+   • hybrid — businesses that do both (e.g. SaaS + hardware).
+- unitsYear1: integer total units sold in year 1 (omit for pure subscription).
+- unitPrice: integer price per unit in the founder's currency.
+- unitCost: integer direct cost per unit (raw materials + direct labor).
+- unitMonthlyVolumeGrowth: decimal between 0 and 0.5 (5%/mo = 0.05). Omit if unsure — engine defaults to the growth scenario rate.
 
 PRICING — return tiers AND optional revenueStreams:
 - tiers: 1–4 objects {name, monthlyPrice, allocationPercent} summing to 100. Tier names should be specific to the business if hinted (e.g. "Solo / Team / Business / Enterprise" for SaaS, "Free / Plus / Pro" for consumer). Adjust prices by customer type — enterprise tiers can be $500–$5,000+/mo per seat.

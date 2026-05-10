@@ -245,10 +245,10 @@ function buildInputsSheet(
   arpuRow.getCell(5).font = { color: { argb: "FF6B7280" }, size: 10 };
 }
 
-// ── Monthly sheet — 36 rows of live formulas ──────────────────────────────
+// ── Monthly sheet — N rows of live formulas (N = model.horizonMonths) ────
 
 const MONTHLY_SHEET = "Monthly";
-const MONTHS = 36;
+const DEFAULT_MONTHS = 60;
 
 function buildMonthlySheet(wb: ExcelJS.Workbook, model: ModelOutputs, fmt: Formats): void {
   const ws = wb.addWorksheet(MONTHLY_SHEET, { properties: { tabColor: { argb: "FF14B8A6" } } });
@@ -274,8 +274,9 @@ function buildMonthlySheet(wb: ExcelJS.Workbook, model: ModelOutputs, fmt: Forma
 
   const dataStart = 5; // first row of monthly data
   const startDate = model.answers.modelStartDate ? new Date(model.answers.modelStartDate) : new Date();
+  const horizon = model.horizonMonths || model.monthly.length || DEFAULT_MONTHS;
 
-  for (let m = 0; m < MONTHS; m++) {
+  for (let m = 0; m < horizon; m++) {
     const r = dataStart + m;
     const row = ws.getRow(r);
 
@@ -338,26 +339,31 @@ function buildMonthlySheet(wb: ExcelJS.Workbook, model: ModelOutputs, fmt: Forma
 
 function buildAnnualSheet(wb: ExcelJS.Workbook, model: ModelOutputs, fmt: Formats): void {
   const ws = wb.addWorksheet("Annual", { properties: { tabColor: { argb: "FF10B981" } } });
+  const horizon = model.horizonMonths || model.monthly.length || DEFAULT_MONTHS;
+  const years = Math.max(1, Math.round(horizon / 12));
   const title = ws.getCell("A1");
-  title.value = `Income Statement — annual roll-up of Monthly (${model.currency.code})`;
+  title.value = `Income Statement — ${years}-year annual roll-up of Monthly (${model.currency.code})`;
   styleSectionTitle(title);
-  ws.mergeCells("A1:E1");
+  const lastCol = String.fromCharCode("A".charCodeAt(0) + 1 + years); // metric + Y1..Yn + delta
+  ws.mergeCells(`A1:${lastCol}1`);
 
   const note = ws.getCell("A2");
-  note.value = "Each cell is a SUM (or MAX/MIN) over the corresponding 12 months on the Monthly sheet.";
+  note.value = "Each cell is a SUM (or last-month formula) over the corresponding 12 months on the Monthly sheet.";
   note.font = { italic: true, color: { argb: "FF6B7280" } };
-  ws.mergeCells("A2:E2");
+  ws.mergeCells(`A2:${lastCol}2`);
 
-  ws.getRow(4).values = ["Metric", "Year 1", "Year 2", "Year 3", "Y3 vs Y1"];
+  const headerValues: (string | number)[] = ["Metric"];
+  for (let y = 1; y <= years; y++) headerValues.push(`Year ${y}`);
+  headerValues.push(`Y${years} vs Y1`);
+  ws.getRow(4).values = headerValues;
   styleHeaderRow(ws.getRow(4));
 
-  // Monthly!{col}{startRow}..{col}{startRow+11} for Y1, etc.
-  const range = (col: string, year: 1 | 2 | 3): string => {
+  const range = (col: string, year: number): string => {
     const start = 5 + (year - 1) * 12;
     const end = start + 11;
     return `${MONTHLY_SHEET}!${col}${start}:${col}${end}`;
   };
-  const lastMonthCell = (col: string, year: 1 | 2 | 3): string => {
+  const lastMonthCell = (col: string, year: number): string => {
     const r = 5 + year * 12 - 1;
     return `${MONTHLY_SHEET}!${col}${r}`;
   };
@@ -387,39 +393,111 @@ function buildAnnualSheet(wb: ExcelJS.Workbook, model: ModelOutputs, fmt: Format
     row.getCell(1).value = def.label;
     if (def.bold) row.getCell(1).font = { bold: true };
 
-    [1, 2, 3].forEach((yr, idx) => {
-      const cell = row.getCell(2 + idx);
-      const yearN = yr as 1 | 2 | 3;
+    for (let yr = 1; yr <= years; yr++) {
+      const cell = row.getCell(1 + yr);
       if (def.kind === "sum-currency") {
-        cell.value = { formula: `=SUM(${range(def.col, yearN)})` };
+        cell.value = { formula: `=SUM(${range(def.col, yr)})` };
         cell.numFmt = fmt.CURRENCY;
       } else if (def.kind === "last-customers") {
-        cell.value = { formula: `=${lastMonthCell(def.col, yearN)}` };
+        cell.value = { formula: `=${lastMonthCell(def.col, yr)}` };
         cell.numFmt = fmt.NUMBER;
       } else if (def.kind === "arr") {
-        cell.value = { formula: `=${lastMonthCell(def.col, yearN)}*12` };
+        cell.value = { formula: `=${lastMonthCell(def.col, yr)}*12` };
         cell.numFmt = fmt.CURRENCY;
       } else if (def.kind === "ratio") {
-        const numRange = range(def.numerator, yearN);
-        const denRange = range(def.denominator, yearN);
+        const numRange = range(def.numerator, yr);
+        const denRange = range(def.denominator, yr);
         cell.value = { formula: `=IFERROR(SUM(${numRange})/SUM(${denRange}),0)` };
         cell.numFmt = fmt.PERCENT;
       }
-    });
+    }
 
-    // Y3 vs Y1 column
-    const deltaCell = row.getCell(5);
+    // Y_last vs Y1 column = last data col − first data col
+    const firstCol = "B";
+    const lastDataCol = String.fromCharCode("A".charCodeAt(0) + 1 + years - 1);
+    const deltaCell = row.getCell(1 + years + 1);
     if (def.kind === "ratio") {
-      deltaCell.value = { formula: `=D${r - 1}-B${r - 1}` };
+      deltaCell.value = { formula: `=${lastDataCol}${r - 1}-${firstCol}${r - 1}` };
       deltaCell.numFmt = fmt.PERCENT;
     } else {
-      deltaCell.value = { formula: `=IFERROR((D${r - 1}-B${r - 1})/ABS(B${r - 1}),0)` };
+      deltaCell.value = { formula: `=IFERROR((${lastDataCol}${r - 1}-${firstCol}${r - 1})/ABS(${firstCol}${r - 1}),0)` };
       deltaCell.numFmt = fmt.PERCENT;
     }
   });
 
   ws.getColumn(1).width = 26;
-  [2, 3, 4, 5].forEach((c) => (ws.getColumn(c).width = 18));
+  for (let i = 2; i <= years + 2; i++) ws.getColumn(i).width = 16;
+}
+
+// ── Costs sheet — COGS and OpEx component breakdowns ─────────────────────
+
+function buildCostsSheet(wb: ExcelJS.Workbook, model: ModelOutputs, fmt: Formats): void {
+  const ws = wb.addWorksheet("Costs", { properties: { tabColor: { argb: "FFF97316" } } });
+  const cb = model.costBreakdown;
+
+  const title = ws.getCell("A1");
+  title.value = `Cost structure — direct costs (COGS) + operational costs (OpEx) (${model.currency.code})`;
+  styleSectionTitle(title);
+  ws.mergeCells("A1:D1");
+
+  const note = ws.getCell("A2");
+  note.value =
+    "How the engine arrives at COGS and OpEx. Component shares are typical for early-stage companies; the totals match the Monthly P&L.";
+  note.font = { italic: true, color: { argb: "FF6B7280" } };
+  ws.mergeCells("A2:D2");
+
+  // COGS components ──────────────────────────────────────────────────────
+  const cogsTitleRow = ws.getRow(4);
+  cogsTitleRow.getCell(1).value = `Direct costs (COGS) — total rate ${(cb.cogsRate * 100).toFixed(1)}% of revenue`;
+  cogsTitleRow.getCell(1).font = { bold: true, color: { argb: "FF111827" } };
+
+  ws.getRow(5).values = ["Component", "Monthly (M12)", "Share of revenue", "Notes"];
+  styleHeaderRow(ws.getRow(5));
+
+  let r = 6;
+  cb.cogsComponents.forEach((c) => {
+    const row = ws.getRow(r++);
+    row.getCell(1).value = c.label;
+    row.getCell(2).value = Math.round(c.monthlyAmount);
+    row.getCell(2).numFmt = fmt.CURRENCY;
+    row.getCell(3).value = c.share;
+    row.getCell(3).numFmt = fmt.PERCENT;
+    if (c.note) {
+      row.getCell(4).value = c.note;
+      row.getCell(4).font = { color: { argb: "FF6B7280" }, size: 10 };
+      row.getCell(4).alignment = { wrapText: true };
+    }
+  });
+
+  // OpEx components ─────────────────────────────────────────────────────
+  r += 1;
+  const opexTitleRow = ws.getRow(r++);
+  opexTitleRow.getCell(1).value = `Operational costs (OpEx) — from monthly burn ${fmt.CURRENCY.replace(/[^0-9#,.]/g, "")}`;
+  opexTitleRow.getCell(1).value = `Operational costs (OpEx) — payroll loading ${(cb.payrollLoadingRate * 100).toFixed(1)}%`;
+  opexTitleRow.getCell(1).font = { bold: true, color: { argb: "FF111827" } };
+
+  ws.getRow(r).values = ["Component", "Monthly amount", "Share of burn", "Notes"];
+  styleHeaderRow(ws.getRow(r));
+  r += 1;
+
+  cb.opexComponents.forEach((c) => {
+    const row = ws.getRow(r++);
+    row.getCell(1).value = c.label;
+    row.getCell(2).value = Math.round(c.monthlyAmount);
+    row.getCell(2).numFmt = fmt.CURRENCY;
+    row.getCell(3).value = c.share;
+    row.getCell(3).numFmt = fmt.PERCENT;
+    if (c.note) {
+      row.getCell(4).value = c.note;
+      row.getCell(4).font = { color: { argb: "FF6B7280" }, size: 10 };
+      row.getCell(4).alignment = { wrapText: true };
+    }
+  });
+
+  ws.getColumn(1).width = 38;
+  ws.getColumn(2).width = 18;
+  ws.getColumn(3).width = 16;
+  ws.getColumn(4).width = 60;
 }
 
 // ── Unit Economics — formulas ─────────────────────────────────────────────
@@ -620,7 +698,7 @@ function buildCoverSheet(wb: ExcelJS.Workbook, model: ModelOutputs, fmt: Formats
 
   ws.mergeCells("A1:B1");
   const title = ws.getCell("A1");
-  title.value = `${company} — 3-Year Financial Model`;
+  title.value = `${company} — ${Math.max(3, Math.round((model.horizonMonths ?? 60) / 12))}-Year Financial Model`;
   title.font = { bold: true, size: 18, color: { argb: "FF111827" } };
   ws.getRow(1).height = 32;
 
@@ -731,18 +809,20 @@ function buildSensitivitySheet(wb: ExcelJS.Workbook, model: ModelOutputs, fmt: F
   styleHeaderRow(ws.getRow(4));
 
   const a = model.answers;
-  const baseY3Arr = model.annual[2].arr;
+  const lastYear = model.annual[model.annual.length - 1];
+  const lastYearLabel = lastYear?.label ?? "last year";
+  const baseLastArr = lastYear?.arr ?? 0;
   const baseRunway = model.runway.runwayMonths;
 
   const variations: { label: string; series: number[]; isRunway: boolean }[] = [
     {
-      label: "ARR sensitivity to growth ± (Y3 ARR)",
-      series: [-0.25, -0.1, 0, 0.1, 0.25].map((d) => baseY3Arr * (1 + d * 1.4)),
+      label: `ARR sensitivity to growth ± (${lastYearLabel} ARR)`,
+      series: [-0.25, -0.1, 0, 0.1, 0.25].map((d) => baseLastArr * (1 + d * 1.4)),
       isRunway: false,
     },
     {
-      label: "ARR sensitivity to churn ± (Y3 ARR)",
-      series: [-0.25, -0.1, 0, 0.1, 0.25].map((d) => baseY3Arr * (1 - d * 0.8)),
+      label: `ARR sensitivity to churn ± (${lastYearLabel} ARR)`,
+      series: [-0.25, -0.1, 0, 0.1, 0.25].map((d) => baseLastArr * (1 - d * 0.8)),
       isRunway: false,
     },
     {
@@ -753,8 +833,8 @@ function buildSensitivitySheet(wb: ExcelJS.Workbook, model: ModelOutputs, fmt: F
       isRunway: true,
     },
     {
-      label: "ARR sensitivity to ARPU (Y3 ARR)",
-      series: [-0.25, -0.1, 0, 0.1, 0.25].map((d) => baseY3Arr * (1 + d)),
+      label: `ARR sensitivity to ARPU (${lastYearLabel} ARR)`,
+      series: [-0.25, -0.1, 0, 0.1, 0.25].map((d) => baseLastArr * (1 + d)),
       isRunway: false,
     },
     {
@@ -797,6 +877,7 @@ export async function generateExcelBuffer(model: ModelOutputs): Promise<ArrayBuf
   buildInputsSheet(wb, model.answers, model.taxRate, fmt);
   buildMonthlySheet(wb, model, fmt);
   buildAnnualSheet(wb, model, fmt);
+  buildCostsSheet(wb, model, fmt);
   buildUnitEconSheet(wb, model, fmt);
   buildCapTableSheet(wb, model, fmt);
   buildScenariosSheet(wb, model, fmt);

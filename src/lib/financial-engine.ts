@@ -8,19 +8,24 @@ import type {
   RunwayData,
   ScenarioMetrics,
   CapTableData,
+  CostBreakdown,
+  CostComponent,
   ModelType,
   GrowthCurve,
   Currency,
+  RevenueModel,
 } from "./types";
 import {
   defaultJurisdictionForGeography,
+  payrollLoadingForJurisdiction,
   resolveCurrency,
   taxRateForJurisdiction,
   valuationMultipleForStage,
 } from "./regional";
 import { formatCurrency as fmt } from "./utils";
 
-const MONTHS = 36;
+const MONTHS = 60;              // 5-year horizon
+const YEARS = MONTHS / 12;       // 5
 
 const GROWTH_RATES: Record<GrowthCurve, number> = {
   conservative: 0.04,
@@ -28,6 +33,8 @@ const GROWTH_RATES: Record<GrowthCurve, number> = {
   aggressive: 0.18,
 };
 
+// Industry-blended COGS rate used for subscription/marketplace/service revenue.
+// Production revenue uses per-unit cost instead.
 const COGS_RATES: Record<string, number> = {
   saas: 0.18,
   marketplace: 0.35,
@@ -36,14 +43,43 @@ const COGS_RATES: Record<string, number> = {
   other: 0.30,
 };
 
+/**
+ * Breakdown of the industry COGS rate into named sub-components so the
+ * Calculations panel / Excel can show *why* the rate is what it is.
+ */
+const COGS_COMPONENT_SHARES: Record<string, { label: string; share: number; note?: string }[]> = {
+  saas: [
+    { label: "Cloud hosting & infra",  share: 0.05, note: "AWS / GCP / Azure spend that scales with active users." },
+    { label: "Payment processing",     share: 0.03, note: "Stripe / Adyen merchant fees on subscription billing." },
+    { label: "Customer support",       share: 0.05, note: "Support reps + tooling per active customer." },
+    { label: "Third-party APIs",       share: 0.05, note: "Email, SMS, AI inference, data — usage-priced vendors." },
+  ],
+  marketplace: [
+    { label: "Payment processing",     share: 0.12, note: "Higher than SaaS because of split-payout flows + chargebacks." },
+    { label: "Trust & safety / insurance", share: 0.08, note: "Fraud checks, insurance, escrow." },
+    { label: "Cloud hosting & infra",  share: 0.05 },
+    { label: "Marketplace operations", share: 0.10, note: "Onboarding, dispute resolution, content moderation." },
+  ],
+  product: [
+    { label: "Cost of goods sold",     share: 0.30, note: "Raw materials + direct labor + assembly." },
+    { label: "Shipping & fulfillment", share: 0.10, note: "3PL, packaging, last-mile carriers." },
+    { label: "Returns & breakage",     share: 0.05, note: "Typical return rate × processing cost." },
+  ],
+  service: [
+    { label: "Delivery labor",         share: 0.20, note: "Consultant / engineer hours at fully-loaded cost." },
+    { label: "Travel & onsite",        share: 0.03 },
+    { label: "Subcontractors",         share: 0.02 },
+  ],
+  other: [
+    { label: "Direct cost of revenue", share: 0.25 },
+    { label: "Variable third-party costs", share: 0.05 },
+  ],
+};
+
 function resolveChurnRate(answers: QuestionnaireAnswers): number {
   if (answers.monthlyChurnRate > 0) return answers.monthlyChurnRate / 100;
   const map: Record<string, number> = {
-    lt2: 0.015,
-    "2to5": 0.035,
-    "5to10": 0.075,
-    gt10: 0.12,
-    unknown: 0.05,
+    lt2: 0.015, "2to5": 0.035, "5to10": 0.075, gt10: 0.12, unknown: 0.05,
   };
   return map[answers.churnEstimate] ?? 0.05;
 }
@@ -52,6 +88,20 @@ function monthLabel(startDate: Date, offset: number): string {
   const d = new Date(startDate);
   d.setMonth(d.getMonth() + offset);
   return d.toLocaleString("default", { month: "short", year: "2-digit" });
+}
+
+function headcountMultiplier(headcount: string): number {
+  if (headcount === "6–15" || headcount === "6-15") return 1.3;
+  if (headcount === "15+") return 1.6;
+  return 1.0;
+}
+
+function resolveRevenueModel(answers: QuestionnaireAnswers): RevenueModel {
+  if (answers.revenueModel) return answers.revenueModel;
+  // Auto-infer: if the user provided unit-economics fields, treat it as
+  // production; otherwise subscription is the safe default.
+  const hasUnitFields = (answers.unitsYear1 ?? 0) > 0 && (answers.unitPrice ?? 0) > 0;
+  return hasUnitFields ? "production" : "subscription";
 }
 
 function computeMonthly(
@@ -63,25 +113,44 @@ function computeMonthly(
   const monthlyGrowth = GROWTH_RATES[curve];
   const monthlyChurn = resolveChurnRate(answers);
   const cogsRate = COGS_RATES[answers.businessModel] ?? 0.25;
-  const startDate = answers.modelStartDate
-    ? new Date(answers.modelStartDate)
-    : new Date();
+  const startDate = answers.modelStartDate ? new Date(answers.modelStartDate) : new Date();
+  const revenueModel = resolveRevenueModel(answers);
 
+  // Subscription tier setup ────────────────────────────────────────────────
   const tiers = answers.tiers.length > 0
     ? answers.tiers
-    : [{ name: "Standard", monthlyPrice: answers.avgMonthlySpend ?? answers.acv ? (answers.acv ?? 500) / 12 : 50, allocationPercent: 100 }];
-
+    : [{
+        name: "Standard",
+        monthlyPrice: answers.avgMonthlySpend ?? answers.acv ? (answers.acv ?? 500) / 12 : 50,
+        allocationPercent: 100,
+      }];
   const totalAlloc = tiers.reduce((s, t) => s + t.allocationPercent, 0);
   const normTiers = tiers.map((t) => ({
     ...t,
     allocationPercent: t.allocationPercent / (totalAlloc || 100),
   }));
 
-  let users = answers.year1UserTarget > 0
-    ? Math.round(answers.year1UserTarget * 0.05)
-    : 50;
+  let users = answers.year1UserTarget > 0 ? Math.round(answers.year1UserTarget * 0.05) : 50;
   const startingUsers = Math.max(1, users);
   const extraStreams = answers.revenueStreams ?? [];
+
+  // Production setup ───────────────────────────────────────────────────────
+  // Units in month 1 derived as ~1/12 of year-1 target adjusted slightly down
+  // so growth has runway; volume grows by unitMonthlyVolumeGrowth (defaults to
+  // the same growth rate the subscription side uses).
+  const unitsYear1 = Math.max(0, answers.unitsYear1 ?? 0);
+  const unitPrice = Math.max(0, answers.unitPrice ?? 0);
+  const unitCost = Math.max(0, answers.unitCost ?? 0);
+  const volumeGrowth = answers.unitMonthlyVolumeGrowth ?? monthlyGrowth;
+  // Solve for starting units so cumulative Y1 units roughly equals unitsYear1.
+  // Σ_{m=0..11} u0 × (1 + g)^m = u0 × ((1+g)^12 − 1)/g.  → u0 = target / ratio.
+  let units = 0;
+  if (unitsYear1 > 0 && volumeGrowth > 0) {
+    const ratio = (Math.pow(1 + volumeGrowth, 12) - 1) / volumeGrowth;
+    units = Math.max(1, unitsYear1 / Math.max(1, ratio));
+  } else if (unitsYear1 > 0) {
+    units = unitsYear1 / 12;
+  }
 
   const initialCash = openingCashOverride ?? answers.fundingAsk;
   let cash = initialCash;
@@ -91,17 +160,13 @@ function computeMonthly(
     answers.taxJurisdiction ?? defaultJurisdictionForGeography(answers.geography);
   const taxRate = taxRateOverride ?? taxRateForJurisdiction(jurisdiction);
 
-  // OpEx scaling — starts at burn, grows slowly with headcount additions
-  const headcountMultiplier =
-    answers.headcount === "6–15" || answers.headcount === "6-15" ? 1.3
-    : answers.headcount === "15+" ? 1.6
-    : 1.0;
-  const baseOpex = answers.monthlyBurn * headcountMultiplier;
+  const baseOpex = answers.monthlyBurn * headcountMultiplier(answers.headcount);
 
   for (let m = 0; m < MONTHS; m++) {
-    const opexGrowthFactor = 1 + m * 0.008; // ~1% monthly OpEx creep
+    const opexGrowthFactor = 1 + m * 0.008;
     const opex = baseOpex * opexGrowthFactor;
 
+    // ── Customers (subscription side) ──
     const newUsers = Math.round(users * monthlyGrowth);
     const churnedUsers = Math.round(users * monthlyChurn);
     const endUsers = Math.max(0, users + newUsers - churnedUsers);
@@ -111,15 +176,35 @@ function computeMonthly(
       const tierRevenue = tierUsers * t.monthlyPrice;
       return { name: t.name, users: tierUsers, revenue: tierRevenue };
     });
-
     const tierRevenue = tierBreakdown.reduce((s, t) => s + t.revenue, 0);
+
     const userScale = endUsers / startingUsers;
     const otherStreamsRevenue = extraStreams.reduce((s, stream) => {
       const factor = stream.scalesWithUsers ? userScale : 1;
       return s + Math.max(0, stream.monthlyRevenue) * factor;
     }, 0);
-    const revenue = tierRevenue + otherStreamsRevenue;
-    const cogs = revenue * cogsRate;
+
+    // ── Units (production side) ──
+    const unitsThisMonth = units;
+    const unitRevenue = unitsThisMonth * unitPrice;
+    const unitCogsForMonth = unitsThisMonth * unitCost;
+
+    // ── Combine revenue + COGS per revenue model ──
+    let revenue: number;
+    let cogs: number;
+    if (revenueModel === "production") {
+      revenue = unitRevenue;
+      cogs = unitCogsForMonth;
+    } else if (revenueModel === "hybrid") {
+      revenue = tierRevenue + otherStreamsRevenue + unitRevenue;
+      // Subscription COGS uses the industry rate; production COGS uses unit cost.
+      const subsCogs = (tierRevenue + otherStreamsRevenue) * cogsRate;
+      cogs = subsCogs + unitCogsForMonth;
+    } else {
+      revenue = tierRevenue + otherStreamsRevenue;
+      cogs = revenue * cogsRate;
+    }
+
     const grossProfit = revenue - cogs;
     const ebitda = grossProfit - opex;
     const tax = ebitda > 0 ? ebitda * taxRate : 0;
@@ -147,13 +232,14 @@ function computeMonthly(
     });
 
     users = endUsers;
+    units = units * (1 + volumeGrowth);
   }
 
   return data;
 }
 
 function aggregateAnnual(monthly: MonthlyDataPoint[]): AnnualSummary[] {
-  return [1, 2, 3].map((yr) => {
+  return Array.from({ length: YEARS }, (_, i) => i + 1).map((yr) => {
     const slice = monthly.slice((yr - 1) * 12, yr * 12);
     const revenue = slice.reduce((s, m) => s + m.revenue, 0);
     const cogs = slice.reduce((s, m) => s + m.cogs, 0);
@@ -184,19 +270,26 @@ function aggregateAnnual(monthly: MonthlyDataPoint[]): AnnualSummary[] {
 function computeUnitEconomics(
   answers: QuestionnaireAnswers,
   monthly: MonthlyDataPoint[],
-  annual: AnnualSummary[]
+  _annual: AnnualSummary[]
 ): UnitEconomics {
   const churnRate = resolveChurnRate(answers);
   const cogsRate = COGS_RATES[answers.businessModel] ?? 0.25;
   const grossMarginRate = 1 - cogsRate;
+  const revenueModel = resolveRevenueModel(answers);
 
-  // Blended ARPU from month 12 as representative
   const m12 = monthly[11];
-  const blendedArpu = m12 && m12.totalUsers > 0
-    ? m12.revenue / m12.totalUsers
-    : answers.tiers.length > 0
-    ? answers.tiers.reduce((s, t) => s + t.monthlyPrice * (t.allocationPercent / 100), 0)
-    : 50;
+  let blendedArpu: number;
+  if (revenueModel === "production") {
+    // For production businesses ARPU is meaningless — use month-12 revenue /
+    // active-user proxy or fall back to unit price as the "per-event" figure.
+    blendedArpu = answers.unitPrice ?? (m12 && m12.totalUsers > 0 ? m12.revenue / m12.totalUsers : 0);
+  } else {
+    blendedArpu = m12 && m12.totalUsers > 0
+      ? m12.revenue / m12.totalUsers
+      : answers.tiers.length > 0
+      ? answers.tiers.reduce((s, t) => s + t.monthlyPrice * (t.allocationPercent / 100), 0)
+      : 50;
+  }
 
   const cac = answers.cac > 0 ? answers.cac : blendedArpu * 3;
   const ltv = churnRate > 0 ? (blendedArpu * grossMarginRate) / churnRate : blendedArpu * 24;
@@ -223,9 +316,7 @@ function computeRunway(
   answers: QuestionnaireAnswers,
   monthly: MonthlyDataPoint[]
 ): RunwayData {
-  const startDate = answers.modelStartDate
-    ? new Date(answers.modelStartDate)
-    : new Date();
+  const startDate = answers.modelStartDate ? new Date(answers.modelStartDate) : new Date();
 
   let breakEvenMonth: number | null = null;
   let cashRunoutMonth: number | null = null;
@@ -243,9 +334,7 @@ function computeRunway(
   const runwayDate = new Date(startDate);
   runwayDate.setMonth(runwayDate.getMonth() + runwayMonths);
 
-  const breakEvenYear = breakEvenMonth != null
-    ? Math.ceil(breakEvenMonth / 12)
-    : null;
+  const breakEvenYear = breakEvenMonth != null ? Math.ceil(breakEvenMonth / 12) : null;
 
   return {
     equityRaise: answers.fundingAsk,
@@ -258,24 +347,29 @@ function computeRunway(
   };
 }
 
-function buildScenario(
-  answers: QuestionnaireAnswers,
-  curve: GrowthCurve
-): ScenarioMetrics {
+function buildScenario(answers: QuestionnaireAnswers, curve: GrowthCurve): ScenarioMetrics {
   const monthly = computeMonthly(answers, curve);
   const annual = aggregateAnnual(monthly);
   const runway = computeRunway(answers, monthly);
-  const lastYear = annual[2];
+  const lastYear = annual[annual.length - 1];
 
   return {
     label: curve.charAt(0).toUpperCase() + curve.slice(1),
     revenueY1: annual[0].revenue,
-    revenueY2: annual[1].revenue,
-    revenueY3: lastYear.revenue,
-    ebitdaY3: lastYear.ebitda,
+    revenueY2: annual[1]?.revenue ?? 0,
+    revenueY3: annual[2]?.revenue ?? 0,
+    revenueY5: annual[4]?.revenue ?? lastYear.revenue,
+    ebitdaY3: annual[2]?.ebitda ?? lastYear.ebitda,
+    ebitdaY5: annual[4]?.ebitda ?? lastYear.ebitda,
     runwayMonths: runway.runwayMonths,
-    totalUsersY3: lastYear.endingUsers,
-    arrY3: lastYear.arr,
+    totalUsersY3: annual[2]?.endingUsers ?? lastYear.endingUsers,
+    totalUsersY5: annual[4]?.endingUsers ?? lastYear.endingUsers,
+    arrY3: annual[2]?.arr ?? lastYear.arr,
+    arrY5: annual[4]?.arr ?? lastYear.arr,
+    revenueLast: lastYear.revenue,
+    ebitdaLast: lastYear.ebitda,
+    totalUsersLast: lastYear.endingUsers,
+    arrLast: lastYear.arr,
   };
 }
 
@@ -285,10 +379,7 @@ function buildCapTable(answers: QuestionnaireAnswers, annual: AnnualSummary[]): 
     answers.taxJurisdiction ?? defaultJurisdictionForGeography(answers.geography);
   const revenueMultiple = valuationMultipleForStage(answers.fundingStage, jurisdiction);
 
-  const preMoneyValuation = arrY1 > 0
-    ? arrY1 * revenueMultiple
-    : answers.fundingAsk * 4;
-
+  const preMoneyValuation = arrY1 > 0 ? arrY1 * revenueMultiple : answers.fundingAsk * 4;
   const postMoneyValuation = preMoneyValuation + answers.fundingAsk;
   const newEquityPercent = answers.fundingAsk / postMoneyValuation;
   const foundersPercent = 1 - newEquityPercent;
@@ -322,6 +413,107 @@ function buildCapTable(answers: QuestionnaireAnswers, annual: AnnualSummary[]): 
   };
 }
 
+function buildCostBreakdown(
+  answers: QuestionnaireAnswers,
+  monthly: MonthlyDataPoint[]
+): CostBreakdown {
+  const revenueModel = resolveRevenueModel(answers);
+  const jurisdiction =
+    answers.taxJurisdiction ?? defaultJurisdictionForGeography(answers.geography);
+  const payroll = payrollLoadingForJurisdiction(jurisdiction);
+
+  // Reference month — month 12 (representative steady-state) — so the
+  // component amounts shown are meaningful instead of near-zero month 1.
+  const refMonth = monthly[11] ?? monthly[monthly.length - 1];
+  const refRevenue = refMonth?.revenue ?? 0;
+
+  // COGS components ────────────────────────────────────────────────────────
+  let cogsComponents: CostComponent[];
+  let cogsRate: number;
+
+  if (revenueModel === "production") {
+    const unitCost = Math.max(0, answers.unitCost ?? 0);
+    const unitPrice = Math.max(0, answers.unitPrice ?? 1);
+    const unitsAtRef = unitPrice > 0 ? refRevenue / unitPrice : 0;
+    const materialsShare = 0.65; // typical split of unit cost
+    const directLaborShare = 0.25;
+    const otherShare = 0.10;
+    cogsComponents = [
+      {
+        label: "Raw materials per unit",
+        monthlyAmount: unitsAtRef * unitCost * materialsShare,
+        share: materialsShare,
+        note: `${(materialsShare * 100).toFixed(0)}% of the ${fmt(unitCost, 2, { code: "USD", symbol: "$", locale: "en-US" })}/unit direct cost.`,
+      },
+      {
+        label: "Direct manufacturing labor",
+        monthlyAmount: unitsAtRef * unitCost * directLaborShare,
+        share: directLaborShare,
+      },
+      {
+        label: "Packaging & other",
+        monthlyAmount: unitsAtRef * unitCost * otherShare,
+        share: otherShare,
+      },
+    ];
+    cogsRate = unitPrice > 0 ? unitCost / unitPrice : 0;
+  } else {
+    cogsRate = COGS_RATES[answers.businessModel] ?? 0.25;
+    const sharesDef = COGS_COMPONENT_SHARES[answers.businessModel] ?? COGS_COMPONENT_SHARES.other;
+    cogsComponents = sharesDef.map((c) => ({
+      label: c.label,
+      monthlyAmount: refRevenue * c.share,
+      share: c.share,
+      note: c.note,
+    }));
+  }
+
+  // OpEx components ────────────────────────────────────────────────────────
+  // Split monthly burn into a typical early-stage allocation, then apply
+  // payroll loading on top of the salary slice (the founder's input is
+  // "what we pay today" — usually net cash to employees, not employer-side
+  // gross). Loading uplift makes the bottom-line burn realistic.
+  const burn = Math.max(0, answers.monthlyBurn);
+  const salariesNetShare = 0.62; // 62% salaries (cash to employees)
+  const toolsShare = 0.10;
+  const marketingShare = 0.15;
+  const officeShare = 0.06;
+  const otherShare = 0.07;
+  const salariesNet = burn * salariesNetShare;
+  const payrollUplift = salariesNet * payroll.rate;
+  const tools = burn * toolsShare;
+  const marketing = burn * marketingShare;
+  const office = burn * officeShare;
+  const other = burn * otherShare;
+
+  const opexComponents: CostComponent[] = [
+    {
+      label: "Salaries (cash to employees)",
+      monthlyAmount: salariesNet,
+      share: salariesNetShare,
+      note: "Typical 60-65% of burn at pre-seed / seed stage.",
+    },
+    {
+      label: payroll.label,
+      monthlyAmount: payrollUplift,
+      share: payroll.rate * salariesNetShare,
+      note: "Employer-side burden on top of cash salaries — region-specific.",
+    },
+    { label: "Tools & software", monthlyAmount: tools, share: toolsShare },
+    { label: "Marketing & sales", monthlyAmount: marketing, share: marketingShare },
+    { label: "Office, infra & legal", monthlyAmount: office, share: officeShare },
+    { label: "Other", monthlyAmount: other, share: otherShare },
+  ];
+
+  return {
+    cogsComponents,
+    cogsRate,
+    opexComponents,
+    payrollLoadingRate: payroll.rate,
+    payrollLoadingLabel: payroll.label,
+  };
+}
+
 function buildFundingNarrative(
   answers: QuestionnaireAnswers,
   annual: AnnualSummary[],
@@ -334,28 +526,27 @@ function buildFundingNarrative(
   const stage = answers.fundingStage.replace("-", " ").replace(/\b\w/g, (c) => c.toUpperCase());
   const proceedsText = answers.useOfProceeds.join(", ").toLowerCase();
   const runwayText = runway.cashPositive
-    ? "well beyond the 3-year model horizon"
+    ? `well beyond the ${YEARS}-year model horizon`
     : `${runway.runwayMonths} months`;
   const breakEvenText = runway.breakEvenYear
     ? `Year ${runway.breakEvenYear}`
     : "within the forecast period";
-  const y3Users = annual[2].endingUsers.toLocaleString("en-US");
-  const y3Arr = fmt(annual[2].arr, 0, currency);
+  const last = annual[annual.length - 1];
+  const lastUsers = last.endingUsers.toLocaleString("en-US");
+  const lastArr = fmt(last.arr, 0, currency);
 
-  return `${company} is raising ${raise} at ${stage}. The raise provides ${runwayText} of runway and funds ${proceedsText}. At target growth, the business reaches EBITDA breakeven in ${breakEvenText} with ${y3Users} paying customers generating ${y3Arr} ARR. Post-raise, new investors receive ${(capTable.newEquityPercent * 100).toFixed(1)}% equity at a ${fmt(capTable.preMoneyValuation, 0, currency)} pre-money valuation.`;
+  return `${company} is raising ${raise} at ${stage}. The raise provides ${runwayText} of runway and funds ${proceedsText}. At target growth, the business reaches EBITDA breakeven in ${breakEvenText} with ${lastUsers} paying customers generating ${lastArr} ARR by ${last.label}. Post-raise, new investors receive ${(capTable.newEquityPercent * 100).toFixed(1)}% equity at a ${fmt(capTable.preMoneyValuation, 0, currency)} pre-money valuation.`;
 }
 
 function selectModelType(answers: QuestionnaireAnswers): ModelType {
+  if (resolveRevenueModel(answers) === "production") return "project_finance";
   if (
     answers.businessModel === "saas" ||
     (answers.businessModel === "product" && answers.customerType === "b2b")
   ) {
     return "saas";
   }
-  if (
-    answers.pricePerUnit != null ||
-    answers.constructionCost != null
-  ) {
+  if (answers.pricePerUnit != null || answers.constructionCost != null) {
     return "project_finance";
   }
   return "alternative";
@@ -386,6 +577,7 @@ export function runFinancialEngine(answers: QuestionnaireAnswers): ModelOutputs 
   const unitEconomics = computeUnitEconomics(answers, monthly, annual);
   const runway = computeRunway(answers, monthly);
   const capTable = buildCapTable(answers, annual);
+  const costBreakdown = buildCostBreakdown(answers, monthly);
   const fundingNarrative = buildFundingNarrative(answers, annual, runway, capTable, currency);
 
   const scenarios = {
@@ -409,5 +601,7 @@ export function runFinancialEngine(answers: QuestionnaireAnswers): ModelOutputs 
     fundingNarrative,
     currency,
     taxRate,
+    costBreakdown,
+    horizonMonths: MONTHS,
   };
 }

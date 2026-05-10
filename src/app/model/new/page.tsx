@@ -30,7 +30,7 @@ export default function NewModelPage() {
           </h1>
           <p className="text-gray-500 max-w-md mx-auto">
             Answer a few questions about your business. We&apos;ll generate a professional-grade
-            3-year financial model in seconds.
+            5-year financial model in seconds.
           </p>
         </div>
 
