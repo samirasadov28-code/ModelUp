@@ -8,20 +8,21 @@ export type ModelType = "saas" | "alternative" | "project_finance";
 export type SubscriptionStatus = "free" | "trialing" | "active" | "canceled";
 
 export type TaxJurisdiction =
-  | "us"
-  | "uk"
-  | "ireland"
-  | "germany"
-  | "france"
-  | "netherlands"
-  | "canada"
-  | "australia"
-  | "singapore"
-  | "india"
-  | "uae"
-  | "other";
+  // Free tier — the four most common defaults.
+  | "us" | "uk" | "ireland" | "other"
+  // Pro extended — broader coverage for serious global founders.
+  | "germany" | "france" | "netherlands" | "spain" | "italy" | "sweden"
+  | "switzerland" | "estonia" | "denmark" | "norway"
+  | "canada" | "australia" | "new-zealand"
+  | "singapore" | "hong-kong" | "japan" | "south-korea" | "india" | "indonesia"
+  | "uae" | "saudi-arabia" | "israel"
+  | "brazil" | "mexico" | "argentina"
+  | "south-africa" | "nigeria";
 
-export type CurrencyCode = "USD" | "GBP" | "EUR" | "CAD" | "AUD" | "SGD" | "INR" | "AED";
+export type CurrencyCode =
+  | "USD" | "GBP" | "EUR" | "CAD" | "AUD" | "NZD" | "SGD" | "HKD" | "JPY"
+  | "KRW" | "INR" | "IDR" | "AED" | "SAR" | "ILS" | "BRL" | "MXN" | "ARS"
+  | "ZAR" | "NGN" | "CHF" | "SEK" | "NOK" | "DKK";
 
 export interface Currency {
   code: CurrencyCode;
