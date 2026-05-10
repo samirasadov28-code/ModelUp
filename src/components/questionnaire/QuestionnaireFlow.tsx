@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { Sparkles, ArrowRight } from "lucide-react";
+import { Sparkles, ArrowRight, Wand2 } from "lucide-react";
 import { saveModelLocally } from "@/lib/model-client-store";
 import { ProgressBar } from "./ProgressBar";
 import { QuestionWrapper } from "./QuestionWrapper";
@@ -63,6 +63,32 @@ const DEFAULT_ANSWERS: Partial<QuestionnaireAnswers> = {
 const tileOff = "border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50";
 const tileOn = "border-blue-500 bg-blue-50 text-blue-700";
 
+// Vetted descriptions across business shapes. Each one is dense enough that
+// the AI can infer a full set of defaults — pricing, CAC, churn, headcount,
+// jurisdiction, raise size — instead of returning sparse suggestions.
+const DESCRIPTION_EXAMPLES: { label: string; text: string }[] = [
+  {
+    label: "B2B SaaS — enterprise",
+    text:
+      "We're building a B2B SaaS that helps mid-market law firms automate contract review with AI. We charge $400/seat/month and the typical firm buys 25 seats. Sales-led GTM targeting 50–300 lawyer firms in the US. Team of 5 in Delaware, raising a $2M seed for hiring AEs and product.",
+  },
+  {
+    label: "Marketplace — consumer",
+    text:
+      "Two-sided marketplace connecting independent therapists with patients in the UK. We take a 15% cut on every booked session (avg £80 per session). 500 therapists onboarded, 4,000 sessions booked last month. Incorporated in London, team of 3, raising £750k pre-seed.",
+  },
+  {
+    label: "Consumer mobile",
+    text:
+      "Freemium iOS app for habit tracking. Free tier with a $4.99/mo Pro upgrade and a $39/yr plan. 25k MAU, ~4% paid conversion, mostly US and Europe. Team of 4 in Berlin (German GmbH), raising €1.5M seed to scale paid acquisition and ship Android.",
+  },
+  {
+    label: "Services + software",
+    text:
+      "Boutique fractional CFO firm for Series A SaaS startups. Retainer pricing $8k/month with average client retention of 18 months. 8 fractional CFOs on the team, headquartered in Singapore. Bootstrapped to ~$1M ARR, now raising a $3M seed to build software around our process.",
+  },
+];
+
 export function QuestionnaireFlow() {
   const router = useRouter();
   // step 0 = intro/describe-your-startup screen, 1..10 = the questionnaire
@@ -73,9 +99,17 @@ export function QuestionnaireFlow() {
 
   // Intro state
   const [description, setDescription] = useState("");
+  const [exampleIdx, setExampleIdx] = useState(0);
   const [suggesting, setSuggesting] = useState(false);
   const [suggestError, setSuggestError] = useState<string | null>(null);
   const [aiNote, setAiNote] = useState<string | null>(null);
+
+  function handleUseExample() {
+    const example = DESCRIPTION_EXAMPLES[exampleIdx];
+    setDescription(example.text);
+    setSuggestError(null);
+    setExampleIdx((idx) => (idx + 1) % DESCRIPTION_EXAMPLES.length);
+  }
 
   const [tierCount, setTierCount] = useState(
     DEFAULT_ANSWERS.tiers && DEFAULT_ANSWERS.tiers.length > 0 ? DEFAULT_ANSWERS.tiers.length : 2
@@ -251,6 +285,21 @@ export function QuestionnaireFlow() {
             so you only review &amp; tweak instead of typing from scratch.
           </p>
           <form onSubmit={handleSuggest} className="space-y-3">
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                Your description
+              </span>
+              <button
+                type="button"
+                onClick={handleUseExample}
+                disabled={suggesting}
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-700 hover:text-blue-800 bg-white hover:bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-lg transition-colors disabled:opacity-50"
+                title="Fill the box with a vetted example you can edit"
+              >
+                <Wand2 className="w-3 h-3" />
+                Try an example: {DESCRIPTION_EXAMPLES[exampleIdx].label}
+              </button>
+            </div>
             <textarea
               required
               rows={4}
