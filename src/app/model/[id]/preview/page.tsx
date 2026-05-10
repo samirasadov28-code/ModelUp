@@ -177,6 +177,55 @@ export default function PreviewPage() {
           </p>
         </div>
 
+        {model.valuation && (
+          <div className="rounded-xl border border-gray-200 bg-white px-6 py-5 shadow-sm">
+            <div className="flex items-center justify-between flex-wrap gap-3 mb-3">
+              <div>
+                <p className="text-gray-500 text-xs font-semibold uppercase tracking-wider">
+                  Discount rate &amp; DCF valuation
+                </p>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  Free preview · Pro unlocks the full WACC build-up with risk-free, beta, equity
+                  risk premium, and cost-of-debt inputs.
+                </p>
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <p className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">
+                  Discount rate
+                </p>
+                <p className="text-xl font-bold text-gray-900 font-mono tabular-nums">
+                  {(model.valuation.discountRate * 100).toFixed(1)}%
+                </p>
+                <p className="text-[10px] text-gray-400 mt-1">
+                  Stage-driven default · editable on Q11
+                </p>
+              </div>
+              <div>
+                <p className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">
+                  DCF enterprise value
+                </p>
+                <p className="text-xl font-bold text-blue-700 font-mono tabular-nums">
+                  {fmtCurrency(Math.max(0, model.valuation.enterpriseValue))}
+                </p>
+                <p className="text-[10px] text-gray-400 mt-1">
+                  Σ PV(5y FCF) + PV terminal value
+                </p>
+              </div>
+              <div>
+                <p className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">
+                  Terminal growth
+                </p>
+                <p className="text-xl font-bold text-gray-900 font-mono tabular-nums">
+                  {(model.valuation.terminalGrowthRate * 100).toFixed(1)}%
+                </p>
+                <p className="text-[10px] text-gray-400 mt-1">Gordon-growth perpetuity</p>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="rounded-xl border border-gray-200 overflow-hidden shadow-sm">
           <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/60">
             <h2 className="text-gray-900 font-semibold">5-Year P&amp;L Summary</h2>

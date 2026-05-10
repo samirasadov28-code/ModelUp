@@ -36,7 +36,7 @@ import {
 } from "@/lib/regional";
 import { hasEarlyAccess } from "@/lib/early-access";
 
-const TOTAL_STEPS = 10;
+const TOTAL_STEPS = 11;
 
 // Sensible starting defaults so every input appears pre-filled even when the
 // user skips the AI intro. The Q5 tier scaffold gets replaced as soon as a
@@ -48,6 +48,7 @@ const DEFAULT_ANSWERS: Partial<QuestionnaireAnswers> = {
   ],
   acquisitionChannels: ["seo", "word-of-mouth"],
   useOfProceeds: ["product-dev", "hiring"],
+  useOfProceedsAllocation: { "product-dev": 50, hiring: 50 },
   revenueStreams: [],
   monthlyChurnRate: 0,
   churnEstimate: "2to5",
@@ -217,7 +218,23 @@ export function QuestionnaireFlow() {
               : (answers.year1UserTarget ?? 0) > 0;
         return hasTarget && !!answers.growthCurve;
       }
-      case 10: return !!answers.fundingAsk && answers.fundingAsk > 0 && answers.targetRunway != null;
+      case 10: {
+        if (!answers.fundingAsk || answers.fundingAsk <= 0) return false;
+        if (answers.targetRunway == null) return false;
+        const proceeds = answers.useOfProceeds ?? [];
+        if (proceeds.length > 0) {
+          const total = proceeds.reduce(
+            (s, k) => s + (answers.useOfProceedsAllocation?.[k] ?? 0),
+            0
+          );
+          if (Math.abs(total - 100) > 0.5) return false;
+        }
+        return true;
+      }
+      case 11:
+        // We accept "no explicit pick" too — the engine falls back to a
+        // stage-driven default, so the step can be ack'd by Next.
+        return answers.discountRate == null || answers.discountRate > 0;
       default: return true;
     }
   };
@@ -320,7 +337,10 @@ export function QuestionnaireFlow() {
         growthCurve: answers.growthCurve ?? "base",
         fundingAsk: answers.fundingAsk ?? 500000,
         useOfProceeds: answers.useOfProceeds ?? [],
+        useOfProceedsAllocation: answers.useOfProceedsAllocation,
         targetRunway: answers.targetRunway ?? 18,
+        discountRate: answers.discountRate,
+        terminalGrowthRate: answers.terminalGrowthRate,
         companyName: answers.companyName,
         modelStartDate: new Date().toISOString().slice(0, 10),
       };
@@ -1166,7 +1186,6 @@ export function QuestionnaireFlow() {
           subtitle="The final piece — we'll use this to calculate runway and returns."
           onNext={handleNext} onBack={handleBack}
           nextDisabled={!canAdvance()}
-          isLast
         >
           <div>
             <Label className="text-gray-700 mb-2 block font-medium">
@@ -1179,39 +1198,101 @@ export function QuestionnaireFlow() {
             />
           </div>
 
-          <div className="mt-3">
-            <Label className="text-gray-700 mb-3 block font-medium">What will you use it for? (select all)</Label>
-            <div className="grid grid-cols-2 gap-2">
-              {[
-                { value: "product-dev", label: "Product Development" },
-                { value: "hiring", label: "Hiring" },
-                { value: "marketing", label: "Marketing & Sales" },
-                { value: "operations", label: "Operations" },
-                { value: "working-capital", label: "Working Capital" },
-              ].map((opt) => {
-                const selected = answers.useOfProceeds?.includes(opt.value);
-                return (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    onClick={() => {
-                      const curr = answers.useOfProceeds ?? [];
-                      update(
-                        "useOfProceeds",
-                        selected ? curr.filter((v) => v !== opt.value) : [...curr, opt.value]
+          {(() => {
+            const PROCEEDS_OPTIONS = [
+              { value: "product-dev", label: "Product Development" },
+              { value: "hiring", label: "Hiring" },
+              { value: "marketing", label: "Marketing & Sales" },
+              { value: "operations", label: "Operations" },
+              { value: "working-capital", label: "Working Capital" },
+            ];
+            const selected = answers.useOfProceeds ?? [];
+            const alloc = answers.useOfProceedsAllocation ?? {};
+            const allocTotal = selected.reduce((s, k) => s + (alloc[k] ?? 0), 0);
+
+            function toggle(value: string) {
+              const isOn = selected.includes(value);
+              const nextSelected = isOn ? selected.filter((v) => v !== value) : [...selected, value];
+              // Even split across the new set so the user gets a sensible
+              // starting point. They can then tweak each row.
+              const each = nextSelected.length > 0 ? Math.floor(100 / nextSelected.length) : 0;
+              const remainder = nextSelected.length > 0 ? 100 - each * nextSelected.length : 0;
+              const nextAlloc: Record<string, number> = {};
+              nextSelected.forEach((k, i) => {
+                nextAlloc[k] = each + (i === 0 ? remainder : 0);
+              });
+              update("useOfProceeds", nextSelected);
+              update("useOfProceedsAllocation", nextAlloc);
+            }
+
+            function setOne(key: string, value: number) {
+              const v = Number.isFinite(value) ? Math.max(0, Math.min(100, value)) : 0;
+              update("useOfProceedsAllocation", { ...alloc, [key]: v });
+            }
+
+            return (
+              <div className="mt-3">
+                <Label className="text-gray-700 mb-3 block font-medium">
+                  What will you use it for? (select all) — allocate % of the raise
+                </Label>
+                <div className="grid grid-cols-2 gap-2">
+                  {PROCEEDS_OPTIONS.map((opt) => {
+                    const on = selected.includes(opt.value);
+                    return (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => toggle(opt.value)}
+                        className={cn(
+                          "py-2.5 rounded-xl border text-sm transition-all",
+                          on ? tileOn : tileOff
+                        )}
+                      >
+                        {opt.label}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {selected.length > 0 && (
+                  <div className="mt-3 space-y-2">
+                    <p className="text-xs text-gray-500 font-semibold uppercase tracking-wider">
+                      Allocation across selected
+                    </p>
+                    {selected.map((key) => {
+                      const opt = PROCEEDS_OPTIONS.find((o) => o.value === key);
+                      const pct = alloc[key] ?? 0;
+                      return (
+                        <div key={key} className="flex items-center gap-3">
+                          <span className="text-sm text-gray-700 flex-1">{opt?.label ?? key}</span>
+                          <Input
+                            type="number"
+                            min={0}
+                            max={100}
+                            value={Number.isFinite(pct) ? pct : 0}
+                            onChange={(e) => setOne(key, Number(e.target.value))}
+                            className="w-20 text-sm h-9 text-right tabular-nums"
+                          />
+                          <span className="text-sm text-gray-500 w-4">%</span>
+                          <span className="text-xs text-gray-400 tabular-nums w-20 text-right">
+                            {answers.fundingAsk
+                              ? `≈ ${Math.round((answers.fundingAsk * pct) / 100).toLocaleString("en-US")}`
+                              : "—"}
+                          </span>
+                        </div>
                       );
-                    }}
-                    className={cn(
-                      "py-2.5 rounded-xl border text-sm transition-all",
-                      selected ? tileOn : tileOff
-                    )}
-                  >
-                    {opt.label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+                    })}
+                    <p className="text-xs text-gray-500 mt-2">
+                      Allocation total: {allocTotal}%
+                      {allocTotal !== 100 && (
+                        <span className="text-amber-600 ml-1 font-medium">(should total 100%)</span>
+                      )}
+                    </p>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
           <div className="mt-3">
             <Label className="text-gray-700 mb-3 block font-medium">Target runway from this raise</Label>
@@ -1246,6 +1327,127 @@ export function QuestionnaireFlow() {
           />
         </QuestionWrapper>
       )}
+
+      {/* Q11 — Discount rate */}
+      {step === 11 && (() => {
+        const DEFAULTS_BY_STAGE: Record<string, number> = {
+          "pre-seed": 35,
+          seed: 28,
+          "series-a": 22,
+          "series-b": 17,
+        };
+        const stage = answers.fundingStage ?? "seed";
+        const stageDefault = DEFAULTS_BY_STAGE[stage] ?? 25;
+        const currentPct =
+          answers.discountRate != null
+            ? Math.round(answers.discountRate * 1000) / 10
+            : stageDefault;
+
+        const PRESETS: { label: string; pct: number; desc: string }[] = [
+          { label: "Mature / public-comp", pct: 10, desc: "WACC-driven, low risk" },
+          { label: "Established growth", pct: 15, desc: "Series B+ / late stage" },
+          { label: "Series A", pct: 22, desc: "Proven PMF, scaling" },
+          { label: "Seed", pct: 28, desc: "Early traction" },
+          { label: "Pre-seed / early", pct: 35, desc: "Idea or MVP" },
+          { label: "Venture / deep-tech", pct: 45, desc: "High-risk early bet" },
+        ];
+
+        const setRate = (pct: number) => update("discountRate", Math.max(0, pct) / 100);
+
+        return (
+          <QuestionWrapper
+            stepNumber={11} totalSteps={TOTAL_STEPS}
+            title="What discount rate should we use?"
+            subtitle="This is the return investors demand from your stage of business. We'll use it to compute a DCF valuation from the 5-year forecast. Pro unlocks a full WACC build-up."
+            onNext={handleNext} onBack={handleBack}
+            nextDisabled={!canAdvance()}
+            isLast
+          >
+            <div>
+              <Label className="text-gray-500 text-xs uppercase tracking-wider font-semibold">
+                Pick a preset
+              </Label>
+              <div className="grid grid-cols-2 gap-2 mt-2">
+                {PRESETS.map((p) => {
+                  const selected = Math.abs(currentPct - p.pct) < 0.05;
+                  return (
+                    <button
+                      key={p.pct}
+                      type="button"
+                      onClick={() => setRate(p.pct)}
+                      className={cn(
+                        "text-left rounded-xl border px-3 py-2.5 transition-all",
+                        selected ? tileOn : tileOff
+                      )}
+                    >
+                      <p className="text-sm font-semibold flex items-baseline justify-between gap-2">
+                        <span>{p.label}</span>
+                        <span className="font-mono tabular-nums text-xs">{p.pct}%</span>
+                      </p>
+                      <p className="text-[11px] text-gray-500 mt-0.5">{p.desc}</p>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="mt-4">
+              <Label className="text-gray-700 mb-2 block font-medium">
+                Or set your own (%) <span className="text-red-500">*</span>
+              </Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  type="number"
+                  step="0.5"
+                  min={1}
+                  max={100}
+                  value={currentPct}
+                  onChange={(e) => setRate(Number(e.target.value))}
+                  className="w-32 text-sm h-10 tabular-nums"
+                />
+                <span className="text-sm text-gray-500">%</span>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                The {stage.replace("-", " ")} default is {stageDefault}% — bump up if your market is
+                riskier, down if revenue is contracted and predictable.
+              </p>
+            </div>
+
+            <div className="mt-4">
+              <Label className="text-gray-700 mb-2 block font-medium">
+                Terminal growth rate (long-term, %)
+              </Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  type="number"
+                  step="0.5"
+                  min={0}
+                  max={15}
+                  value={
+                    answers.terminalGrowthRate != null
+                      ? Math.round(answers.terminalGrowthRate * 1000) / 10
+                      : 3
+                  }
+                  onChange={(e) =>
+                    update("terminalGrowthRate", Math.max(0, Number(e.target.value)) / 100)
+                  }
+                  className="w-32 text-sm h-10 tabular-nums"
+                />
+                <span className="text-sm text-gray-500">%</span>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                Used for the terminal-value (Gordon growth) leg of the DCF. 2–3% is a typical
+                long-run assumption.
+              </p>
+            </div>
+
+            <ProUpsell
+              headline="Full WACC build-up: cost of equity (CAPM) + cost of debt × tax shield"
+              body="Pro lets you set risk-free rate, beta, equity risk premium, cost of debt and debt/equity weights to refine this discount rate, plus a full DCF valuation table with sensitivity bands."
+            />
+          </QuestionWrapper>
+        );
+      })()}
     </div>
   );
 }

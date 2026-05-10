@@ -102,7 +102,19 @@ export interface QuestionnaireAnswers {
   // Q10
   fundingAsk: number;
   useOfProceeds: string[];
+  /**
+   * Percent of the raise allocated to each selected `useOfProceeds` bucket
+   * (keys must be a subset of `useOfProceeds`). Values are percent (0–100)
+   * and the engine normalises them to sum to 100 if the founder leaves the
+   * total off.
+   */
+  useOfProceedsAllocation?: Record<string, number>;
   targetRunway: 12 | 18 | 24 | 36;
+  // Q11
+  /** Annual discount rate as a decimal (e.g. 0.20 for 20%). Drives DCF valuation. */
+  discountRate?: number;
+  /** Perpetual growth assumption for terminal value (default 3%). */
+  terminalGrowthRate?: number;
   // Where the company is incorporated for corporate tax purposes.
   // Defaults to whatever maps cleanly from `geography` if not supplied.
   taxJurisdiction?: TaxJurisdiction;
@@ -241,6 +253,32 @@ export interface CapTableData {
   pricePerShare: number;
 }
 
+/**
+ * DCF valuation result. The engine projects annual free cash flow from the
+ * 5-year P&L, discounts each year at `discountRate`, and adds a Gordon-growth
+ * terminal value at the end of the horizon. Pro users can refine the WACC
+ * components on the model output page; the engine recomputes from the chosen
+ * discount rate either way.
+ */
+export interface ValuationData {
+  discountRate: number;
+  terminalGrowthRate: number;
+  /** Free cash flow per year (post-tax EBITDA used as proxy in v1). */
+  annualFcf: number[];
+  /** Discount factors per year — `1 / (1 + r)^t`. */
+  discountFactors: number[];
+  /** Present value of each year's FCF. */
+  presentValues: number[];
+  /** Σ presentValues. */
+  pvOfFcf: number;
+  /** Terminal value computed as FCF_y_n × (1 + g) / (r − g). */
+  terminalValue: number;
+  /** PV of the terminal value. */
+  pvOfTerminal: number;
+  /** Enterprise value = pvOfFcf + pvOfTerminal. */
+  enterpriseValue: number;
+}
+
 export interface ModelOutputs {
   modelId: string;
   modelType: ModelType;
@@ -257,6 +295,7 @@ export interface ModelOutputs {
     aggressive: ScenarioMetrics;
   };
   capTable: CapTableData;
+  valuation: ValuationData;
   fundingNarrative: string;
   currency: Currency;
   taxRate: number;
