@@ -273,8 +273,18 @@ const FUNDING_STAGES: FundingStage[] = ["pre-seed", "seed", "series-a", "series-
 const GROWTH_CURVES: GrowthCurve[] = ["conservative", "base", "aggressive"];
 const CHURN_ESTIMATES: ChurnEstimate[] = ["lt2", "2to5", "5to10", "gt10", "unknown"];
 const TAX_JURISDICTIONS: TaxJurisdiction[] = [
-  "us", "uk", "ireland", "germany", "france", "netherlands",
-  "canada", "australia", "singapore", "india", "uae", "other",
+  "us", "uk", "ireland", "other",
+  "germany", "france", "netherlands", "spain", "italy", "sweden",
+  "switzerland", "estonia", "denmark", "norway",
+  "belgium", "austria", "portugal", "finland", "luxembourg",
+  "malta", "cyprus", "poland", "czechia",
+  "canada", "australia", "new-zealand",
+  "singapore", "hong-kong", "japan", "south-korea", "india", "indonesia",
+  "thailand", "vietnam", "malaysia", "philippines", "taiwan", "china",
+  "uae", "saudi-arabia", "israel", "turkey", "egypt",
+  "brazil", "mexico", "argentina", "chile", "colombia",
+  "south-africa", "nigeria",
+  "cayman-islands",
 ];
 const HEADCOUNTS = ["1", "2–5", "6–15", "15+"] as const;
 const TARGET_RUNWAYS = [12, 18, 24, 36] as const;
@@ -424,7 +434,20 @@ REQUIRED — pick one of the listed values:
 - businessModel: "saas" | "marketplace" | "product" | "service" | "other"
 - customerType:  "b2b" | "b2c" | "both"
 - geography:     "us" | "uk" | "eu" | "asia" | "global"   (PRIMARY MARKET — where customers live)
-- taxJurisdiction: "us" | "uk" | "ireland" | "germany" | "france" | "netherlands" | "canada" | "australia" | "singapore" | "india" | "uae" | "other"   (where the company is incorporated for corporate tax — drives the tax line and valuation multiple. Default to the most likely match for the founder's market: US founders → "us"; UK founders → "uk"; EU SaaS → "ireland"; Singapore-based APAC → "singapore"; India team → "india".)
+- taxJurisdiction: one of the 50 supported tax bases — pick the one the company is incorporated in for corporate tax purposes. Drives the tax line and valuation multiple. Options:
+   "us" | "uk" | "ireland" | "other"
+   | "germany" | "france" | "netherlands" | "spain" | "italy" | "sweden"
+   | "switzerland" | "estonia" | "denmark" | "norway"
+   | "belgium" | "austria" | "portugal" | "finland" | "luxembourg"
+   | "malta" | "cyprus" | "poland" | "czechia"
+   | "canada" | "australia" | "new-zealand"
+   | "singapore" | "hong-kong" | "japan" | "south-korea" | "india" | "indonesia"
+   | "thailand" | "vietnam" | "malaysia" | "philippines" | "taiwan" | "china"
+   | "uae" | "saudi-arabia" | "israel" | "turkey" | "egypt"
+   | "brazil" | "mexico" | "argentina" | "chile" | "colombia"
+   | "south-africa" | "nigeria"
+   | "cayman-islands"
+   Defaults: US founders → "us"; UK founders → "uk"; EU SaaS → "ireland"; Singapore-based APAC → "singapore"; India team → "india"; LATAM → "mexico" or "brazil" by market; MENA → "uae" or "saudi-arabia". Use "cayman-islands" only if explicitly mentioned (typical for offshore fund structures).
 - fundingStage:  "pre-seed" | "seed" | "series-a" | "series-b"
 - growthCurve:   "conservative" | "base" | "aggressive"   (consumer-viral or PLG → aggressive; enterprise sales-led → base/conservative)
 - churnEstimate: "lt2" | "2to5" | "5to10" | "gt10" | "unknown"   (enterprise SaaS lt2/2to5; SMB SaaS 2to5/5to10; consumer 5to10/gt10)
