@@ -12,6 +12,8 @@ import { UnitEconomicsDashboard } from "@/components/outputs/UnitEconomicsDashbo
 import { ScenarioComparison } from "@/components/outputs/ScenarioComparison";
 import { FundingNarrative } from "@/components/outputs/FundingNarrative";
 import { CapTableSummary } from "@/components/outputs/CapTableSummary";
+import { ProCapTableWaterfall } from "@/components/outputs/ProCapTableWaterfall";
+import { ProValuationPanel } from "@/components/outputs/ProValuationPanel";
 import { CalculationsPanel } from "@/components/outputs/CalculationsPanel";
 import { SensitivityAnalysis } from "@/components/outputs/SensitivityAnalysis";
 import { MetricCard } from "@/components/outputs/MetricCard";
@@ -279,6 +281,7 @@ export default function FullModelPage() {
             <TabsTrigger value="unit-econ">Unit Economics</TabsTrigger>
             <TabsTrigger value="scenarios">Scenarios</TabsTrigger>
             <TabsTrigger value="captable">Cap Table</TabsTrigger>
+            <TabsTrigger value="valuation">Valuation</TabsTrigger>
             <TabsTrigger value="sensitivity" className="gap-1.5">
               <Sliders className="w-3.5 h-3.5" />
               Sensitivity
@@ -338,12 +341,33 @@ export default function FullModelPage() {
           </TabsContent>
 
           <TabsContent value="captable">
-            <div className="rounded-xl border border-gray-200 p-6 shadow-sm">
-              <h2 className="font-semibold text-gray-900 mb-1">Cap Table</h2>
-              <p className="text-xs text-gray-500 mb-6">
-                Pre/post-raise ownership structure
-              </p>
+            <div className="rounded-xl border border-gray-200 p-6 shadow-sm space-y-6">
+              <div>
+                <h2 className="font-semibold text-gray-900 mb-1">Cap Table</h2>
+                <p className="text-xs text-gray-500">
+                  Pre / post-raise ownership for this round.
+                </p>
+              </div>
               <CapTableSummary capTable={capTable} currency={currency} />
+              <div className="pt-4 border-t border-gray-100">
+                <h3 className="font-semibold text-gray-900 mb-1">Multi-round dilution waterfall</h3>
+                <p className="text-xs text-gray-500 mb-4">
+                  Edit pre-seed splits and projected future rounds — the table below shows founder
+                  dilution at each stage including ESOP refreshes.
+                </p>
+                <ProCapTableWaterfall model={model} />
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="valuation">
+            <div className="rounded-xl border border-gray-200 p-6 shadow-sm">
+              <h2 className="font-semibold text-gray-900 mb-1">Valuation (DCF)</h2>
+              <p className="text-xs text-gray-500 mb-6">
+                Build your discount rate from CAPM + cost of debt, then see year-by-year DCF and a
+                sensitivity matrix across WACC × terminal growth.
+              </p>
+              <ProValuationPanel model={model} />
             </div>
           </TabsContent>
 
