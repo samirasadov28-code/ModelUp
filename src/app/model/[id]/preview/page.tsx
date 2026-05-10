@@ -8,6 +8,8 @@ import { PLTable } from "@/components/outputs/PLTable";
 import { MetricCard } from "@/components/outputs/MetricCard";
 import { UnitEconomicsDashboard } from "@/components/outputs/UnitEconomicsDashboard";
 import { TrustBadge } from "@/components/outputs/TrustBadge";
+import { ValuationCard } from "@/components/outputs/ValuationCard";
+import { SourcesAndUsesTable } from "@/components/outputs/SourcesAndUsesTable";
 import { ViewModeToggle } from "@/components/ViewModeToggle";
 import {
   PreviewTeaser,
@@ -150,15 +152,16 @@ export default function PreviewPage() {
             sub={`Raise: ${fmtCurrency(answers.fundingAsk)}`}
           />
           <MetricCard
-            label="Break-even"
+            label="Break-even (EBITDA+)"
             value={breakEvenText}
-            sub="EBITDA positive"
+            sub={runway.breakEvenMonth ? `Month ${runway.breakEvenMonth}` : "Not in forecast"}
             variant={runway.breakEvenYear ? "success" : "default"}
           />
           <MetricCard
-            label={`Year ${annual.length} Customers`}
-            value={formatNumber(annual[annual.length - 1].endingUsers)}
-            sub="Paying customers (EoY)"
+            label="First profitable year"
+            value={runway.firstProfitableYear ? `Year ${runway.firstProfitableYear}` : `Year ${annual.length}+`}
+            sub="Annual net income > 0"
+            variant={runway.firstProfitableYear ? "success" : "default"}
           />
         </div>
 
@@ -177,52 +180,15 @@ export default function PreviewPage() {
           </p>
         </div>
 
-        {model.valuation && (
-          <div className="rounded-xl border border-gray-200 bg-white px-6 py-5 shadow-sm">
-            <div className="flex items-center justify-between flex-wrap gap-3 mb-3">
-              <div>
-                <p className="text-gray-500 text-xs font-semibold uppercase tracking-wider">
-                  Discount rate &amp; DCF valuation
-                </p>
-                <p className="text-xs text-gray-400 mt-0.5">
-                  Free preview · Pro unlocks the full WACC build-up with risk-free, beta, equity
-                  risk premium, and cost-of-debt inputs.
-                </p>
-              </div>
-            </div>
-            <div className="grid grid-cols-3 gap-3">
-              <div>
-                <p className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">
-                  Discount rate
-                </p>
-                <p className="text-xl font-bold text-gray-900 font-mono tabular-nums">
-                  {(model.valuation.discountRate * 100).toFixed(1)}%
-                </p>
-                <p className="text-[10px] text-gray-400 mt-1">
-                  Stage-driven default · editable on Q11
-                </p>
-              </div>
-              <div>
-                <p className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">
-                  DCF enterprise value
-                </p>
-                <p className="text-xl font-bold text-blue-700 font-mono tabular-nums">
-                  {fmtCurrency(Math.max(0, model.valuation.enterpriseValue))}
-                </p>
-                <p className="text-[10px] text-gray-400 mt-1">
-                  Σ PV(5y FCF) + PV terminal value
-                </p>
-              </div>
-              <div>
-                <p className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">
-                  Terminal growth
-                </p>
-                <p className="text-xl font-bold text-gray-900 font-mono tabular-nums">
-                  {(model.valuation.terminalGrowthRate * 100).toFixed(1)}%
-                </p>
-                <p className="text-[10px] text-gray-400 mt-1">Gordon-growth perpetuity</p>
-              </div>
-            </div>
+        {model.valuation && <ValuationCard model={model} />}
+
+        {model.sourcesAndUses && (
+          <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+            <h2 className="text-gray-900 font-semibold mb-1">Sources &amp; Uses</h2>
+            <p className="text-xs text-gray-500 mb-4">
+              Where the capital comes from and where it goes — drawn from your Q10 allocation.
+            </p>
+            <SourcesAndUsesTable data={model.sourcesAndUses} currency={currency} />
           </div>
         )}
 

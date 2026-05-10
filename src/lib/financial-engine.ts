@@ -16,6 +16,10 @@ import type {
   RevenueModel,
   ValuationData,
   FundingStage,
+  CashFlowStatement,
+  SourcesAndUsesData,
+  MultipleValuation,
+  BusinessModel,
 } from "./types";
 import {
   defaultJurisdictionForGeography,
@@ -316,16 +320,21 @@ function computeUnitEconomics(
 
 function computeRunway(
   answers: QuestionnaireAnswers,
-  monthly: MonthlyDataPoint[]
+  monthly: MonthlyDataPoint[],
+  annual: AnnualSummary[]
 ): RunwayData {
   const startDate = answers.modelStartDate ? new Date(answers.modelStartDate) : new Date();
 
   let breakEvenMonth: number | null = null;
   let cashRunoutMonth: number | null = null;
+  let firstProfitableMonth: number | null = null;
 
   for (let i = 0; i < monthly.length; i++) {
     if (breakEvenMonth === null && monthly[i].ebitda >= 0 && i > 0) {
       breakEvenMonth = monthly[i].month;
+    }
+    if (firstProfitableMonth === null && monthly[i].netIncome > 0 && i > 0) {
+      firstProfitableMonth = monthly[i].month;
     }
     if (cashRunoutMonth === null && monthly[i].closingCash <= 0 && i > 0) {
       cashRunoutMonth = monthly[i].month;
@@ -338,6 +347,10 @@ function computeRunway(
 
   const breakEvenYear = breakEvenMonth != null ? Math.ceil(breakEvenMonth / 12) : null;
 
+  // First full year where post-tax net income > 0 (annual basis).
+  const profitYear = annual.find((a) => a.netIncome > 0);
+  const firstProfitableYear = profitYear ? profitYear.year : null;
+
   return {
     equityRaise: answers.fundingAsk,
     monthlyBurnAtStart: answers.monthlyBurn,
@@ -346,13 +359,15 @@ function computeRunway(
     cashPositive: cashRunoutMonth === null,
     breakEvenMonth,
     breakEvenYear,
+    firstProfitableMonth,
+    firstProfitableYear,
   };
 }
 
 function buildScenario(answers: QuestionnaireAnswers, curve: GrowthCurve): ScenarioMetrics {
   const monthly = computeMonthly(answers, curve);
   const annual = aggregateAnnual(monthly);
-  const runway = computeRunway(answers, monthly);
+  const runway = computeRunway(answers, monthly, annual);
   const lastYear = annual[annual.length - 1];
 
   return {
@@ -596,6 +611,159 @@ function buildValuation(
     terminalValue,
     pvOfTerminal,
     enterpriseValue,
+    multipleValuation: buildMultipleValuation(answers, annual),
+  };
+}
+
+/**
+ * Indirect-method cash flow statement, year by year. The early-stage engine
+ * doesn't model D&A or working-capital changes yet, so cash from operations
+ * = net income; investing = 0 (no CapEx); financing = funding ask in year 1.
+ *
+ * Ending cash matches the monthly engine's closing cash for the final month
+ * of each year by construction.
+ */
+function buildCashFlowStatement(
+  answers: QuestionnaireAnswers,
+  monthly: MonthlyDataPoint[],
+  annual: AnnualSummary[]
+): CashFlowStatement {
+  const years = annual.map((a, idx) => {
+    const lastMonth = monthly[(idx + 1) * 12 - 1];
+    const firstMonth = monthly[idx * 12];
+    const equityRaised = idx === 0 ? answers.fundingAsk : 0;
+    const cashFromOperations = a.netIncome;
+    const cashFromInvesting = 0;
+    const cashFromFinancing = equityRaised;
+    const netChangeInCash = cashFromOperations + cashFromInvesting + cashFromFinancing;
+    // Beginning cash for year 1 = 0 (the funding hits inside the year as a
+    // financing inflow). For subsequent years it's the prior year's closing.
+    const beginningCash = idx === 0 ? 0 : monthly[idx * 12 - 1]?.closingCash ?? 0;
+    const endingCash = lastMonth?.closingCash ?? beginningCash + netChangeInCash;
+    return {
+      year: a.year,
+      label: a.label,
+      netIncome: a.netIncome,
+      depreciationAmortisation: 0,
+      workingCapitalChanges: 0,
+      cashFromOperations,
+      capex: 0,
+      cashFromInvesting,
+      equityRaised,
+      debtRaised: 0,
+      cashFromFinancing,
+      netChangeInCash,
+      beginningCash,
+      endingCash,
+    };
+  });
+  return { years };
+}
+
+/**
+ * Sources & Uses table — classic deal-doc summary. Sources are the capital
+ * coming in (equity raise, optional debt, optional existing cash). Uses are
+ * the spend buckets allocated via Q10's `useOfProceedsAllocation`. When the
+ * allocation doesn't sum to 100 we re-normalise so the totals balance.
+ */
+function buildSourcesAndUses(answers: QuestionnaireAnswers): SourcesAndUsesData {
+  const totalRaise = answers.fundingAsk;
+
+  const sources = [
+    { label: "New equity (this round)", amount: totalRaise, percent: 1.0 },
+  ];
+  const totalSources = sources.reduce((s, r) => s + r.amount, 0);
+
+  // Re-normalise allocations so they sum to 100 (defensive — Q10 already
+  // forces this, but old localStorage models may pre-date the field).
+  const alloc = answers.useOfProceedsAllocation ?? {};
+  const proceeds = answers.useOfProceeds ?? [];
+  const labelFor: Record<string, string> = {
+    "product-dev": "Product development",
+    hiring: "Hiring",
+    marketing: "Marketing & sales",
+    operations: "Operations",
+    "working-capital": "Working capital",
+  };
+  const rawAllocSum = proceeds.reduce((s, k) => s + (alloc[k] ?? 0), 0);
+  const usableSum = rawAllocSum > 0 ? rawAllocSum : 100;
+  const uses = proceeds.length > 0
+    ? proceeds.map((k) => {
+        const pct = (alloc[k] ?? 0) / usableSum;
+        return {
+          label: labelFor[k] ?? k,
+          amount: Math.round(totalRaise * pct),
+          percent: pct,
+        };
+      })
+    : [
+        // Fallback when the founder didn't tag uses on Q10.
+        { label: "General corporate use", amount: totalRaise, percent: 1.0 },
+      ];
+  const totalUses = uses.reduce((s, r) => s + r.amount, 0);
+
+  return { sources, uses, totalSources, totalUses };
+}
+
+/**
+ * EBITDA-multiple valuation using industry-typical ranges. SaaS gets fat
+ * multiples; commodity services get tight ones. When EBITDA is negative we
+ * fall back to revenue × revenue-multiple so the row stays defensible.
+ */
+function buildMultipleValuation(
+  answers: QuestionnaireAnswers,
+  annual: AnnualSummary[]
+): MultipleValuation {
+  const last = annual[annual.length - 1];
+  const business = (answers.businessModel as BusinessModel) ?? "other";
+
+  const EBITDA_MULTIPLES: Record<BusinessModel, [number, number, number]> = {
+    saas: [10, 15, 22],
+    marketplace: [8, 12, 18],
+    product: [5, 8, 12],
+    service: [3, 5, 8],
+    other: [5, 8, 12],
+  };
+
+  const REVENUE_MULTIPLES: Record<BusinessModel, [number, number, number]> = {
+    saas: [4, 7, 11],
+    marketplace: [3, 5, 8],
+    product: [1.5, 2.5, 4],
+    service: [1, 1.5, 2.5],
+    other: [2, 3, 5],
+  };
+
+  if (last.ebitda > 0) {
+    const [low, base, high] = EBITDA_MULTIPLES[business];
+    return {
+      basis: "ebitda",
+      baseAmount: last.ebitda,
+      baseLabel: `${last.label} EBITDA`,
+      lowMultiple: low,
+      baseMultiple: base,
+      highMultiple: high,
+      lowValuation: last.ebitda * low,
+      baseValuation: last.ebitda * base,
+      highValuation: last.ebitda * high,
+      note: `${business.toUpperCase()} private-comp EBITDA multiples — ${low}× low / ${base}× base / ${high}× high.`,
+    };
+  }
+
+  // EBITDA negative → use revenue as the anchor. Use ARR (run-rate) which is
+  // what investors actually value at this stage.
+  const [low, base, high] = REVENUE_MULTIPLES[business];
+  const baseAmount = last.arr;
+  return {
+    basis: "revenue",
+    baseAmount,
+    baseLabel: `${last.label} ARR (run-rate)`,
+    lowMultiple: low,
+    baseMultiple: base,
+    highMultiple: high,
+    lowValuation: baseAmount * low,
+    baseValuation: baseAmount * base,
+    highValuation: baseAmount * high,
+    note: `EBITDA is negative in ${last.label} — switched to ARR × revenue multiple (${low}× / ${base}× / ${high}×).`,
   };
 }
 
@@ -636,10 +804,12 @@ export function runFinancialEngine(answers: QuestionnaireAnswers): ModelOutputs 
   const monthly = computeMonthly(answers, answers.growthCurve);
   const annual = aggregateAnnual(monthly);
   const unitEconomics = computeUnitEconomics(answers, monthly, annual);
-  const runway = computeRunway(answers, monthly);
+  const runway = computeRunway(answers, monthly, annual);
   const capTable = buildCapTable(answers, annual);
   const costBreakdown = buildCostBreakdown(answers, monthly);
   const valuation = buildValuation(answers, annual);
+  const cashFlow = buildCashFlowStatement(answers, monthly, annual);
+  const sourcesAndUses = buildSourcesAndUses(answers);
   const fundingNarrative = buildFundingNarrative(answers, annual, runway, capTable, currency);
 
   const scenarios = {
@@ -661,6 +831,8 @@ export function runFinancialEngine(answers: QuestionnaireAnswers): ModelOutputs 
     scenarios,
     capTable,
     valuation,
+    cashFlow,
+    sourcesAndUses,
     fundingNarrative,
     currency,
     taxRate,

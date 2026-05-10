@@ -750,6 +750,201 @@ function buildCoverSheet(wb: ExcelJS.Workbook, model: ModelOutputs, fmt: Formats
   noteCell.font = { color: { argb: "FF374151" } };
 }
 
+function buildCashFlowSheet(wb: ExcelJS.Workbook, model: ModelOutputs, fmt: Formats): void {
+  const ws = wb.addWorksheet("Cash Flow", { properties: { tabColor: { argb: "FF06B6D4" } } });
+  const years = model.cashFlow.years;
+  const title = ws.getCell("A1");
+  title.value = `Cash Flow Statement — indirect method (${model.currency.code})`;
+  styleSectionTitle(title);
+  const lastCol = String.fromCharCode("A".charCodeAt(0) + years.length);
+  ws.mergeCells(`A1:${lastCol}1`);
+
+  const note = ws.getCell("A2");
+  note.value =
+    "Operating + Investing + Financing roll up to net change in cash, then to ending cash. " +
+    "D&A, WC changes, and CapEx are placeholders in v1 — the engine assumes zero for early-stage models.";
+  note.font = { italic: true, color: { argb: "FF6B7280" } };
+  ws.mergeCells(`A2:${lastCol}2`);
+
+  const headerValues: (string | number)[] = ["Line item"];
+  years.forEach((y) => headerValues.push(y.label));
+  ws.getRow(4).values = headerValues;
+  styleHeaderRow(ws.getRow(4));
+
+  const rows: { label: string; key: keyof typeof years[number]; indent?: boolean; bold?: boolean; total?: boolean }[] = [
+    { label: "Net income (post-tax)", key: "netIncome", indent: true },
+    { label: "+ D&A", key: "depreciationAmortisation", indent: true },
+    { label: "+ Working-capital changes", key: "workingCapitalChanges", indent: true },
+    { label: "Cash from operations", key: "cashFromOperations", total: true },
+    { label: "CapEx", key: "capex", indent: true },
+    { label: "Cash from investing", key: "cashFromInvesting", total: true },
+    { label: "Equity raised", key: "equityRaised", indent: true },
+    { label: "Debt raised", key: "debtRaised", indent: true },
+    { label: "Cash from financing", key: "cashFromFinancing", total: true },
+    { label: "Net change in cash", key: "netChangeInCash", bold: true },
+    { label: "Beginning cash", key: "beginningCash", indent: true },
+    { label: "Ending cash", key: "endingCash", bold: true },
+  ];
+
+  let r = 5;
+  rows.forEach((def) => {
+    const row = ws.getRow(r++);
+    row.getCell(1).value = def.label;
+    row.getCell(1).font = {
+      bold: def.bold || def.total,
+      color: { argb: def.indent ? "FF6B7280" : "FF111827" },
+    };
+    years.forEach((y, idx) => {
+      const cell = row.getCell(2 + idx);
+      cell.value = y[def.key] as number;
+      cell.numFmt = fmt.CURRENCY;
+      if (def.bold || def.total) cell.font = { bold: true };
+    });
+    if (def.total) {
+      row.eachCell((c) => (c.fill = SUBHEADER_FILL));
+    }
+  });
+
+  ws.getColumn(1).width = 32;
+  for (let i = 2; i <= years.length + 1; i++) ws.getColumn(i).width = 16;
+}
+
+function buildSourcesAndUsesSheet(wb: ExcelJS.Workbook, model: ModelOutputs, fmt: Formats): void {
+  const ws = wb.addWorksheet("Sources & Uses", { properties: { tabColor: { argb: "FF22C55E" } } });
+  const data = model.sourcesAndUses;
+
+  const title = ws.getCell("A1");
+  title.value = `Sources & Uses (${model.currency.code})`;
+  styleSectionTitle(title);
+  ws.mergeCells("A1:E1");
+
+  // Sources block
+  ws.getCell("A3").value = "SOURCES";
+  ws.getCell("A3").font = { bold: true, color: { argb: "FF065F46" } };
+  ws.getRow(4).values = ["Source", "Amount", "% of total", ""];
+  styleHeaderRow(ws.getRow(4));
+  let r = 5;
+  data.sources.forEach((row) => {
+    const wsRow = ws.getRow(r++);
+    wsRow.getCell(1).value = row.label;
+    wsRow.getCell(2).value = row.amount;
+    wsRow.getCell(2).numFmt = fmt.CURRENCY;
+    wsRow.getCell(3).value = row.percent;
+    wsRow.getCell(3).numFmt = fmt.PERCENT;
+  });
+  const sourcesTotal = ws.getRow(r++);
+  sourcesTotal.getCell(1).value = "Total sources";
+  sourcesTotal.getCell(1).font = { bold: true };
+  sourcesTotal.getCell(2).value = data.totalSources;
+  sourcesTotal.getCell(2).numFmt = fmt.CURRENCY;
+  sourcesTotal.getCell(2).font = { bold: true };
+  sourcesTotal.getCell(3).value = 1;
+  sourcesTotal.getCell(3).numFmt = fmt.PERCENT;
+  sourcesTotal.eachCell((c) => (c.fill = SUBHEADER_FILL));
+
+  // Uses block
+  r += 2;
+  ws.getCell(`A${r}`).value = "USES";
+  ws.getCell(`A${r}`).font = { bold: true, color: { argb: "FF1E3A8A" } };
+  r += 1;
+  ws.getRow(r).values = ["Use", "Amount", "% of total", ""];
+  styleHeaderRow(ws.getRow(r));
+  r += 1;
+  data.uses.forEach((row) => {
+    const wsRow = ws.getRow(r++);
+    wsRow.getCell(1).value = row.label;
+    wsRow.getCell(2).value = row.amount;
+    wsRow.getCell(2).numFmt = fmt.CURRENCY;
+    wsRow.getCell(3).value = row.percent;
+    wsRow.getCell(3).numFmt = fmt.PERCENT;
+  });
+  const usesTotal = ws.getRow(r++);
+  usesTotal.getCell(1).value = "Total uses";
+  usesTotal.getCell(1).font = { bold: true };
+  usesTotal.getCell(2).value = data.totalUses;
+  usesTotal.getCell(2).numFmt = fmt.CURRENCY;
+  usesTotal.getCell(2).font = { bold: true };
+  usesTotal.getCell(3).value = 1;
+  usesTotal.getCell(3).numFmt = fmt.PERCENT;
+  usesTotal.eachCell((c) => (c.fill = SUBHEADER_FILL));
+
+  ws.getColumn(1).width = 32;
+  ws.getColumn(2).width = 18;
+  ws.getColumn(3).width = 14;
+}
+
+function buildValuationSheet(wb: ExcelJS.Workbook, model: ModelOutputs, fmt: Formats): void {
+  const ws = wb.addWorksheet("Valuation", { properties: { tabColor: { argb: "FF22D3EE" } } });
+  const v = model.valuation;
+  const mv = v.multipleValuation;
+
+  const title = ws.getCell("A1");
+  title.value = `Valuation — DCF + EBITDA multiple (${model.currency.code})`;
+  styleSectionTitle(title);
+  ws.mergeCells("A1:F1");
+
+  // DCF block
+  ws.getCell("A3").value = "DCF (intrinsic value)";
+  ws.getCell("A3").font = { bold: true, color: { argb: "FF1E3A8A" } };
+  ws.getRow(4).values = ["Metric", "Value"];
+  styleHeaderRow(ws.getRow(4));
+  const dcfRows: [string, number, string][] = [
+    ["Discount rate", v.discountRate, "%"],
+    ["Terminal growth rate", v.terminalGrowthRate, "%"],
+    ["PV of FCF (sum)", v.pvOfFcf, "$"],
+    ["Terminal value", v.terminalValue, "$"],
+    ["PV of terminal value", v.pvOfTerminal, "$"],
+    ["Enterprise value (DCF)", v.enterpriseValue, "$"],
+  ];
+  let r = 5;
+  dcfRows.forEach(([label, val, kind]) => {
+    const row = ws.getRow(r++);
+    row.getCell(1).value = label;
+    row.getCell(2).value = val;
+    row.getCell(2).numFmt = kind === "$" ? fmt.CURRENCY : fmt.PERCENT;
+    if (label.startsWith("Enterprise")) {
+      row.getCell(1).font = { bold: true };
+      row.getCell(2).font = { bold: true };
+      row.eachCell((c) => (c.fill = SUBHEADER_FILL));
+    }
+  });
+
+  r += 2;
+  ws.getCell(`A${r}`).value = `${mv.basis === "ebitda" ? "EBITDA" : "Revenue"} multiple (comps)`;
+  ws.getCell(`A${r}`).font = { bold: true, color: { argb: "FF065F46" } };
+  r += 1;
+  ws.getRow(r).values = ["Scenario", "Multiple", "Valuation"];
+  styleHeaderRow(ws.getRow(r));
+  r += 1;
+  const mvRows: [string, number, number][] = [
+    ["Low", mv.lowMultiple, mv.lowValuation],
+    ["Base", mv.baseMultiple, mv.baseValuation],
+    ["High", mv.highMultiple, mv.highValuation],
+  ];
+  mvRows.forEach(([label, mult, val]) => {
+    const row = ws.getRow(r++);
+    row.getCell(1).value = label;
+    row.getCell(2).value = mult;
+    row.getCell(2).numFmt = '0.0"x"';
+    row.getCell(3).value = val;
+    row.getCell(3).numFmt = fmt.CURRENCY;
+    if (label === "Base") {
+      row.getCell(1).font = { bold: true };
+      row.getCell(3).font = { bold: true };
+    }
+  });
+
+  r += 1;
+  const noteCell = ws.getCell(`A${r}`);
+  noteCell.value = mv.note;
+  noteCell.font = { italic: true, color: { argb: "FF6B7280" }, size: 10 };
+  ws.mergeCells(`A${r}:F${r}`);
+
+  ws.getColumn(1).width = 32;
+  ws.getColumn(2).width = 18;
+  ws.getColumn(3).width = 18;
+}
+
 function buildScenariosSheet(wb: ExcelJS.Workbook, model: ModelOutputs, fmt: Formats): void {
   const ws = wb.addWorksheet("Scenarios", { properties: { tabColor: { argb: "FF8B5CF6" } } });
   const title = ws.getCell("A1");
@@ -877,9 +1072,12 @@ export async function generateExcelBuffer(model: ModelOutputs): Promise<ArrayBuf
   buildInputsSheet(wb, model.answers, model.taxRate, fmt);
   buildMonthlySheet(wb, model, fmt);
   buildAnnualSheet(wb, model, fmt);
+  buildCashFlowSheet(wb, model, fmt);
+  buildSourcesAndUsesSheet(wb, model, fmt);
   buildCostsSheet(wb, model, fmt);
   buildUnitEconSheet(wb, model, fmt);
   buildCapTableSheet(wb, model, fmt);
+  buildValuationSheet(wb, model, fmt);
   buildScenariosSheet(wb, model, fmt);
   buildSensitivitySheet(wb, model, fmt);
 

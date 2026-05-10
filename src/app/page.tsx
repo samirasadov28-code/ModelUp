@@ -37,22 +37,23 @@ export default function LandingPage() {
 
       {/* Hero */}
       <section className="max-w-5xl mx-auto px-6 pt-20 pb-16 text-center">
-        <div className="inline-flex items-center gap-2 text-xs bg-blue-50 text-blue-700 border border-blue-100 px-3 py-1.5 rounded-full mb-7 font-medium">
-          <Lightbulb className="w-3.5 h-3.5" />
-          For founders with bold ideas
+        <div className="inline-flex items-center gap-2 text-xs bg-gradient-to-r from-blue-50 to-cyan-50 text-blue-700 border border-blue-200 px-3 py-1.5 rounded-full mb-7 font-semibold shadow-sm">
+          <Sparkles className="w-3.5 h-3.5" />
+          AI-powered financial modeling
         </div>
 
         <h1 className="text-5xl md:text-6xl font-extrabold leading-tight mb-6 tracking-tight">
-          <span className="text-gray-900">Turn your idea into</span>
+          <span className="text-gray-900">The AI co-pilot for</span>
           <br />
           <span className="bg-gradient-to-r from-blue-600 via-cyan-500 to-emerald-500 bg-clip-text text-transparent">
-            a revenue machine
+            founder financials
           </span>
         </h1>
 
         <p className="text-gray-500 text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
-          Every great idea deserves a real financial model. Answer 10 questions and get a
-          professional 5-year forecast — in 30 seconds.
+          Describe your startup in a sentence. Our AI infers your business model, pricing, churn,
+          and burn — and generates a defensible 5-year financial model, valuation, and investor
+          narrative in 30 seconds.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -174,35 +175,40 @@ export default function LandingPage() {
       {/* How it works */}
       <section className="bg-gray-50 border-y border-gray-100 py-20">
         <div className="max-w-5xl mx-auto px-6">
+          <div className="inline-flex items-center gap-2 text-xs bg-white text-blue-700 border border-blue-200 px-3 py-1.5 rounded-full mb-5 font-semibold mx-auto">
+            <Sparkles className="w-3.5 h-3.5" />
+            Powered by AI
+          </div>
           <h2 className="text-3xl font-bold text-center text-gray-900 mb-4">
-            From idea to investor-ready in minutes
+            From a sentence to an investor-ready model in minutes
           </h2>
           <p className="text-gray-500 text-center mb-14 max-w-xl mx-auto">
-            Stop spending weeks on spreadsheets. ModelUp converts your vision into numbers that move investors.
+            The AI reads your description, infers industry-appropriate assumptions, and builds the
+            entire model so you only review &amp; tweak — never start from a blank spreadsheet.
           </p>
 
           <div className="grid md:grid-cols-3 gap-8">
             {[
               {
                 step: "01",
-                icon: <Lightbulb className="w-6 h-6" />,
+                icon: <Sparkles className="w-6 h-6" />,
                 iconBg: "bg-blue-100 text-blue-600",
-                title: "Describe your idea",
-                desc: "10 quick questions about your business model, market, pricing, and growth ambition.",
+                title: "Describe your startup",
+                desc: "One sentence is enough. Our AI infers your business model, pricing tiers, churn, CAC, burn, jurisdiction, and raise — then pre-fills every question.",
               },
               {
                 step: "02",
                 icon: <Zap className="w-6 h-6" />,
                 iconBg: "bg-cyan-100 text-cyan-600",
-                title: "Get your model instantly",
-                desc: "Our engine builds a 5-year P&L, cash forecast, unit economics, and funding narrative in seconds.",
+                title: "AI builds your model",
+                desc: "5-year P&L, cash flow statement, sources & uses, unit economics, DCF + EBITDA-multiple valuation, cap table, and an AI-written funding narrative — in seconds.",
               },
               {
                 step: "03",
                 icon: <DollarSign className="w-6 h-6" />,
                 iconBg: "bg-emerald-100 text-emerald-600",
-                title: "Monetise with confidence",
-                desc: "Walk into investor meetings or launch decisions with data-backed projections — not guesses.",
+                title: "Pitch with confidence",
+                desc: "Live AI chat answers any what-if. Download a formula-driven Excel investors can interrogate. Walk into the room with data, not guesses.",
               },
             ].map((s) => (
               <div key={s.step} className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">

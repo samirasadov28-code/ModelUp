@@ -178,8 +178,48 @@ export interface RunwayData {
   runwayMonths: number;
   runwayEndDate: string;
   cashPositive: boolean;
+  /** First month where EBITDA ≥ 0 (operating break-even). */
   breakEvenMonth: number | null;
   breakEvenYear: number | null;
+  /** First *full year* where post-tax net income > 0. */
+  firstProfitableYear: number | null;
+  /** First month where post-tax net income > 0 (monthly granularity). */
+  firstProfitableMonth: number | null;
+}
+
+export interface CashFlowYear {
+  year: number;
+  label: string;
+  netIncome: number;
+  // Adjustments (D&A, working-capital changes, etc.) — placeholders for now.
+  depreciationAmortisation: number;
+  workingCapitalChanges: number;
+  cashFromOperations: number;
+  capex: number;
+  cashFromInvesting: number;
+  equityRaised: number;
+  debtRaised: number;
+  cashFromFinancing: number;
+  netChangeInCash: number;
+  beginningCash: number;
+  endingCash: number;
+}
+
+export interface CashFlowStatement {
+  years: CashFlowYear[];
+}
+
+export interface SourcesAndUsesRow {
+  label: string;
+  amount: number;
+  percent: number;
+}
+
+export interface SourcesAndUsesData {
+  sources: SourcesAndUsesRow[];
+  uses: SourcesAndUsesRow[];
+  totalSources: number;
+  totalUses: number;
 }
 
 export interface ScenarioMetrics {
@@ -260,6 +300,29 @@ export interface CapTableData {
  * components on the model output page; the engine recomputes from the chosen
  * discount rate either way.
  */
+/**
+ * EBITDA-multiple valuation — a simpler "comps" approach that anchors on the
+ * last forecast year's EBITDA × industry multiple. When EBITDA is negative we
+ * fall back to last-year revenue × revenue multiple so the row still has a
+ * defensible number.
+ */
+export interface MultipleValuation {
+  /** "EBITDA multiple" or "Revenue multiple (EBITDA negative)". */
+  basis: "ebitda" | "revenue";
+  /** The base number we're multiplying (last-year EBITDA or revenue). */
+  baseAmount: number;
+  baseLabel: string;
+  /** Low / base / high industry multiples in turns (e.g. 8, 12, 18). */
+  lowMultiple: number;
+  baseMultiple: number;
+  highMultiple: number;
+  /** Resulting enterprise values. */
+  lowValuation: number;
+  baseValuation: number;
+  highValuation: number;
+  note: string;
+}
+
 export interface ValuationData {
   discountRate: number;
   terminalGrowthRate: number;
@@ -277,6 +340,8 @@ export interface ValuationData {
   pvOfTerminal: number;
   /** Enterprise value = pvOfFcf + pvOfTerminal. */
   enterpriseValue: number;
+  /** Comps-based valuation as a sanity check next to the DCF. */
+  multipleValuation: MultipleValuation;
 }
 
 export interface ModelOutputs {
@@ -296,6 +361,8 @@ export interface ModelOutputs {
   };
   capTable: CapTableData;
   valuation: ValuationData;
+  cashFlow: CashFlowStatement;
+  sourcesAndUses: SourcesAndUsesData;
   fundingNarrative: string;
   currency: Currency;
   taxRate: number;
