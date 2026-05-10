@@ -14,6 +14,9 @@ import { FundingNarrative } from "@/components/outputs/FundingNarrative";
 import { CapTableSummary } from "@/components/outputs/CapTableSummary";
 import { ProCapTableWaterfall } from "@/components/outputs/ProCapTableWaterfall";
 import { ProValuationPanel } from "@/components/outputs/ProValuationPanel";
+import { ValuationCard } from "@/components/outputs/ValuationCard";
+import { CashFlowStatementTable } from "@/components/outputs/CashFlowStatementTable";
+import { SourcesAndUsesTable } from "@/components/outputs/SourcesAndUsesTable";
 import { CalculationsPanel } from "@/components/outputs/CalculationsPanel";
 import { SensitivityAnalysis } from "@/components/outputs/SensitivityAnalysis";
 import { MetricCard } from "@/components/outputs/MetricCard";
@@ -234,11 +237,19 @@ export default function FullModelPage() {
             sub={`Raise: ${fmt(answers.fundingAsk)}`}
           />
           <MetricCard
-            label="Break-even"
-            value={runway.breakEvenYear ? `Year ${runway.breakEvenYear}` : "Year 3+"}
+            label="Break-even (EBITDA+)"
+            value={runway.breakEvenYear ? `Year ${runway.breakEvenYear}` : `Year ${annual.length}+`}
             variant={runway.breakEvenYear ? "success" : "default"}
-            sub="EBITDA positive"
+            sub={runway.breakEvenMonth ? `Month ${runway.breakEvenMonth}` : "Not reached in forecast"}
           />
+          <MetricCard
+            label="First profitable year"
+            value={runway.firstProfitableYear ? `Year ${runway.firstProfitableYear}` : `Year ${annual.length}+`}
+            variant={runway.firstProfitableYear ? "success" : "default"}
+            sub="Annual net income > 0"
+          />
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <MetricCard
             label="LTV / CAC"
             value={`${unitEconomics.ltvCacRatio.toFixed(1)}x`}
@@ -250,6 +261,18 @@ export default function FullModelPage() {
                 : "default"
             }
             sub={unitEconomics.cacStatus === "green" ? "Healthy ratio" : "Monitor closely"}
+          />
+          <MetricCard
+            label="DCF enterprise value"
+            value={fmt(Math.max(0, model.valuation.enterpriseValue))}
+            sub={`@ ${(model.valuation.discountRate * 100).toFixed(1)}% discount`}
+          />
+          <MetricCard
+            label="EBITDA multiple value"
+            value={fmt(Math.max(0, model.valuation.multipleValuation.baseValuation))}
+            sub={`${model.valuation.multipleValuation.baseMultiple}× ${
+              model.valuation.multipleValuation.basis === "ebitda" ? "Y" + annual.length + " EBITDA" : "Y" + annual.length + " ARR"
+            }`}
           />
         </div>
 
@@ -278,6 +301,8 @@ export default function FullModelPage() {
           <TabsList className="flex-wrap h-auto">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="pl">P&amp;L</TabsTrigger>
+            <TabsTrigger value="cash-flow">Cash Flow</TabsTrigger>
+            <TabsTrigger value="sources-uses">Sources &amp; Uses</TabsTrigger>
             <TabsTrigger value="unit-econ">Unit Economics</TabsTrigger>
             <TabsTrigger value="scenarios">Scenarios</TabsTrigger>
             <TabsTrigger value="captable">Cap Table</TabsTrigger>
@@ -312,6 +337,29 @@ export default function FullModelPage() {
                 </p>
               </div>
               <PLTable annual={annual} currency={currency} />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="cash-flow">
+            <div className="rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+              <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/60">
+                <h2 className="font-semibold text-gray-900">Cash Flow Statement</h2>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  Indirect method · {model.cashFlow.years.length} years · operating + investing + financing
+                </p>
+              </div>
+              <CashFlowStatementTable cashFlow={model.cashFlow} currency={currency} />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="sources-uses">
+            <div className="rounded-xl border border-gray-200 p-6 shadow-sm">
+              <h2 className="font-semibold text-gray-900 mb-1">Sources &amp; Uses</h2>
+              <p className="text-xs text-gray-500 mb-6">
+                Capital coming in versus capital going out — pulled straight from your Q10
+                allocation. Must balance.
+              </p>
+              <SourcesAndUsesTable data={model.sourcesAndUses} currency={currency} />
             </div>
           </TabsContent>
 
@@ -361,13 +409,16 @@ export default function FullModelPage() {
           </TabsContent>
 
           <TabsContent value="valuation">
-            <div className="rounded-xl border border-gray-200 p-6 shadow-sm">
-              <h2 className="font-semibold text-gray-900 mb-1">Valuation (DCF)</h2>
-              <p className="text-xs text-gray-500 mb-6">
-                Build your discount rate from CAPM + cost of debt, then see year-by-year DCF and a
-                sensitivity matrix across WACC × terminal growth.
-              </p>
-              <ProValuationPanel model={model} />
+            <div className="space-y-4">
+              <ValuationCard model={model} />
+              <div className="rounded-xl border border-gray-200 p-6 shadow-sm">
+                <h2 className="font-semibold text-gray-900 mb-1">Pro WACC build-up</h2>
+                <p className="text-xs text-gray-500 mb-6">
+                  Refine the discount rate from CAPM + cost of debt; the DCF table and sensitivity
+                  matrix below recompute live.
+                </p>
+                <ProValuationPanel model={model} />
+              </div>
             </div>
           </TabsContent>
 

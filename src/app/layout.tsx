@@ -9,15 +9,18 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://modelups.netlify.app
 
 export const metadata: Metadata = {
   title: {
-    default: "ModelUp — Professional Financial Models for Startups",
+    default: "ModelUp — The AI Co-Pilot for Founder Financials",
     template: "%s — ModelUp",
   },
   description:
-    "Answer 10 questions about your startup. Get a professional-grade financial model for fundraising in seconds.",
+    "AI-powered financial modeling for founders. Describe your startup in a sentence — get a 5-year P&L, cash flow statement, DCF + EBITDA-multiple valuation, cap table, and investor narrative in 30 seconds.",
   keywords: [
+    "AI financial model",
+    "AI startup financial model",
+    "AI fundraising model",
+    "AI DCF valuation",
     "startup financial model",
     "pitch deck financials",
-    "fundraising model",
     "SaaS financial projections",
   ],
   metadataBase: new URL(APP_URL),
@@ -33,23 +36,23 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     siteName: "ModelUp",
-    title: "ModelUp — Professional Financial Models for Startups",
+    title: "ModelUp — The AI Co-Pilot for Founder Financials",
     description:
-      "Answer 10 questions. Get a professional 5-year financial model for fundraising in seconds.",
+      "AI-powered financial modeling. Describe your startup in a sentence — get a 5-year P&L, cash flow, DCF + EBITDA-multiple valuation, and cap table in 30 seconds.",
     url: APP_URL,
     images: [
       {
         url: "/Logo_512.png",
         width: 512,
         height: 512,
-        alt: "ModelUp",
+        alt: "ModelUp — AI financial modeling",
       },
     ],
   },
   twitter: {
     card: "summary",
-    title: "ModelUp — Financial Models for Startups",
-    description: "Answer 10 questions. Get a professional 5-year financial model instantly.",
+    title: "ModelUp — AI Financial Modeling for Founders",
+    description: "AI-powered 5-year financial model + DCF valuation in 30 seconds.",
     images: ["/Logo_512.png"],
   },
 };
