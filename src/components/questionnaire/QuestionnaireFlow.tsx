@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { Sparkles, ArrowRight, Wand2 } from "lucide-react";
+import { Sparkles, ArrowRight, Wand2, Lock } from "lucide-react";
 import { saveModelLocally } from "@/lib/model-client-store";
 import { ProgressBar } from "./ProgressBar";
 import { QuestionWrapper } from "./QuestionWrapper";
 import { OptionCard } from "./OptionCard";
+import { ProUpsell } from "./ProUpsell";
 import { Input } from "@/components/ui/input";
 import { MoneyInput } from "@/components/ui/money-input";
 import { Label } from "@/components/ui/label";
@@ -27,9 +28,12 @@ import type {
 import {
   TAX_JURISDICTION_LABELS,
   TAX_JURISDICTION_FLAGS,
+  FREE_TAX_JURISDICTIONS,
+  PRO_TAX_JURISDICTIONS,
   defaultJurisdictionForGeography,
   taxRateForJurisdiction,
 } from "@/lib/regional";
+import { hasEarlyAccess } from "@/lib/early-access";
 
 const TOTAL_STEPS = 10;
 
@@ -96,6 +100,7 @@ export function QuestionnaireFlow() {
   const [answers, setAnswers] = useState<Partial<QuestionnaireAnswers>>(DEFAULT_ANSWERS);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hasPro, setHasPro] = useState(false);
 
   // Intro state
   const [description, setDescription] = useState("");
@@ -103,6 +108,7 @@ export function QuestionnaireFlow() {
   const [suggesting, setSuggesting] = useState(false);
   const [suggestError, setSuggestError] = useState<string | null>(null);
   const [aiNote, setAiNote] = useState<string | null>(null);
+  const [showProJurisdictions, setShowProJurisdictions] = useState(false);
 
   function handleUseExample() {
     const example = DESCRIPTION_EXAMPLES[exampleIdx];
@@ -111,9 +117,59 @@ export function QuestionnaireFlow() {
     setExampleIdx((idx) => (idx + 1) % DESCRIPTION_EXAMPLES.length);
   }
 
-  const [tierCount, setTierCount] = useState(
+  // Detect Pro/early-access on mount so we can ungate the full jurisdiction list.
+  useEffect(() => {
+    if (hasEarlyAccess()) setHasPro(true);
+  }, []);
+
+  const [tierCount, setTierCountRaw] = useState(
     DEFAULT_ANSWERS.tiers && DEFAULT_ANSWERS.tiers.length > 0 ? DEFAULT_ANSWERS.tiers.length : 2
   );
+
+  /**
+   * Set the number of visible tiers and rebalance allocation so the visible
+   * tiers always sum to 100%. 1 tier → 100% on that tier; switching from 3 → 2
+   * proportionally redistributes the dropped tier's share.
+   */
+  function setTierCount(n: number) {
+    setTierCountRaw(n);
+    const existing = answers.tiers ?? [];
+    const visible: TierConfig[] = [];
+    for (let i = 0; i < n; i++) {
+      visible.push(
+        existing[i] ?? {
+          name: ["Free", "Basic", "Pro", "Enterprise"][i] ?? `Tier ${i + 1}`,
+          monthlyPrice: 0,
+          allocationPercent: 0,
+        }
+      );
+    }
+    if (n === 1) {
+      visible[0] = { ...visible[0], allocationPercent: 100 };
+    } else {
+      const total = visible.reduce((s, t) => s + (t.allocationPercent || 0), 0);
+      if (total <= 0) {
+        const each = Math.floor(100 / n);
+        const remainder = 100 - each * n;
+        visible.forEach((t, i) => {
+          t.allocationPercent = each + (i === 0 ? remainder : 0);
+        });
+      } else if (Math.abs(total - 100) > 0.5) {
+        // Scale visible tiers to sum to 100 (preserves their relative weights).
+        const scale = 100 / total;
+        let runningTotal = 0;
+        visible.forEach((t, i) => {
+          if (i === visible.length - 1) {
+            t.allocationPercent = Math.max(0, 100 - runningTotal);
+          } else {
+            t.allocationPercent = Math.round((t.allocationPercent || 0) * scale);
+            runningTotal += t.allocationPercent;
+          }
+        });
+      }
+    }
+    update("tiers", visible);
+  }
 
   const update = <K extends keyof QuestionnaireAnswers>(
     key: K,
@@ -124,6 +180,10 @@ export function QuestionnaireFlow() {
     const tiers = [...(answers.tiers ?? [])];
     while (tiers.length <= idx) tiers.push({ name: "", monthlyPrice: 0, allocationPercent: 0 });
     tiers[idx] = { ...tiers[idx], [field]: value };
+    // For a single tier the allocation is always 100% — never let a stray edit break that.
+    if (tierCount === 1 && field !== "allocationPercent") {
+      tiers[0] = { ...tiers[0], allocationPercent: 100 };
+    }
     update("tiers", tiers);
   }
 
@@ -209,6 +269,12 @@ export function QuestionnaireFlow() {
       };
       const monthlyChurnRate = churnMap[answers.churnEstimate ?? "unknown"] ?? 5;
 
+      const trimmedTiers = (answers.tiers ?? []).slice(0, tierCount);
+      // Single-tier safety: always 100% on the only visible tier.
+      if (tierCount === 1 && trimmedTiers[0]) {
+        trimmedTiers[0] = { ...trimmedTiers[0], allocationPercent: 100 };
+      }
+
       const payload: QuestionnaireAnswers = {
         businessModel: answers.businessModel ?? "saas",
         customerType: answers.customerType ?? "b2b",
@@ -216,7 +282,7 @@ export function QuestionnaireFlow() {
         taxJurisdiction:
           answers.taxJurisdiction ?? defaultJurisdictionForGeography(answers.geography ?? "us"),
         fundingStage: answers.fundingStage ?? "seed",
-        tiers: answers.tiers ?? [],
+        tiers: trimmedTiers,
         revenueStreams: answers.revenueStreams ?? [],
         acquisitionChannels: answers.acquisitionChannels ?? [],
         cac: answers.cac ?? 0,
@@ -403,6 +469,10 @@ export function QuestionnaireFlow() {
               onClick={() => update("businessModel", opt.value as BusinessModel)}
             />
           ))}
+          <ProUpsell
+            headline="Industry-tuned cost-of-revenue benchmarks"
+            body="Pro picks the right COGS curve for your category — vertical SaaS, hardware, fintech, marketplaces — instead of the blended industry default."
+          />
         </QuestionWrapper>
       )}
 
@@ -428,6 +498,10 @@ export function QuestionnaireFlow() {
               onClick={() => update("customerType", opt.value as CustomerType)}
             />
           ))}
+          <ProUpsell
+            headline="Cohort-level retention curves for B2B vs B2C"
+            body="Pro models enterprise vs SMB vs consumer cohorts separately — different churn, ACV, and payback by segment instead of one blended curve."
+          />
         </QuestionWrapper>
       )}
 
@@ -480,7 +554,7 @@ export function QuestionnaireFlow() {
               often pick Ireland for tech.
             </p>
             <div className="grid grid-cols-2 gap-2">
-              {(Object.keys(TAX_JURISDICTION_LABELS) as TaxJurisdiction[]).map((j) => {
+              {FREE_TAX_JURISDICTIONS.map((j) => {
                 const selected = answers.taxJurisdiction === j;
                 const rate = taxRateForJurisdiction(j);
                 return (
@@ -511,7 +585,77 @@ export function QuestionnaireFlow() {
                 );
               })}
             </div>
+
+            {/* Extended jurisdictions — Pro-gated. Free users see a teaser; Pro users get a real dropdown. */}
+            {hasPro ? (
+              <div className="mt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowProJurisdictions((v) => !v)}
+                  className="text-xs font-semibold text-blue-700 hover:text-blue-800"
+                >
+                  {showProJurisdictions ? "Hide" : "Show"} all {PRO_TAX_JURISDICTIONS.length}+ Pro jurisdictions →
+                </button>
+                {showProJurisdictions && (
+                  <div className="mt-2">
+                    <select
+                      value={
+                        PRO_TAX_JURISDICTIONS.includes(answers.taxJurisdiction as TaxJurisdiction)
+                          ? answers.taxJurisdiction
+                          : ""
+                      }
+                      onChange={(e) => {
+                        const v = e.target.value as TaxJurisdiction;
+                        if (v) update("taxJurisdiction", v);
+                      }}
+                      className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-400"
+                    >
+                      <option value="">Select a jurisdiction…</option>
+                      {PRO_TAX_JURISDICTIONS.map((j) => (
+                        <option key={j} value={j}>
+                          {TAX_JURISDICTION_FLAGS[j]} {TAX_JURISDICTION_LABELS[j]} —{" "}
+                          {(taxRateForJurisdiction(j) * 100).toFixed(1)}% corp tax
+                        </option>
+                      ))}
+                    </select>
+                    {answers.taxJurisdiction &&
+                      PRO_TAX_JURISDICTIONS.includes(answers.taxJurisdiction as TaxJurisdiction) && (
+                        <p className="mt-2 text-xs text-blue-700">
+                          Tax base set to{" "}
+                          <span className="font-semibold">
+                            {TAX_JURISDICTION_LABELS[answers.taxJurisdiction]}
+                          </span>{" "}
+                          ({(taxRateForJurisdiction(answers.taxJurisdiction) * 100).toFixed(1)}%
+                          effective rate).
+                        </p>
+                      )}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="mt-4 rounded-xl border border-blue-100 bg-gradient-to-br from-blue-50/60 to-white p-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <Lock className="w-3.5 h-3.5 text-blue-600" />
+                  <p className="text-xs font-semibold text-gray-900">
+                    Need a different jurisdiction?
+                  </p>
+                </div>
+                <p className="text-xs text-gray-600 leading-snug">
+                  Pro unlocks {PRO_TAX_JURISDICTIONS.length}+ tax bases including Germany, France,
+                  Singapore, India, UAE, Switzerland, Estonia, Brazil, Mexico, Israel — each with the
+                  effective corporate-tax rate and a region-priced valuation multiple.{" "}
+                  <a href="/pricing" className="text-blue-700 font-semibold hover:underline">
+                    See Pro →
+                  </a>
+                </p>
+              </div>
+            )}
           </div>
+
+          <ProUpsell
+            headline="Region-aware payroll loading & state-level tax precision"
+            body="Pro adds employer NI / FICA / payroll burden to your monthly burn and lets you pick state-level (Delaware vs CA) or canton-level (Zug vs Zurich) corporate-tax precision."
+          />
         </QuestionWrapper>
       )}
 
@@ -539,6 +683,10 @@ export function QuestionnaireFlow() {
               onClick={() => update("fundingStage", opt.value as FundingStage)}
             />
           ))}
+          <ProUpsell
+            headline="Stage-blended valuation comparables"
+            body="Pro pulls fresh seed/A/B revenue multiples by industry & geography from PitchBook-style comps — not a single static stage multiple."
+          />
         </QuestionWrapper>
       )}
 
@@ -599,10 +747,14 @@ export function QuestionnaireFlow() {
                     min={0}
                     max={100}
                     placeholder={String(Math.floor(100 / tierCount))}
-                    value={answers.tiers?.[i]?.allocationPercent || ""}
+                    value={answers.tiers?.[i]?.allocationPercent ?? ""}
                     onChange={(e) => updateTier(i, "allocationPercent", Number(e.target.value))}
-                    className="text-sm h-9"
+                    disabled={tierCount === 1}
+                    className={cn("text-sm h-9", tierCount === 1 && "bg-gray-50 text-gray-500")}
                   />
+                  {tierCount === 1 && (
+                    <p className="text-[10px] text-gray-400 mt-1">Locked at 100% with one tier</p>
+                  )}
                 </div>
               </div>
             </div>
@@ -621,6 +773,10 @@ export function QuestionnaireFlow() {
               onChange={(next: RevenueStream[]) => update("revenueStreams", next)}
             />
           </div>
+          <ProUpsell
+            headline="Per-tier churn, expansion revenue, and upgrade paths"
+            body="Pro models churn and expansion separately for each tier and lets you set monthly upgrade rates between tiers — Free → Pro → Enterprise — instead of a flat blend."
+          />
         </QuestionWrapper>
       )}
 
@@ -701,6 +857,10 @@ export function QuestionnaireFlow() {
               </div>
             )}
           </div>
+          <ProUpsell
+            headline="Per-channel CAC, conversion, and payback curves"
+            body="Pro lets you split CAC by channel — paid ads, sales, partnerships — each with its own conversion rate, ramp, and payback so you can see which channel actually scales."
+          />
         </QuestionWrapper>
       )}
 
@@ -729,6 +889,10 @@ export function QuestionnaireFlow() {
               onClick={() => update("churnEstimate", opt.value as ChurnEstimate)}
             />
           ))}
+          <ProUpsell
+            headline="Cohort-based churn that decays over time"
+            body="Pro models month-1 churn separately from steady-state churn (early customers churn 3-5× more) so the LTV math actually matches reality."
+          />
         </QuestionWrapper>
       )}
 
@@ -775,6 +939,10 @@ export function QuestionnaireFlow() {
             />
             <p className="text-xs text-gray-500 mt-1">Salaries, tools, office, cloud infra — everything</p>
           </div>
+          <ProUpsell
+            headline="Headcount-driven burn with hiring plan"
+            body="Pro builds your burn from a roles-and-salaries hiring plan (engineer, AE, designer) with employer payroll loading by jurisdiction — not a flat monthly figure that drifts."
+          />
         </QuestionWrapper>
       )}
 
@@ -816,6 +984,10 @@ export function QuestionnaireFlow() {
               />
             ))}
           </div>
+          <ProUpsell
+            headline="S-curve growth with TAM ceiling"
+            body="Pro replaces flat monthly growth with an S-curve that decelerates as you approach your TAM — what investors actually expect for top-down sanity checks."
+          />
         </QuestionWrapper>
       )}
 
@@ -901,6 +1073,10 @@ export function QuestionnaireFlow() {
               onChange={(e) => update("companyName", e.target.value)}
             />
           </div>
+          <ProUpsell
+            headline="Dilution waterfall across multiple rounds"
+            body="Pro models seed → A → B in sequence — option-pool refresh, ESOP top-ups, secondary — so you can see founder dilution at exit, not just after this round."
+          />
         </QuestionWrapper>
       )}
     </div>
