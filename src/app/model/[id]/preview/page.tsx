@@ -8,6 +8,7 @@ import { PLTable } from "@/components/outputs/PLTable";
 import { MetricCard } from "@/components/outputs/MetricCard";
 import { UnitEconomicsDashboard } from "@/components/outputs/UnitEconomicsDashboard";
 import { TrustBadge } from "@/components/outputs/TrustBadge";
+import { ViewModeToggle } from "@/components/ViewModeToggle";
 import {
   PreviewTeaser,
   ExampleRevenueChart,
@@ -97,13 +98,17 @@ export default function PreviewPage() {
             <div className="hidden sm:block">
               <TrustBadge />
             </div>
-            <Link
-              href={`/model/${params.id}/full`}
-              className="inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-colors shadow-sm whitespace-nowrap"
-            >
-              <Sparkles className="w-3.5 h-3.5" />
-              {upgradeLabel}
-            </Link>
+            {earlyAccess ? (
+              <ViewModeToggle modelId={params.id} current="free" />
+            ) : (
+              <Link
+                href={`/model/${params.id}/full`}
+                className="inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-colors shadow-sm whitespace-nowrap"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                {upgradeLabel}
+              </Link>
+            )}
           </div>
         </div>
       </nav>

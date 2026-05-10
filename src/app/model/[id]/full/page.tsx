@@ -16,11 +16,12 @@ import { CalculationsPanel } from "@/components/outputs/CalculationsPanel";
 import { SensitivityAnalysis } from "@/components/outputs/SensitivityAnalysis";
 import { MetricCard } from "@/components/outputs/MetricCard";
 import { TrustBadge } from "@/components/outputs/TrustBadge";
+import { ViewModeToggle } from "@/components/ViewModeToggle";
 import { EarlyAccessForm } from "@/components/EarlyAccessForm";
 import { getModelLocally } from "@/lib/model-client-store";
 import { formatCurrencyCompact } from "@/lib/utils";
 import { hasEarlyAccess } from "@/lib/early-access";
-import { Calculator, Download, Eye, Lightbulb, Lock, Sliders, Sparkles } from "lucide-react";
+import { Calculator, Download, Lightbulb, Lock, Sliders, Sparkles } from "lucide-react";
 import type { ModelOutputs } from "@/lib/types";
 
 const GATE_ENABLED = process.env.NEXT_PUBLIC_GATE_ENABLED === "true";
@@ -178,15 +179,7 @@ export default function FullModelPage() {
             <div className="hidden lg:block">
               <TrustBadge />
             </div>
-            <Link
-              href={`/model/${params.id}/preview`}
-              className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-gray-700 bg-white hover:bg-gray-50 border border-gray-200 px-3 py-2 rounded-lg transition-colors whitespace-nowrap"
-              title="See what a free user would see for this model"
-            >
-              <Eye className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">View as free</span>
-              <span className="sm:hidden">Free</span>
-            </Link>
+            <ViewModeToggle modelId={params.id} current="pro" />
             <button
               onClick={handleExport}
               disabled={exporting}
