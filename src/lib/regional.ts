@@ -156,6 +156,54 @@ export function taxRateForJurisdiction(j: TaxJurisdiction | undefined): number {
   return TAX_RATES[j ?? "us"] ?? 0.20;
 }
 
+// ── Payroll loading (employer-side burden on top of gross salary) ─────────
+//
+// What employers actually pay on top of the cash salary line: social-security
+// contributions, statutory pension, healthcare, mandatory leave/benefits.
+// Used in the OpEx breakdown so a founder's monthly burn includes a realistic
+// payroll loading instead of pretending net comp = total cost.
+
+const PAYROLL_LOADING: Record<TaxJurisdiction, { rate: number; label: string }> = {
+  us:             { rate: 0.115, label: "US payroll taxes & benefits (~11.5%: 7.65% FICA + benefits)" },
+  uk:             { rate: 0.165, label: "UK employer NI + pension auto-enrolment (~16.5%)" },
+  ireland:        { rate: 0.111, label: "Ireland employer PRSI (~11.1%)" },
+  germany:        { rate: 0.21,  label: "Germany employer social contributions (~21%)" },
+  france:         { rate: 0.42,  label: "France employer cotisations sociales (~42%)" },
+  netherlands:    { rate: 0.20,  label: "Netherlands employer contributions (~20%)" },
+  spain:          { rate: 0.31,  label: "Spain employer social security (~30.6%)" },
+  italy:          { rate: 0.30,  label: "Italy INPS employer contributions (~30%)" },
+  sweden:         { rate: 0.3142, label: "Sweden arbetsgivaravgift (31.42%)" },
+  switzerland:    { rate: 0.13,  label: "Switzerland AHV/IV/EO + pension (~13%)" },
+  estonia:        { rate: 0.338, label: "Estonia social tax + unemployment (~33.8%)" },
+  denmark:        { rate: 0.011, label: "Denmark ATP + AUB (~1.1%)" },
+  norway:         { rate: 0.142, label: "Norway employer's contribution (~14.2%)" },
+  canada:         { rate: 0.115, label: "Canada CPP + EI + WCB (~11.5%)" },
+  australia:      { rate: 0.115, label: "Australia superannuation + payroll tax (~11.5%)" },
+  "new-zealand":  { rate: 0.03,  label: "New Zealand KiwiSaver employer (~3%)" },
+  singapore:      { rate: 0.17,  label: "Singapore CPF employer (~17%)" },
+  "hong-kong":    { rate: 0.05,  label: "Hong Kong MPF employer (~5%)" },
+  japan:          { rate: 0.155, label: "Japan employer social insurance (~15.5%)" },
+  "south-korea":  { rate: 0.10,  label: "South Korea 4 majors employer share (~10%)" },
+  india:          { rate: 0.12,  label: "India EPF + ESI employer (~12%)" },
+  indonesia:      { rate: 0.106, label: "Indonesia BPJS employer (~10.6%)" },
+  uae:            { rate: 0.125, label: "UAE end-of-service gratuity + pension (~12.5%)" },
+  "saudi-arabia": { rate: 0.12,  label: "Saudi GOSI employer (~12%)" },
+  israel:         { rate: 0.085, label: "Israel Bituach Leumi + pension (~8.5%)" },
+  brazil:         { rate: 0.30,  label: "Brazil employer contributions (~30%)" },
+  mexico:         { rate: 0.225, label: "Mexico IMSS + INFONAVIT employer (~22.5%)" },
+  argentina:      { rate: 0.235, label: "Argentina employer contributions (~23.5%)" },
+  "south-africa": { rate: 0.02,  label: "South Africa UIF + SDL (~2%)" },
+  nigeria:        { rate: 0.10,  label: "Nigeria pension + ITF + NHF employer (~10%)" },
+  other:          { rate: 0.15,  label: "Global average payroll loading (~15%)" },
+};
+
+export function payrollLoadingForJurisdiction(j: TaxJurisdiction | undefined): {
+  rate: number;
+  label: string;
+} {
+  return PAYROLL_LOADING[j ?? "us"] ?? { rate: 0.15, label: "Global average payroll loading (~15%)" };
+}
+
 // ── Stage-based valuation multiples (Year-1 ARR) ───────────────────────────
 
 const STAGE_BASE_MULTIPLE: Record<FundingStage, number> = {

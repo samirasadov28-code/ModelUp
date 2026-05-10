@@ -123,7 +123,7 @@ export default function PreviewPage() {
             </span>
           </div>
           <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight">
-            {company} — 3-Year Financial Model
+            {company} — {annual.length}-Year Financial Model
           </h1>
           <p className="text-gray-500 text-sm mt-1 capitalize">
             {answers.businessModel.replace("-", " ")} ·{" "}
@@ -134,14 +134,14 @@ export default function PreviewPage() {
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <MetricCard
-            label="Year 3 ARR"
-            value={fmtCurrency(annual[2].arr)}
+            label={`Year ${annual.length} ARR`}
+            value={fmtCurrency(annual[annual.length - 1].arr)}
             sub="Annual recurring revenue"
             variant="highlight"
           />
           <MetricCard
             label="Cash Runway"
-            value={runway.cashPositive ? "36mo+" : `${runway.runwayMonths}mo`}
+            value={runway.cashPositive ? `${(model.horizonMonths ?? 36)}mo+` : `${runway.runwayMonths}mo`}
             sub={`Raise: ${fmtCurrency(answers.fundingAsk)}`}
           />
           <MetricCard
@@ -151,8 +151,8 @@ export default function PreviewPage() {
             variant={runway.breakEvenYear ? "success" : "default"}
           />
           <MetricCard
-            label="Year 3 Customers"
-            value={formatNumber(annual[2].endingUsers)}
+            label={`Year ${annual.length} Customers`}
+            value={formatNumber(annual[annual.length - 1].endingUsers)}
             sub="Paying customers (EoY)"
           />
         </div>
@@ -166,7 +166,7 @@ export default function PreviewPage() {
             <span className="text-blue-700 font-semibold">{fmtCurrency(answers.fundingAsk)}</span>{" "}
             raise gives you{" "}
             <span className="text-gray-900 font-semibold">
-              {runway.cashPositive ? "over 36 months" : `${runway.runwayMonths} months`}
+              {runway.cashPositive ? `over ${model.horizonMonths ?? 36} months` : `${runway.runwayMonths} months`}
             </span>{" "}
             of runway.
           </p>
@@ -174,7 +174,7 @@ export default function PreviewPage() {
 
         <div className="rounded-xl border border-gray-200 overflow-hidden shadow-sm">
           <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/60">
-            <h2 className="text-gray-900 font-semibold">3-Year P&amp;L Summary</h2>
+            <h2 className="text-gray-900 font-semibold">5-Year P&amp;L Summary</h2>
             <p className="text-xs text-gray-500 mt-0.5">
               Annual projections · {answers.growthCurve} growth scenario
             </p>

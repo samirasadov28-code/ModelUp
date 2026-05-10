@@ -52,7 +52,7 @@ export default function LandingPage() {
 
         <p className="text-gray-500 text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
           Every great idea deserves a real financial model. Answer 10 questions and get a
-          professional 3-year forecast — in 30 seconds.
+          professional 5-year forecast — in 30 seconds.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -143,7 +143,7 @@ export default function LandingPage() {
 
               {/* Mini P&L */}
               <div className="md:col-span-2 bg-white rounded-xl p-5 border border-gray-100 shadow-sm">
-                <p className="text-sm font-semibold text-gray-900 mb-4">3-Year P&amp;L</p>
+                <p className="text-sm font-semibold text-gray-900 mb-4">5-Year P&amp;L</p>
                 <div className="space-y-2 text-xs">
                   <div className="grid grid-cols-4 gap-2 text-gray-400 font-semibold">
                     <span></span><span className="text-right">Y1</span><span className="text-right">Y2</span><span className="text-right">Y3</span>
@@ -195,7 +195,7 @@ export default function LandingPage() {
                 icon: <Zap className="w-6 h-6" />,
                 iconBg: "bg-cyan-100 text-cyan-600",
                 title: "Get your model instantly",
-                desc: "Our engine builds a 3-year P&L, cash forecast, unit economics, and funding narrative in seconds.",
+                desc: "Our engine builds a 5-year P&L, cash forecast, unit economics, and funding narrative in seconds.",
               },
               {
                 step: "03",
@@ -273,7 +273,7 @@ export default function LandingPage() {
             <div className="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm">
               <h3 className="text-gray-400 text-xs uppercase tracking-widest font-bold mb-6">Free</h3>
               <div className="space-y-3">
-                {["3-year P&L summary", "Cash runway calculation", "Break-even year"].map((item) => (
+                {["5-year P&L summary", "Cash runway calculation", "Break-even year"].map((item) => (
                   <div key={item} className="flex items-center gap-3 text-sm text-gray-700">
                     <div className="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
                       <div className="w-1.5 h-1.5 rounded-full bg-gray-400" />
