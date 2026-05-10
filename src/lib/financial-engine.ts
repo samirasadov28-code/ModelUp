@@ -14,6 +14,8 @@ import type {
   GrowthCurve,
   Currency,
   RevenueModel,
+  ValuationData,
+  FundingStage,
 } from "./types";
 import {
   defaultJurisdictionForGeography,
@@ -538,6 +540,65 @@ function buildFundingNarrative(
   return `${company} is raising ${raise} at ${stage}. The raise provides ${runwayText} of runway and funds ${proceedsText}. At target growth, the business reaches EBITDA breakeven in ${breakEvenText} with ${lastUsers} paying customers generating ${lastArr} ARR by ${last.label}. Post-raise, new investors receive ${(capTable.newEquityPercent * 100).toFixed(1)}% equity at a ${fmt(capTable.preMoneyValuation, 0, currency)} pre-money valuation.`;
 }
 
+/**
+ * Stage-driven default discount rate. Investors demand a higher return for
+ * earlier-stage risk: pre-seed ~35%, seed ~28%, series-A ~22%, series-B ~17%.
+ * These are blended industry conventions — Pro users can refine via WACC.
+ */
+const STAGE_DISCOUNT_RATE: Record<FundingStage, number> = {
+  "pre-seed": 0.35,
+  seed: 0.28,
+  "series-a": 0.22,
+  "series-b": 0.17,
+};
+
+export function defaultDiscountRateForStage(stage: FundingStage): number {
+  return STAGE_DISCOUNT_RATE[stage] ?? 0.25;
+}
+
+/**
+ * DCF valuation. Uses post-tax EBITDA as a free-cash-flow proxy (v1 — we
+ * don't yet track CAPEX or working capital separately) and adds a Gordon-
+ * growth terminal value: TV = FCF_n × (1 + g) / (r − g).
+ *
+ * Falls back to a defensive Math.max so the math doesn't blow up when
+ * r ≤ g (which only happens at very low discount rates).
+ */
+function buildValuation(
+  answers: QuestionnaireAnswers,
+  annual: AnnualSummary[]
+): ValuationData {
+  const discountRate =
+    answers.discountRate && answers.discountRate > 0
+      ? answers.discountRate
+      : defaultDiscountRateForStage(answers.fundingStage);
+  const terminalGrowthRate = answers.terminalGrowthRate ?? 0.03;
+
+  const annualFcf = annual.map((a) => a.netIncome);
+  const discountFactors = annual.map((_, i) => 1 / Math.pow(1 + discountRate, i + 1));
+  const presentValues = annualFcf.map((fcf, i) => fcf * discountFactors[i]);
+  const pvOfFcf = presentValues.reduce((s, v) => s + v, 0);
+
+  const lastFcf = annualFcf[annualFcf.length - 1] ?? 0;
+  const safeSpread = Math.max(0.02, discountRate - terminalGrowthRate);
+  const terminalValue = (lastFcf * (1 + terminalGrowthRate)) / safeSpread;
+  const pvOfTerminal = terminalValue * (discountFactors[discountFactors.length - 1] ?? 0);
+
+  const enterpriseValue = pvOfFcf + pvOfTerminal;
+
+  return {
+    discountRate,
+    terminalGrowthRate,
+    annualFcf,
+    discountFactors,
+    presentValues,
+    pvOfFcf,
+    terminalValue,
+    pvOfTerminal,
+    enterpriseValue,
+  };
+}
+
 function selectModelType(answers: QuestionnaireAnswers): ModelType {
   if (resolveRevenueModel(answers) === "production") return "project_finance";
   if (
@@ -578,6 +639,7 @@ export function runFinancialEngine(answers: QuestionnaireAnswers): ModelOutputs 
   const runway = computeRunway(answers, monthly);
   const capTable = buildCapTable(answers, annual);
   const costBreakdown = buildCostBreakdown(answers, monthly);
+  const valuation = buildValuation(answers, annual);
   const fundingNarrative = buildFundingNarrative(answers, annual, runway, capTable, currency);
 
   const scenarios = {
@@ -598,6 +660,7 @@ export function runFinancialEngine(answers: QuestionnaireAnswers): ModelOutputs 
     runway,
     scenarios,
     capTable,
+    valuation,
     fundingNarrative,
     currency,
     taxRate,
