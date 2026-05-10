@@ -13,16 +13,22 @@ export type TaxJurisdiction =
   // Pro extended — broader coverage for serious global founders.
   | "germany" | "france" | "netherlands" | "spain" | "italy" | "sweden"
   | "switzerland" | "estonia" | "denmark" | "norway"
+  | "belgium" | "austria" | "portugal" | "finland" | "luxembourg"
+  | "malta" | "cyprus" | "poland" | "czechia"
   | "canada" | "australia" | "new-zealand"
   | "singapore" | "hong-kong" | "japan" | "south-korea" | "india" | "indonesia"
-  | "uae" | "saudi-arabia" | "israel"
-  | "brazil" | "mexico" | "argentina"
-  | "south-africa" | "nigeria";
+  | "thailand" | "vietnam" | "malaysia" | "philippines" | "taiwan" | "china"
+  | "uae" | "saudi-arabia" | "israel" | "turkey" | "egypt"
+  | "brazil" | "mexico" | "argentina" | "chile" | "colombia"
+  | "south-africa" | "nigeria"
+  | "cayman-islands";
 
 export type CurrencyCode =
   | "USD" | "GBP" | "EUR" | "CAD" | "AUD" | "NZD" | "SGD" | "HKD" | "JPY"
   | "KRW" | "INR" | "IDR" | "AED" | "SAR" | "ILS" | "BRL" | "MXN" | "ARS"
-  | "ZAR" | "NGN" | "CHF" | "SEK" | "NOK" | "DKK";
+  | "ZAR" | "NGN" | "CHF" | "SEK" | "NOK" | "DKK"
+  | "PLN" | "CZK" | "CLP" | "COP" | "THB" | "VND" | "MYR" | "PHP" | "TWD"
+  | "CNY" | "TRY" | "EGP";
 
 export interface Currency {
   code: CurrencyCode;

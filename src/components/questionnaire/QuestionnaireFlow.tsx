@@ -207,7 +207,16 @@ export function QuestionnaireFlow() {
       case 6: return !!answers.cac && answers.cac > 0;
       case 7: return !!answers.churnEstimate;
       case 8: return !!answers.headcount && !!answers.monthlyBurn && answers.monthlyBurn > 0;
-      case 9: return !!answers.year1UserTarget && answers.year1UserTarget > 0 && !!answers.growthCurve;
+      case 9: {
+        const rm = answers.revenueModel ?? "subscription";
+        const hasTarget =
+          rm === "production"
+            ? (answers.unitsYear1 ?? 0) > 0
+            : rm === "hybrid"
+              ? (answers.year1UserTarget ?? 0) > 0 && (answers.unitsYear1 ?? 0) > 0
+              : (answers.year1UserTarget ?? 0) > 0;
+        return hasTarget && !!answers.growthCurve;
+      }
       case 10: return !!answers.fundingAsk && answers.fundingAsk > 0 && answers.targetRunway != null;
       default: return true;
     }
@@ -1081,18 +1090,49 @@ export function QuestionnaireFlow() {
           onNext={handleNext} onBack={handleBack}
           nextDisabled={!canAdvance()}
         >
-          <div className="mb-4">
-            <Label className="text-gray-700 mb-2 block font-medium">
-              Year 1 customer / user target <span className="text-red-500">*</span>
-            </Label>
-            <MoneyInput
-              prefix=""
-              placeholder="500"
-              value={answers.year1UserTarget}
-              onValueChange={(v) => update("year1UserTarget", v ?? 0)}
-            />
-            <p className="text-xs text-gray-500 mt-1">Total paying customers at end of year one</p>
-          </div>
+          {(() => {
+            const rm = answers.revenueModel ?? "subscription";
+            // Production-only businesses care about units shipped, not paying
+            // customers. Hybrid businesses care about both. Subscription only
+            // cares about customers.
+            return (
+              <>
+                {rm !== "production" && (
+                  <div className="mb-4">
+                    <Label className="text-gray-700 mb-2 block font-medium">
+                      Year 1 customer / user target <span className="text-red-500">*</span>
+                    </Label>
+                    <MoneyInput
+                      prefix=""
+                      placeholder="500"
+                      value={answers.year1UserTarget}
+                      onValueChange={(v) => update("year1UserTarget", v ?? 0)}
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Total paying customers at end of year one
+                    </p>
+                  </div>
+                )}
+                {(rm === "production" || rm === "hybrid") && (
+                  <div className="mb-4">
+                    <Label className="text-gray-700 mb-2 block font-medium">
+                      Year 1 production target (units) <span className="text-red-500">*</span>
+                    </Label>
+                    <MoneyInput
+                      prefix=""
+                      placeholder="10,000"
+                      value={answers.unitsYear1}
+                      onValueChange={(v) => update("unitsYear1", v ?? 0)}
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Total units shipped / produced across year one. Combined with the unit price
+                      &amp; cost you entered on the revenue step, this drives Y1 revenue and direct cost.
+                    </p>
+                  </div>
+                )}
+              </>
+            );
+          })()}
 
           <div>
             <Label className="text-gray-700 mb-3 block font-medium">Growth scenario</Label>
