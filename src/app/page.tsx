@@ -1,10 +1,15 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Lightbulb, Zap, DollarSign, BarChart3, TrendingUp, Download, Sparkles } from "lucide-react";
 import { VERSION_LABEL } from "@/lib/version";
 import { ForceUpdateButton } from "@/components/ForceUpdateButton";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { useT } from "@/i18n/LocaleProvider";
 
 export default function LandingPage() {
+  const { t } = useT();
   return (
     <main className="min-h-screen bg-white text-gray-900">
       {/* Nav */}
@@ -17,6 +22,7 @@ export default function LandingPage() {
             </span>
           </Link>
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <LanguageSwitcher compact />
             <Link
               href="/pricing"
               className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-100 px-3 py-1.5 rounded-full transition-colors whitespace-nowrap"
@@ -28,7 +34,7 @@ export default function LandingPage() {
               href="/model/new"
               className="inline-flex items-center gap-1.5 bg-blue-600 text-white px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold hover:bg-blue-700 transition-colors shadow-sm whitespace-nowrap"
             >
-              Build your model
+              {t("nav.build_model")}
               <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </Link>
           </div>
@@ -39,21 +45,19 @@ export default function LandingPage() {
       <section className="max-w-5xl mx-auto px-6 pt-20 pb-16 text-center">
         <div className="inline-flex items-center gap-2 text-xs bg-gradient-to-r from-blue-50 to-cyan-50 text-blue-700 border border-blue-200 px-3 py-1.5 rounded-full mb-7 font-semibold shadow-sm">
           <Sparkles className="w-3.5 h-3.5" />
-          AI-powered financial modeling
+          {t("hero.pill")}
         </div>
 
         <h1 className="text-5xl md:text-6xl font-extrabold leading-tight mb-6 tracking-tight">
-          <span className="text-gray-900">The AI co-pilot for</span>
+          <span className="text-gray-900">{t("hero.headline_a")}</span>
           <br />
           <span className="bg-gradient-to-r from-blue-600 via-cyan-500 to-emerald-500 bg-clip-text text-transparent">
-            founder financials
+            {t("hero.headline_b")}
           </span>
         </h1>
 
         <p className="text-gray-500 text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
-          Describe your startup in a sentence. Our AI infers your business model, pricing, churn,
-          and burn — and generates a defensible 5-year financial model, valuation, and investor
-          narrative in 30 seconds.
+          {t("hero.subcopy")}
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -61,18 +65,18 @@ export default function LandingPage() {
             href="/model/new"
             className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-8 py-4 rounded-xl text-base font-bold hover:from-blue-700 hover:to-blue-800 transition-all shadow-xl shadow-blue-500/25"
           >
-            Build your model — it&apos;s free
+            {t("hero.cta_primary")}
             <ArrowRight className="w-5 h-5" />
           </Link>
           <Link
             href="/pricing"
             className="inline-flex items-center justify-center gap-2 border border-gray-200 text-gray-600 px-8 py-4 rounded-xl text-base font-medium hover:border-gray-300 hover:text-gray-900 transition-colors"
           >
-            See pricing
+            {t("hero.cta_secondary")}
           </Link>
         </div>
 
-        <p className="text-gray-400 text-sm mt-6">No signup required · Free preview always available</p>
+        <p className="text-gray-400 text-sm mt-6">{t("hero.disclaimer")}</p>
       </section>
 
       {/* Live model preview */}
@@ -177,14 +181,13 @@ export default function LandingPage() {
         <div className="max-w-5xl mx-auto px-6">
           <div className="inline-flex items-center gap-2 text-xs bg-white text-blue-700 border border-blue-200 px-3 py-1.5 rounded-full mb-5 font-semibold mx-auto">
             <Sparkles className="w-3.5 h-3.5" />
-            Powered by AI
+            {t("how.badge")}
           </div>
           <h2 className="text-3xl font-bold text-center text-gray-900 mb-4">
-            From a sentence to an investor-ready model in minutes
+            {t("how.title")}
           </h2>
           <p className="text-gray-500 text-center mb-14 max-w-xl mx-auto">
-            The AI reads your description, infers industry-appropriate assumptions, and builds the
-            entire model so you only review &amp; tweak — never start from a blank spreadsheet.
+            {t("how.subtitle")}
           </p>
 
           <div className="grid md:grid-cols-3 gap-8">
@@ -193,22 +196,22 @@ export default function LandingPage() {
                 step: "01",
                 icon: <Sparkles className="w-6 h-6" />,
                 iconBg: "bg-blue-100 text-blue-600",
-                title: "Describe your startup",
-                desc: "One sentence is enough. Our AI infers your business model, pricing tiers, churn, CAC, burn, jurisdiction, and raise — then pre-fills every question.",
+                title: t("how.step1_title"),
+                desc: t("how.step1_desc"),
               },
               {
                 step: "02",
                 icon: <Zap className="w-6 h-6" />,
                 iconBg: "bg-cyan-100 text-cyan-600",
-                title: "AI builds your model",
-                desc: "5-year P&L, cash flow statement, sources & uses, unit economics, DCF + EBITDA-multiple valuation, cap table, and an AI-written funding narrative — in seconds.",
+                title: t("how.step2_title"),
+                desc: t("how.step2_desc"),
               },
               {
                 step: "03",
                 icon: <DollarSign className="w-6 h-6" />,
                 iconBg: "bg-emerald-100 text-emerald-600",
-                title: "Pitch with confidence",
-                desc: "Live AI chat answers any what-if. Download a formula-driven Excel investors can interrogate. Walk into the room with data, not guesses.",
+                title: t("how.step3_title"),
+                desc: t("how.step3_desc"),
               },
             ].map((s) => (
               <div key={s.step} className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
