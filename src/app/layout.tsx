@@ -3,6 +3,7 @@ import Script from "next/script";
 import "./globals.css";
 import { FeedbackButton } from "@/components/FeedbackButton";
 import { ChatWidget } from "@/components/ChatWidget";
+import { LocaleProvider } from "@/i18n/LocaleProvider";
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID ?? "G-P2KEZWEVZ8";
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://modelups.netlify.app";
@@ -59,16 +60,21 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    // suppressHydrationWarning: LocaleProvider mutates html.lang and html.dir
+    // on the client after reading the founder's stored locale; that diff
+    // against the server-rendered "en" / "ltr" is intentional, not a bug.
+    <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <meta name="theme-color" content="#2563eb" />
       </head>
       <body className="bg-white text-gray-900 antialiased">
-        {children}
-        <FeedbackButton />
-        <ChatWidget />
+        <LocaleProvider>
+          {children}
+          <FeedbackButton />
+          <ChatWidget />
+        </LocaleProvider>
 
         {/* Google Analytics */}
         <Script

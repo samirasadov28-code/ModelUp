@@ -42,6 +42,26 @@ anything destructive (force-push, branch deletion, dropping data, rewriting publ
   it works even when the server cache is cold.
 - Stripe + Supabase + early-access form are wired but optional — guard env-keyed code paths.
 
+## Internationalisation (i18n) — in progress
+
+- 16 locales supported: `en`, `es`, `fr`, `de`, `pt`, `it`, `nl`, `tr`, `uk`, `ru`, `ar` (RTL),
+  `hi`, `bn`, `zh`, `ja`, `id`. Registry: `src/i18n/locales.ts`. Dictionaries:
+  `src/i18n/dictionaries/<code>.ts` — every locale mirrors the keys defined in `en.ts`.
+- `LocaleProvider` (root layout) reads the founder's locale from cookie → localStorage →
+  browser language → `en`, then sets `html.lang` and `html.dir` (Arabic flips to RTL).
+- `useT()` hook returns `{ locale, setLocale, t }`. Use `t("nav.pricing")` etc. Falls back
+  to English when a key is missing for the current locale.
+- `<LanguageSwitcher />` in the nav opens a popover with all 16 options.
+- **What's translated so far**: landing-page nav, hero, "How it works" section, and a small
+  set of `common.*` strings (Next/Back/Skip/Cancel/Continue/Loading/Get Pro/Download Excel).
+- **What's NOT translated yet**: questionnaire Q1–Q11 questions and options, output pages
+  (preview, full, all tabs), Excel sheet titles + column headers, pricing page, model/new page,
+  AI chat copy. Extract more keys into `dictionaries/en.ts` (and mirror across all 15 other
+  files) as you touch each surface.
+- Translations were AI-assisted in the first pass and need native-speaker review before
+  promotion. Keep a `// TODO(i18n-review): <locale>` comment next to any string you're
+  unsure about.
+
 ## Conventions
 
 - `formatCurrency(value, fractionDigits, currency?)` and `formatCurrencyCompact(value, currency?)`
