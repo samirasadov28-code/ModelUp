@@ -54,14 +54,17 @@ anything destructive (force-push, branch deletion, dropping data, rewriting publ
 - `<LanguageSwitcher />` in the nav opens a popover with all 16 options.
 - **What's translated so far**: landing-page nav + hero + "How it works"; **questionnaire
   Q0 intro screen and Q1–Q11 titles, subtitles, option labels, and Next/Back/step counter
-  buttons**; the `common.*` set (Next/Back/Skip/Cancel/Continue/Loading/Get Pro/Download
-  Excel/Try example/Language/Thinking/Add/Remove/Reset/Step X of Y/Generate Model).
-- **What's NOT translated yet**: output pages (preview, full, all tabs incl. P&L / Cash Flow /
-  Sources & Uses / Unit Econ / Scenarios / Cap Table / Valuation / Sensitivity / Calculations),
-  Excel sheet titles + column headers, pricing page, `/model/new` page wrapper copy, AI chat
-  copy, ProUpsell card text, OptionCard descriptions (only the option labels are translated;
-  the secondary descriptions still render in English). Extract more keys into `dictionaries/en.ts`
-  (and mirror across all 15 other files) as you touch each surface.
+  buttons**; **output pages: preview + full — all 10 tab labels, metric-card hero strips,
+  tab-content section titles & subtitles**; **pricing page** (hero, Free/Pro card headers,
+  CTAs, FAQ heading); the `common.*` set.
+- **What's NOT translated yet**: output components' internal labels (PLTable column
+  headers, CashFlowStatementTable line items, SourcesAndUsesTable column headers,
+  ValuationCard label-set, CapTableSummary headers, ProValuationPanel inputs +
+  computed-card labels, ProCapTableWaterfall inputs + waterfall column headers,
+  SensitivityAnalysis slider labels + metric-change labels, CalculationsPanel section
+  titles); Excel sheet titles + column headers; `/model/new` wrapper copy; AI chat copy +
+  groq prompts; ProUpsell card text (one per question); OptionCard secondary descriptions;
+  pricing-page Free / Pro feature bullet lists.
 - Translations were AI-assisted in the first pass and need native-speaker review before
   promotion. Keep a `// TODO(i18n-review): <locale>` comment next to any string you're
   unsure about.

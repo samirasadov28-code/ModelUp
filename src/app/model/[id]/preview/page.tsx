@@ -21,10 +21,12 @@ import { ArrowRight, Sparkles } from "lucide-react";
 import { getModelLocally } from "@/lib/model-client-store";
 import { formatCurrencyCompact, formatNumber } from "@/lib/utils";
 import { hasEarlyAccess } from "@/lib/early-access";
+import { useT } from "@/i18n/LocaleProvider";
 import type { ModelOutputs } from "@/lib/types";
 
 export default function PreviewPage() {
   const params = useParams<{ id: string }>();
+  const { t } = useT();
   const [model, setModel] = useState<ModelOutputs | null>(null);
   const [loading, setLoading] = useState(true);
   const [earlyAccess, setEarlyAccess] = useState(false);
@@ -119,7 +121,7 @@ export default function PreviewPage() {
         <div>
           <div className="flex items-center gap-3 mb-2 flex-wrap">
             <span className="text-xs bg-blue-50 text-blue-700 border border-blue-100 px-2.5 py-1 rounded-full font-semibold">
-              Free Preview
+              {t("preview.free_preview_badge")}
             </span>
             <span className="text-xs text-gray-400">
               {new Date(model.createdAt).toLocaleDateString("en-US", {
@@ -141,42 +143,40 @@ export default function PreviewPage() {
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <MetricCard
-            label={`Year ${annual.length} ARR`}
+            label={t("pg.year_n_arr", { n: annual.length })}
             value={fmtCurrency(annual[annual.length - 1].arr)}
-            sub="Annual recurring revenue"
+            sub={t("pg.annual_recurring_revenue")}
             variant="highlight"
           />
           <MetricCard
-            label="Cash Runway"
+            label={t("pg.cash_runway")}
             value={runway.cashPositive ? `${(model.horizonMonths ?? 36)}mo+` : `${runway.runwayMonths}mo`}
-            sub={`Raise: ${fmtCurrency(answers.fundingAsk)}`}
+            sub={t("pg.raise_label", { amount: fmtCurrency(answers.fundingAsk) })}
           />
           <MetricCard
-            label="Break-even (EBITDA+)"
+            label={t("pg.break_even")}
             value={breakEvenText}
-            sub={runway.breakEvenMonth ? `Month ${runway.breakEvenMonth}` : "Not in forecast"}
+            sub={runway.breakEvenMonth ? t("pg.break_even_sub", { month: runway.breakEvenMonth }) : t("pg.break_even_not_reached")}
             variant={runway.breakEvenYear ? "success" : "default"}
           />
           <MetricCard
-            label="First profitable year"
+            label={t("pg.first_profit_year")}
             value={runway.firstProfitableYear ? `Year ${runway.firstProfitableYear}` : `Year ${annual.length}+`}
-            sub="Annual net income > 0"
+            sub={t("pg.first_profit_sub")}
             variant={runway.firstProfitableYear ? "success" : "default"}
           />
         </div>
 
         <div className="rounded-xl border border-gray-200 bg-gradient-to-br from-blue-50/40 to-white px-6 py-5 shadow-sm">
-          <p className="text-gray-500 text-xs font-semibold mb-2 uppercase tracking-wider">Cash Runway</p>
+          <p className="text-gray-500 text-xs font-semibold mb-2 uppercase tracking-wider">{t("pg.cash_runway")}</p>
           <p className="text-gray-900 text-lg leading-relaxed">
-            At a monthly burn of{" "}
-            <span className="text-blue-700 font-semibold">{fmtCurrency(answers.monthlyBurn)}</span>
-            , your{" "}
-            <span className="text-blue-700 font-semibold">{fmtCurrency(answers.fundingAsk)}</span>{" "}
-            raise gives you{" "}
-            <span className="text-gray-900 font-semibold">
-              {runway.cashPositive ? `over ${model.horizonMonths ?? 36} months` : `${runway.runwayMonths} months`}
-            </span>{" "}
-            of runway.
+            {t("preview.cash_runway_text", {
+              burn: fmtCurrency(answers.monthlyBurn),
+              raise: fmtCurrency(answers.fundingAsk),
+              runway: runway.cashPositive
+                ? `${model.horizonMonths ?? 36}mo+`
+                : `${runway.runwayMonths}mo`,
+            })}
           </p>
         </div>
 
@@ -184,19 +184,17 @@ export default function PreviewPage() {
 
         {model.sourcesAndUses && (
           <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-            <h2 className="text-gray-900 font-semibold mb-1">Sources &amp; Uses</h2>
-            <p className="text-xs text-gray-500 mb-4">
-              Where the capital comes from and where it goes — drawn from your Q10 allocation.
-            </p>
+            <h2 className="text-gray-900 font-semibold mb-1">{t("preview.sources_uses_title")}</h2>
+            <p className="text-xs text-gray-500 mb-4">{t("preview.sources_uses_sub")}</p>
             <SourcesAndUsesTable data={model.sourcesAndUses} currency={currency} />
           </div>
         )}
 
         <div className="rounded-xl border border-gray-200 overflow-hidden shadow-sm">
           <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/60">
-            <h2 className="text-gray-900 font-semibold">5-Year P&amp;L Summary</h2>
+            <h2 className="text-gray-900 font-semibold">{t("preview.pl_summary_title")}</h2>
             <p className="text-xs text-gray-500 mt-0.5">
-              Annual projections · {answers.growthCurve} growth scenario
+              {t("preview.pl_summary_sub", { growth: answers.growthCurve })}
             </p>
           </div>
           <PLTable annual={annual} compact currency={currency} />
@@ -215,11 +213,11 @@ export default function PreviewPage() {
         <div className="rounded-xl border border-gray-200 overflow-hidden shadow-sm">
           <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/60 flex items-center justify-between">
             <div>
-              <h2 className="text-gray-900 font-semibold">Unit Economics</h2>
-              <p className="text-xs text-gray-500 mt-0.5">CAC · LTV · Payback period</p>
+              <h2 className="text-gray-900 font-semibold">{t("preview.unit_econ_title")}</h2>
+              <p className="text-xs text-gray-500 mt-0.5">{t("preview.unit_econ_sub")}</p>
             </div>
             <div className="inline-flex items-center gap-1.5 text-xs text-blue-700 bg-blue-50 border border-blue-100 px-2.5 py-1 rounded-full font-semibold">
-              Pro only
+              {t("preview.pro_only_badge")}
             </div>
           </div>
           <div className="p-6">
@@ -234,28 +232,27 @@ export default function PreviewPage() {
             Pro · $4.99/mo
           </div>
           <h2 className="text-2xl font-extrabold text-gray-900 mb-2">
-            Unlock your full financial model
+            {t("preview.upgrade_title")}
           </h2>
           <p className="text-gray-500 text-sm mb-6 max-w-md mx-auto">
-            Interactive charts, unit economics, funding narrative, scenario comparison,
-            cap table, every formula plugged in with your numbers, and the populated Excel file.
+            {t("preview.upgrade_body")}
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
             <Link
               href={`/model/${params.id}/full`}
               className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl text-sm font-semibold transition-colors shadow-lg shadow-blue-500/25"
             >
-              {earlyAccess ? "Open full model" : "Get Pro — $4.99/mo"}
+              {earlyAccess ? t("common.open_full_model") : t("common.get_pro")}
               <ArrowRight className="w-4 h-4" />
             </Link>
             <Link
               href="/pricing"
               className="text-sm text-gray-500 hover:text-gray-900 transition-colors font-medium"
             >
-              See what&apos;s included →
+              {t("preview.upgrade_see_included")}
             </Link>
           </div>
-          <p className="text-xs text-gray-400 mt-4">Cancel anytime · No commitment</p>
+          <p className="text-xs text-gray-400 mt-4">{t("preview.upgrade_cancel")}</p>
         </div>
 
         {!earlyAccess && (

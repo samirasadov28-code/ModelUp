@@ -26,6 +26,7 @@ import { EarlyAccessForm } from "@/components/EarlyAccessForm";
 import { getModelLocally } from "@/lib/model-client-store";
 import { formatCurrencyCompact } from "@/lib/utils";
 import { hasEarlyAccess } from "@/lib/early-access";
+import { useT } from "@/i18n/LocaleProvider";
 import { Calculator, Download, Lightbulb, Lock, Sliders, Sparkles } from "lucide-react";
 import type { ModelOutputs } from "@/lib/types";
 
@@ -35,6 +36,7 @@ export default function FullModelPage() {
   const params = useParams<{ id: string }>();
   const searchParams = useSearchParams();
   const justSubscribed = searchParams.get("subscribed") === "1";
+  const { t } = useT();
 
   const [model, setModel] = useState<ModelOutputs | null>(null);
   const [loading, setLoading] = useState(true);
@@ -204,7 +206,7 @@ export default function FullModelPage() {
             <div className="flex items-center gap-3 mb-2 flex-wrap">
               <span className="inline-flex items-center gap-1.5 text-xs bg-blue-50 text-blue-700 border border-blue-100 px-2.5 py-1 rounded-full font-semibold">
                 <Sparkles className="w-3 h-3" />
-                Full Model — Pro
+                {t("full.full_model_pro")}
               </span>
               <span className="text-xs text-gray-400 capitalize">
                 {answers.businessModel} · {answers.fundingStage.replace("-", " ")}
@@ -226,32 +228,32 @@ export default function FullModelPage() {
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <MetricCard
-            label={`Year ${annual.length} ARR`}
+            label={t("pg.year_n_arr", { n: annual.length })}
             value={fmt(annual[annual.length - 1].arr)}
             variant="highlight"
-            sub="Annual recurring revenue"
+            sub={t("pg.annual_recurring_revenue")}
           />
           <MetricCard
-            label="Runway"
+            label={t("pg.runway")}
             value={runway.cashPositive ? `${monthly.length}mo+` : `${runway.runwayMonths}mo`}
-            sub={`Raise: ${fmt(answers.fundingAsk)}`}
+            sub={t("pg.raise_label", { amount: fmt(answers.fundingAsk) })}
           />
           <MetricCard
-            label="Break-even (EBITDA+)"
+            label={t("pg.break_even")}
             value={runway.breakEvenYear ? `Year ${runway.breakEvenYear}` : `Year ${annual.length}+`}
             variant={runway.breakEvenYear ? "success" : "default"}
-            sub={runway.breakEvenMonth ? `Month ${runway.breakEvenMonth}` : "Not reached in forecast"}
+            sub={runway.breakEvenMonth ? t("pg.break_even_sub", { month: runway.breakEvenMonth }) : t("pg.break_even_not_reached")}
           />
           <MetricCard
-            label="First profitable year"
+            label={t("pg.first_profit_year")}
             value={runway.firstProfitableYear ? `Year ${runway.firstProfitableYear}` : `Year ${annual.length}+`}
             variant={runway.firstProfitableYear ? "success" : "default"}
-            sub="Annual net income > 0"
+            sub={t("pg.first_profit_sub")}
           />
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <MetricCard
-            label="LTV / CAC"
+            label={t("pg.ltv_cac")}
             value={`${unitEconomics.ltvCacRatio.toFixed(1)}x`}
             variant={
               unitEconomics.cacStatus === "green"
@@ -260,15 +262,15 @@ export default function FullModelPage() {
                 ? "warning"
                 : "default"
             }
-            sub={unitEconomics.cacStatus === "green" ? "Healthy ratio" : "Monitor closely"}
+            sub={unitEconomics.cacStatus === "green" ? t("pg.ltv_cac_healthy") : t("pg.ltv_cac_monitor")}
           />
           <MetricCard
-            label="DCF enterprise value"
+            label={t("pg.dcf_ev")}
             value={fmt(Math.max(0, model.valuation.enterpriseValue))}
-            sub={`@ ${(model.valuation.discountRate * 100).toFixed(1)}% discount`}
+            sub={t("pg.dcf_at_rate", { rate: (model.valuation.discountRate * 100).toFixed(1) })}
           />
           <MetricCard
-            label="EBITDA multiple value"
+            label={t("pg.ebitda_mult_value")}
             value={fmt(Math.max(0, model.valuation.multipleValuation.baseValuation))}
             sub={`${model.valuation.multipleValuation.baseMultiple}× ${
               model.valuation.multipleValuation.basis === "ebitda" ? "Y" + annual.length + " EBITDA" : "Y" + annual.length + " ARR"
@@ -299,21 +301,21 @@ export default function FullModelPage() {
 
         <Tabs defaultValue="overview">
           <TabsList className="flex-wrap h-auto">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="pl">P&amp;L</TabsTrigger>
-            <TabsTrigger value="cash-flow">Cash Flow</TabsTrigger>
-            <TabsTrigger value="sources-uses">Sources &amp; Uses</TabsTrigger>
-            <TabsTrigger value="unit-econ">Unit Economics</TabsTrigger>
-            <TabsTrigger value="scenarios">Scenarios</TabsTrigger>
-            <TabsTrigger value="captable">Cap Table</TabsTrigger>
-            <TabsTrigger value="valuation">Valuation</TabsTrigger>
+            <TabsTrigger value="overview">{t("tab.overview")}</TabsTrigger>
+            <TabsTrigger value="pl">{t("tab.pl")}</TabsTrigger>
+            <TabsTrigger value="cash-flow">{t("tab.cash_flow")}</TabsTrigger>
+            <TabsTrigger value="sources-uses">{t("tab.sources_uses")}</TabsTrigger>
+            <TabsTrigger value="unit-econ">{t("tab.unit_econ")}</TabsTrigger>
+            <TabsTrigger value="scenarios">{t("tab.scenarios")}</TabsTrigger>
+            <TabsTrigger value="captable">{t("tab.cap_table")}</TabsTrigger>
+            <TabsTrigger value="valuation">{t("tab.valuation")}</TabsTrigger>
             <TabsTrigger value="sensitivity" className="gap-1.5">
               <Sliders className="w-3.5 h-3.5" />
-              Sensitivity
+              {t("tab.sensitivity")}
             </TabsTrigger>
             <TabsTrigger value="calculations" className="gap-1.5">
               <Calculator className="w-3.5 h-3.5" />
-              Calculations
+              {t("tab.calculations")}
             </TabsTrigger>
           </TabsList>
 
@@ -331,9 +333,9 @@ export default function FullModelPage() {
           <TabsContent value="pl">
             <div className="rounded-xl border border-gray-200 overflow-hidden shadow-sm">
               <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/60">
-                <h2 className="font-semibold text-gray-900">Income Statement</h2>
+                <h2 className="font-semibold text-gray-900">{t("full.income_statement")}</h2>
                 <p className="text-xs text-gray-500 mt-0.5">
-                  5-year annual projections · {answers.growthCurve} scenario
+                  {t("full.income_statement_sub", { years: annual.length, growth: answers.growthCurve })}
                 </p>
               </div>
               <PLTable annual={annual} currency={currency} />
@@ -343,9 +345,9 @@ export default function FullModelPage() {
           <TabsContent value="cash-flow">
             <div className="rounded-xl border border-gray-200 overflow-hidden shadow-sm">
               <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/60">
-                <h2 className="font-semibold text-gray-900">Cash Flow Statement</h2>
+                <h2 className="font-semibold text-gray-900">{t("full.cash_flow_title")}</h2>
                 <p className="text-xs text-gray-500 mt-0.5">
-                  Indirect method · {model.cashFlow.years.length} years · operating + investing + financing
+                  {t("full.cash_flow_sub", { years: model.cashFlow.years.length })}
                 </p>
               </div>
               <CashFlowStatementTable cashFlow={model.cashFlow} currency={currency} />
@@ -354,31 +356,24 @@ export default function FullModelPage() {
 
           <TabsContent value="sources-uses">
             <div className="rounded-xl border border-gray-200 p-6 shadow-sm">
-              <h2 className="font-semibold text-gray-900 mb-1">Sources &amp; Uses</h2>
-              <p className="text-xs text-gray-500 mb-6">
-                Capital coming in versus capital going out — pulled straight from your Q10
-                allocation. Must balance.
-              </p>
+              <h2 className="font-semibold text-gray-900 mb-1">{t("tab.sources_uses")}</h2>
+              <p className="text-xs text-gray-500 mb-6">{t("full.sources_uses_sub")}</p>
               <SourcesAndUsesTable data={model.sourcesAndUses} currency={currency} />
             </div>
           </TabsContent>
 
           <TabsContent value="unit-econ">
             <div className="rounded-xl border border-gray-200 p-6 shadow-sm">
-              <h2 className="font-semibold text-gray-900 mb-1">Unit Economics</h2>
-              <p className="text-xs text-gray-500 mb-6">
-                Core metrics for business health and investor readiness
-              </p>
+              <h2 className="font-semibold text-gray-900 mb-1">{t("full.unit_econ_title")}</h2>
+              <p className="text-xs text-gray-500 mb-6">{t("full.unit_econ_sub")}</p>
               <UnitEconomicsDashboard ue={unitEconomics} currency={currency} />
             </div>
           </TabsContent>
 
           <TabsContent value="scenarios">
             <div className="rounded-xl border border-gray-200 p-6 shadow-sm">
-              <h2 className="font-semibold text-gray-900 mb-1">Scenario Comparison</h2>
-              <p className="text-xs text-gray-500 mb-6">
-                Conservative vs Base vs Aggressive across key metrics
-              </p>
+              <h2 className="font-semibold text-gray-900 mb-1">{t("full.scenarios_title")}</h2>
+              <p className="text-xs text-gray-500 mb-6">{t("full.scenarios_sub")}</p>
               <ScenarioComparison
                 base={scenarios.base}
                 conservative={scenarios.conservative}
@@ -391,18 +386,13 @@ export default function FullModelPage() {
           <TabsContent value="captable">
             <div className="rounded-xl border border-gray-200 p-6 shadow-sm space-y-6">
               <div>
-                <h2 className="font-semibold text-gray-900 mb-1">Cap Table</h2>
-                <p className="text-xs text-gray-500">
-                  Pre / post-raise ownership for this round.
-                </p>
+                <h2 className="font-semibold text-gray-900 mb-1">{t("full.cap_table_title")}</h2>
+                <p className="text-xs text-gray-500">{t("full.cap_table_sub")}</p>
               </div>
               <CapTableSummary capTable={capTable} currency={currency} />
               <div className="pt-4 border-t border-gray-100">
-                <h3 className="font-semibold text-gray-900 mb-1">Multi-round dilution waterfall</h3>
-                <p className="text-xs text-gray-500 mb-4">
-                  Edit pre-seed splits and projected future rounds — the table below shows founder
-                  dilution at each stage including ESOP refreshes.
-                </p>
+                <h3 className="font-semibold text-gray-900 mb-1">{t("full.waterfall_title")}</h3>
+                <p className="text-xs text-gray-500 mb-4">{t("full.waterfall_sub")}</p>
                 <ProCapTableWaterfall model={model} />
               </div>
             </div>
@@ -412,11 +402,8 @@ export default function FullModelPage() {
             <div className="space-y-4">
               <ValuationCard model={model} />
               <div className="rounded-xl border border-gray-200 p-6 shadow-sm">
-                <h2 className="font-semibold text-gray-900 mb-1">Pro WACC build-up</h2>
-                <p className="text-xs text-gray-500 mb-6">
-                  Refine the discount rate from CAPM + cost of debt; the DCF table and sensitivity
-                  matrix below recompute live.
-                </p>
+                <h2 className="font-semibold text-gray-900 mb-1">{t("full.pro_wacc_title")}</h2>
+                <p className="text-xs text-gray-500 mb-6">{t("full.pro_wacc_sub")}</p>
                 <ProValuationPanel model={model} />
               </div>
             </div>
@@ -424,21 +411,16 @@ export default function FullModelPage() {
 
           <TabsContent value="sensitivity">
             <div className="rounded-xl border border-gray-200 p-6 shadow-sm">
-              <h2 className="font-semibold text-gray-900 mb-1">Sensitivity analysis</h2>
-              <p className="text-xs text-gray-500 mb-6">
-                Stress-test every input — burn, CAC, churn, pricing, growth, runway — and see live
-                impact on Year-3 ARR, EBITDA, runway, and unit economics.
-              </p>
+              <h2 className="font-semibold text-gray-900 mb-1">{t("full.sensitivity_title")}</h2>
+              <p className="text-xs text-gray-500 mb-6">{t("full.sensitivity_sub")}</p>
               <SensitivityAnalysis baseModel={model} />
             </div>
           </TabsContent>
 
           <TabsContent value="calculations">
             <div className="rounded-xl border border-gray-200 p-6 shadow-sm">
-              <h2 className="font-semibold text-gray-900 mb-1">Calculations</h2>
-              <p className="text-xs text-gray-500 mb-6">
-                Every formula behind the model, with your inputs plugged in
-              </p>
+              <h2 className="font-semibold text-gray-900 mb-1">{t("full.calculations_title")}</h2>
+              <p className="text-xs text-gray-500 mb-6">{t("full.calculations_sub")}</p>
               <CalculationsPanel model={model} />
             </div>
           </TabsContent>
