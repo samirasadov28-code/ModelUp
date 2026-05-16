@@ -52,12 +52,16 @@ anything destructive (force-push, branch deletion, dropping data, rewriting publ
 - `useT()` hook returns `{ locale, setLocale, t }`. Use `t("nav.pricing")` etc. Falls back
   to English when a key is missing for the current locale.
 - `<LanguageSwitcher />` in the nav opens a popover with all 16 options.
-- **What's translated so far**: landing-page nav, hero, "How it works" section, and a small
-  set of `common.*` strings (Next/Back/Skip/Cancel/Continue/Loading/Get Pro/Download Excel).
-- **What's NOT translated yet**: questionnaire Q1–Q11 questions and options, output pages
-  (preview, full, all tabs), Excel sheet titles + column headers, pricing page, model/new page,
-  AI chat copy. Extract more keys into `dictionaries/en.ts` (and mirror across all 15 other
-  files) as you touch each surface.
+- **What's translated so far**: landing-page nav + hero + "How it works"; **questionnaire
+  Q0 intro screen and Q1–Q11 titles, subtitles, option labels, and Next/Back/step counter
+  buttons**; the `common.*` set (Next/Back/Skip/Cancel/Continue/Loading/Get Pro/Download
+  Excel/Try example/Language/Thinking/Add/Remove/Reset/Step X of Y/Generate Model).
+- **What's NOT translated yet**: output pages (preview, full, all tabs incl. P&L / Cash Flow /
+  Sources & Uses / Unit Econ / Scenarios / Cap Table / Valuation / Sensitivity / Calculations),
+  Excel sheet titles + column headers, pricing page, `/model/new` page wrapper copy, AI chat
+  copy, ProUpsell card text, OptionCard descriptions (only the option labels are translated;
+  the secondary descriptions still render in English). Extract more keys into `dictionaries/en.ts`
+  (and mirror across all 15 other files) as you touch each surface.
 - Translations were AI-assisted in the first pass and need native-speaker review before
   promotion. Keep a `// TODO(i18n-review): <locale>` comment next to any string you're
   unsure about.

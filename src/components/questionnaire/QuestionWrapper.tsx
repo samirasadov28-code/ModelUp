@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/LocaleProvider";
 
 interface QuestionWrapperProps {
   stepNumber: number;
@@ -11,6 +12,7 @@ interface QuestionWrapperProps {
   onNext: () => void;
   onBack?: () => void;
   nextDisabled?: boolean;
+  /** Override the Next label. Falls back to localized "Continue →". */
   nextLabel?: string;
   isLast?: boolean;
 }
@@ -24,13 +26,17 @@ export function QuestionWrapper({
   onNext,
   onBack,
   nextDisabled,
-  nextLabel = "Continue",
+  nextLabel,
   isLast = false,
 }: QuestionWrapperProps) {
+  const { t } = useT();
+  const next = isLast
+    ? t("common.generate_model")
+    : `${nextLabel ?? t("common.continue")} →`;
   return (
     <div className="w-full max-w-xl mx-auto">
       <p className="text-xs font-semibold text-blue-600 uppercase tracking-widest mb-2">
-        Step {stepNumber} of {totalSteps}
+        {t("common.step_of", { current: stepNumber, total: totalSteps })}
       </p>
 
       <h2 className="text-2xl font-bold text-gray-900 mb-1">{title}</h2>
@@ -46,7 +52,7 @@ export function QuestionWrapper({
             onClick={onBack}
             className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
           >
-            ← Back
+            ← {t("common.back")}
           </button>
         ) : (
           <div />
@@ -62,7 +68,7 @@ export function QuestionWrapper({
               : "bg-blue-600 text-white hover:bg-blue-700 shadow-md shadow-blue-500/20"
           )}
         >
-          {isLast ? "Generate My Model →" : `${nextLabel} →`}
+          {next}
         </button>
       </div>
     </div>
