@@ -214,6 +214,112 @@ export const en = {
   "q11.preset_venture": "Venture / deep-tech",
   "q11.custom_rate": "Or set your own (%)",
   "q11.terminal_growth": "Terminal growth rate (long-term, %)",
+
+  // ── Full-model page tabs ───────────────────────────────────────────────
+  "tab.overview": "Overview",
+  "tab.pl": "P&L",
+  "tab.cash_flow": "Cash Flow",
+  "tab.sources_uses": "Sources & Uses",
+  "tab.unit_econ": "Unit Economics",
+  "tab.scenarios": "Scenarios",
+  "tab.cap_table": "Cap Table",
+  "tab.valuation": "Valuation",
+  "tab.sensitivity": "Sensitivity",
+  "tab.calculations": "Calculations",
+
+  // ── Output pages — common labels (preview + full) ──────────────────────
+  "pg.year_n_arr": "Year {n} ARR",
+  "pg.year_n_customers": "Year {n} Customers",
+  "pg.annual_recurring_revenue": "Annual recurring revenue",
+  "pg.cash_runway": "Cash Runway",
+  "pg.runway": "Runway",
+  "pg.raise_label": "Raise: {amount}",
+  "pg.break_even": "Break-even (EBITDA+)",
+  "pg.break_even_sub": "Month {month}",
+  "pg.break_even_not_reached": "Not reached in forecast",
+  "pg.first_profit_year": "First profitable year",
+  "pg.first_profit_sub": "Annual net income > 0",
+  "pg.ltv_cac": "LTV / CAC",
+  "pg.ltv_cac_healthy": "Healthy ratio",
+  "pg.ltv_cac_monitor": "Monitor closely",
+  "pg.dcf_ev": "DCF enterprise value",
+  "pg.dcf_at_rate": "@ {rate}% discount",
+  "pg.ebitda_mult_value": "EBITDA multiple value",
+  "pg.year_arr_label": "{label} ARR",
+  "pg.year_ebitda_label": "{label} EBITDA",
+  "pg.year_paying_customers": "Paying customers (EoY)",
+  "pg.years_model_title": "{company} — {years}-Year Financial Model",
+  "pg.generated_on": "Source: {source} · Generated {date}",
+  "pg.excel_note": "Open Excel file in Excel or Google Sheets to auto-calculate formulas.",
+  "pg.exporting": "Exporting…",
+  "pg.download_xlsx": "Download .xlsx",
+  "pg.excel_ready": "Excel model ready for download.",
+  "pg.excel_ready_body":
+    "The populated {source} file includes all your inputs injected into the Scen sheet. Open in Excel or Google Sheets to auto-calculate every formula.",
+
+  // ── Preview page-specific ──────────────────────────────────────────────
+  "preview.free_preview_badge": "Free Preview",
+  "preview.cash_runway_text":
+    "At a monthly burn of {burn}, your {raise} raise gives you {runway} of runway.",
+  "preview.pl_summary_title": "5-Year P&L Summary",
+  "preview.pl_summary_sub": "Annual projections · {growth} growth scenario",
+  "preview.unit_econ_title": "Unit Economics",
+  "preview.unit_econ_sub": "CAC · LTV · Payback period",
+  "preview.pro_only_badge": "Pro only",
+  "preview.upgrade_title": "Unlock your full financial model",
+  "preview.upgrade_body":
+    "Interactive charts, unit economics, funding narrative, scenario comparison, cap table, every formula plugged in with your numbers, and the populated Excel file.",
+  "preview.upgrade_cancel": "Cancel anytime · No commitment",
+  "preview.upgrade_see_included": "See what's included →",
+  "preview.sources_uses_title": "Sources & Uses",
+  "preview.sources_uses_sub":
+    "Where the capital comes from and where it goes — drawn from your Q10 allocation.",
+
+  // ── Full-model page-specific ───────────────────────────────────────────
+  "full.full_model_pro": "Full Model — Pro",
+  "full.ai_insights_label": "AI Model Insights",
+  "full.income_statement": "Income Statement",
+  "full.income_statement_sub": "{years}-year annual projections · {growth} scenario",
+  "full.unit_econ_title": "Unit Economics",
+  "full.unit_econ_sub": "Core metrics for business health and investor readiness",
+  "full.scenarios_title": "Scenario Comparison",
+  "full.scenarios_sub": "Conservative vs Base vs Aggressive across key metrics",
+  "full.cap_table_title": "Cap Table",
+  "full.cap_table_sub": "Pre / post-raise ownership for this round.",
+  "full.waterfall_title": "Multi-round dilution waterfall",
+  "full.waterfall_sub":
+    "Edit pre-seed splits and projected future rounds — the table below shows founder dilution at each stage including ESOP refreshes.",
+  "full.valuation_title": "Valuation (DCF)",
+  "full.valuation_sub":
+    "Build your discount rate from CAPM + cost of debt, then see year-by-year DCF and a sensitivity matrix across WACC × terminal growth.",
+  "full.pro_wacc_title": "Pro WACC build-up",
+  "full.pro_wacc_sub":
+    "Refine the discount rate from CAPM + cost of debt; the DCF table and sensitivity matrix below recompute live.",
+  "full.sensitivity_title": "Sensitivity analysis",
+  "full.sensitivity_sub":
+    "Stress-test every input — burn, CAC, churn, pricing, growth, runway — and see live impact on Year-3 ARR, EBITDA, runway, and unit economics.",
+  "full.calculations_title": "Calculations",
+  "full.calculations_sub": "Every formula behind the model, with your inputs plugged in",
+  "full.cash_flow_title": "Cash Flow Statement",
+  "full.cash_flow_sub":
+    "Indirect method · {years} years · operating + investing + financing",
+  "full.sources_uses_sub":
+    "Capital coming in versus capital going out — pulled straight from your Q10 allocation. Must balance.",
+
+  // ── Pricing page ───────────────────────────────────────────────────────
+  "pricing.headline_a": "Simple pricing.",
+  "pricing.headline_b": "Built for founders.",
+  "pricing.subheadline":
+    "Start free. Upgrade when you need the full model, charts, scenarios, and Excel download.",
+  "pricing.free_title": "Free",
+  "pricing.free_subtitle": "Forever, no card required",
+  "pricing.pro_title": "Pro",
+  "pricing.pro_subtitle": "Everything Free, plus the full model",
+  "pricing.pro_price_per_mo": "/mo",
+  "pricing.cta_free": "Start free",
+  "pricing.cta_pro": "Get Pro",
+  "pricing.cancel_anytime": "Cancel anytime",
+  "pricing.faq_title": "Frequently asked",
 } as const;
 
 export type DictKey = keyof typeof en;
