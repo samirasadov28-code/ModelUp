@@ -35,6 +35,7 @@ import {
   taxRateForJurisdiction,
 } from "@/lib/regional";
 import { hasEarlyAccess } from "@/lib/early-access";
+import { useT } from "@/i18n/LocaleProvider";
 
 const TOTAL_STEPS = 11;
 
@@ -99,6 +100,7 @@ const DESCRIPTION_EXAMPLES: { label: string; text: string }[] = [
 
 export function QuestionnaireFlow() {
   const router = useRouter();
+  const { t } = useT();
   // step 0 = intro/describe-your-startup screen, 1..10 = the questionnaire
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Partial<QuestionnaireAnswers>>(DEFAULT_ANSWERS);
@@ -255,7 +257,7 @@ export function QuestionnaireFlow() {
     e.preventDefault();
     if (suggesting) return;
     if (description.trim().length < 10) {
-      setSuggestError("Tell us a bit more — at least one sentence.");
+      setSuggestError(t("q0.error_too_short"));
       return;
     }
     setSuggesting(true);
@@ -267,7 +269,7 @@ export function QuestionnaireFlow() {
         body: JSON.stringify({ description }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "AI suggestions failed");
+      if (!res.ok) throw new Error(data.error || t("q0.error_suggest_failed"));
 
       const s = (data.suggestions ?? {}) as Partial<QuestionnaireAnswers> & { reasoning?: string };
       setAnswers((prev) => {
@@ -285,7 +287,7 @@ export function QuestionnaireFlow() {
       setAiNote(s.reasoning ?? "Smart defaults applied — review and adjust each step.");
       setStep(1);
     } catch (err) {
-      setSuggestError(err instanceof Error ? err.message : "AI suggestions failed");
+      setSuggestError(err instanceof Error ? err.message : t("q0.error_suggest_failed"));
     } finally {
       setSuggesting(false);
     }
@@ -358,7 +360,7 @@ export function QuestionnaireFlow() {
 
       router.push(`/model/${modelId}/preview`);
     } catch {
-      setError("Something went wrong. Please try again.");
+      setError(t("common.error_generic"));
       setLoading(false);
     }
   }
@@ -371,8 +373,8 @@ export function QuestionnaireFlow() {
           <div className="absolute inset-2 rounded-full border-2 border-blue-600 border-t-transparent animate-spin" />
         </div>
         <div className="text-center">
-          <p className="text-gray-900 font-semibold">Building your financial model…</p>
-          <p className="text-gray-500 text-sm mt-1">Running projections across 3 scenarios</p>
+          <p className="text-gray-900 font-semibold">{t("q0.building_model")}</p>
+          <p className="text-gray-500 text-sm mt-1">{t("q0.running_projections")}</p>
         </div>
       </div>
     );
@@ -384,30 +386,30 @@ export function QuestionnaireFlow() {
         <div className="rounded-2xl border-2 border-blue-200 bg-gradient-to-br from-blue-50 via-white to-cyan-50 p-6 md:p-8 shadow-xl shadow-blue-500/10">
           <div className="flex items-center gap-2 mb-3">
             <Sparkles className="w-4 h-4 text-blue-600" />
-            <p className="text-xs font-bold text-blue-700 uppercase tracking-wider">Smart start</p>
+            <p className="text-xs font-bold text-blue-700 uppercase tracking-wider">
+              {t("common.smart_start")}
+            </p>
           </div>
           <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900 mb-2 tracking-tight">
-            Describe your startup in a few words
+            {t("q0.intro_title")}
           </h2>
           <p className="text-sm text-gray-600 mb-5 leading-relaxed">
-            One or two sentences is plenty. Our AI will pre-fill the next 10 questions with sensible
-            defaults — your business model, customer type, pricing, burn, CAC, raise size and more —
-            so you only review &amp; tweak instead of typing from scratch.
+            {t("q0.intro_subtitle")}
           </p>
           <form onSubmit={handleSuggest} className="space-y-3">
             <div className="flex items-center justify-between gap-3">
               <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                Your description
+                {t("q0.your_description")}
               </span>
               <button
                 type="button"
                 onClick={handleUseExample}
                 disabled={suggesting}
                 className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-700 hover:text-blue-800 bg-white hover:bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-lg transition-colors disabled:opacity-50"
-                title="Fill the box with a vetted example you can edit"
+                title={t("common.try_example")}
               >
                 <Wand2 className="w-3 h-3" />
-                Try an example: {DESCRIPTION_EXAMPLES[exampleIdx].label}
+                {t("q0.try_example_prefix")} {DESCRIPTION_EXAMPLES[exampleIdx].label}
               </button>
             </div>
             <textarea
@@ -418,7 +420,7 @@ export function QuestionnaireFlow() {
                 setDescription(e.target.value);
                 if (suggestError) setSuggestError(null);
               }}
-              placeholder="e.g. We're building a B2B SaaS platform that helps law firms automate contract review with AI. Charging $200/seat/month, targeting US mid-market firms. Raising a seed round."
+              placeholder={t("q0.placeholder")}
               className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-400 resize-none"
             />
             {suggestError && (
@@ -433,12 +435,12 @@ export function QuestionnaireFlow() {
                 {suggesting ? (
                   <>
                     <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Thinking…
+                    {t("common.thinking")}
                   </>
                 ) : (
                   <>
                     <Sparkles className="w-4 h-4" />
-                    Get smart defaults
+                    {t("q0.get_smart_defaults")}
                   </>
                 )}
               </button>
@@ -448,15 +450,12 @@ export function QuestionnaireFlow() {
                 disabled={suggesting}
                 className="inline-flex items-center justify-center gap-2 border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 px-5 py-2.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
               >
-                Skip — I&apos;ll fill it in myself
+                {t("q0.skip_intro")}
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
           </form>
-          <p className="text-xs text-gray-500 mt-4">
-            Tip: the more you say (pricing, market, stage, headcount), the better the defaults. We
-            never share your description.
-          </p>
+          <p className="text-xs text-gray-500 mt-4">{t("q0.tip")}</p>
         </div>
       </div>
     );
@@ -469,8 +468,8 @@ export function QuestionnaireFlow() {
         <div className="rounded-xl border border-blue-100 bg-blue-50/60 px-4 py-3 flex items-start gap-2">
           <Sparkles className="w-4 h-4 text-blue-600 mt-0.5 shrink-0" />
           <div className="flex-1 text-xs text-gray-700">
-            <span className="font-semibold text-blue-700">Pre-filled from your description.</span>{" "}
-            {aiNote} Review every step — you can edit anything.
+            <span className="font-semibold text-blue-700">{t("q0.ai_prefilled")}</span>{" "}
+            {aiNote} {t("q0.review_each")}
           </div>
           <button
             type="button"
@@ -492,17 +491,17 @@ export function QuestionnaireFlow() {
       {step === 1 && (
         <QuestionWrapper
           stepNumber={1} totalSteps={TOTAL_STEPS}
-          title="What type of business are you building?"
-          subtitle="This determines which financial model we use as the foundation."
+          title={t("q1.title")}
+          subtitle={t("q1.subtitle")}
           onNext={handleNext} onBack={handleBack}
           nextDisabled={!canAdvance()}
         >
           {[
-            { value: "saas", label: "SaaS / Subscription", desc: "Software charged monthly or annually", icon: "⚡" },
-            { value: "marketplace", label: "Marketplace", desc: "Connecting buyers and sellers, taking a cut", icon: "🔄" },
-            { value: "product", label: "Product", desc: "Physical or digital product for purchase", icon: "📦" },
-            { value: "service", label: "Service / Agency", desc: "Retainer or project-based professional services", icon: "🤝" },
-            { value: "other", label: "Other", desc: "Infrastructure, cleantech, hardware, etc.", icon: "🏗️" },
+            { value: "saas", label: t("q1.opt_saas"), desc: "Software charged monthly or annually", icon: "⚡" },
+            { value: "marketplace", label: t("q1.opt_marketplace"), desc: "Connecting buyers and sellers, taking a cut", icon: "🔄" },
+            { value: "product", label: t("q1.opt_product"), desc: "Physical or digital product for purchase", icon: "📦" },
+            { value: "service", label: t("q1.opt_service"), desc: "Retainer or project-based professional services", icon: "🤝" },
+            { value: "other", label: t("q1.opt_other"), desc: "Infrastructure, cleantech, hardware, etc.", icon: "🏗️" },
           ].map((opt) => (
             <OptionCard
               key={opt.value}
@@ -524,14 +523,14 @@ export function QuestionnaireFlow() {
       {step === 2 && (
         <QuestionWrapper
           stepNumber={2} totalSteps={TOTAL_STEPS}
-          title="Who are your customers?"
+          title={t("q2.title")}
           onNext={handleNext} onBack={handleBack}
           nextDisabled={!canAdvance()}
         >
           {[
-            { value: "b2b", label: "B2B — businesses", desc: "Sell to companies, teams, or enterprises", icon: "🏢" },
-            { value: "b2c", label: "B2C — consumers", desc: "Sell directly to individual users", icon: "👤" },
-            { value: "both", label: "Both B2B and B2C", desc: "Mixed customer base", icon: "🌐" },
+            { value: "b2b", label: t("q2.opt_b2b"), desc: "Sell to companies, teams, or enterprises", icon: "🏢" },
+            { value: "b2c", label: t("q2.opt_b2c"), desc: "Sell directly to individual users", icon: "👤" },
+            { value: "both", label: t("q2.opt_both"), desc: "Mixed customer base", icon: "🌐" },
           ].map((opt) => (
             <OptionCard
               key={opt.value}
@@ -553,22 +552,22 @@ export function QuestionnaireFlow() {
       {step === 3 && (
         <QuestionWrapper
           stepNumber={3} totalSteps={TOTAL_STEPS}
-          title="Where do you operate?"
-          subtitle="Primary market drives currency and acquisition assumptions. Tax base drives corporate tax and valuation multiples."
+          title={t("q3.title")}
+          subtitle={t("q3.subtitle")}
           onNext={handleNext} onBack={handleBack}
           nextDisabled={!canAdvance()}
         >
           <div>
             <Label className="text-gray-500 text-xs uppercase tracking-wider font-semibold">
-              Primary market
+              {t("q3.primary_market")}
             </Label>
             <div className="mt-2 space-y-2">
               {[
-                { value: "us", label: "United States", icon: "🇺🇸" },
-                { value: "uk", label: "United Kingdom", icon: "🇬🇧" },
-                { value: "eu", label: "Europe (EU)", icon: "🇪🇺" },
-                { value: "asia", label: "Asia Pacific", icon: "🌏" },
-                { value: "global", label: "Global / Multi-market", icon: "🌍" },
+                { value: "us", label: t("q3.geo_us"), icon: "🇺🇸" },
+                { value: "uk", label: t("q3.geo_uk"), icon: "🇬🇧" },
+                { value: "eu", label: t("q3.geo_eu"), icon: "🇪🇺" },
+                { value: "asia", label: t("q3.geo_asia"), icon: "🌏" },
+                { value: "global", label: t("q3.geo_global"), icon: "🌍" },
               ].map((opt) => (
                 <OptionCard
                   key={opt.value}
@@ -590,12 +589,10 @@ export function QuestionnaireFlow() {
 
           <div className="pt-4 mt-4 border-t border-gray-100">
             <Label className="text-gray-500 text-xs uppercase tracking-wider font-semibold">
-              Tax base — where the company pays corporate tax
+              {t("q3.tax_base")}
             </Label>
             <p className="text-xs text-gray-500 mt-1 mb-3">
-              Drives the corporate-tax line in your P&amp;L and the valuation multiple in the cap
-              table. Most US founders pick &quot;United States&quot; (Delaware C-corp); EU founders
-              often pick Ireland for tech.
+              {t("q3.tax_base_help")}
             </p>
             <div className="grid grid-cols-2 gap-2">
               {FREE_TAX_JURISDICTIONS.map((j) => {
@@ -707,16 +704,16 @@ export function QuestionnaireFlow() {
       {step === 4 && (
         <QuestionWrapper
           stepNumber={4} totalSteps={TOTAL_STEPS}
-          title="What stage are you raising at?"
-          subtitle="This calibrates valuation assumptions and investor return expectations."
+          title={t("q4.title")}
+          subtitle={t("q4.subtitle")}
           onNext={handleNext} onBack={handleBack}
           nextDisabled={!canAdvance()}
         >
           {[
-            { value: "pre-seed", label: "Pre-seed", desc: "Idea or MVP stage, raising your first capital", icon: "🌱" },
-            { value: "seed", label: "Seed", desc: "Early traction, building the team", icon: "🚀" },
-            { value: "series-a", label: "Series A", desc: "Proven product-market fit, scaling", icon: "📈" },
-            { value: "series-b", label: "Series B+", desc: "Scaling fast, expanding markets", icon: "🏆" },
+            { value: "pre-seed", label: t("q4.opt_pre_seed"), desc: "Idea or MVP stage, raising your first capital", icon: "🌱" },
+            { value: "seed", label: t("q4.opt_seed"), desc: "Early traction, building the team", icon: "🚀" },
+            { value: "series-a", label: t("q4.opt_series_a"), desc: "Proven product-market fit, scaling", icon: "📈" },
+            { value: "series-b", label: t("q4.opt_series_b"), desc: "Scaling fast, expanding markets", icon: "🏆" },
           ].map((opt) => (
             <OptionCard
               key={opt.value}
@@ -738,20 +735,20 @@ export function QuestionnaireFlow() {
       {step === 5 && (
         <QuestionWrapper
           stepNumber={5} totalSteps={TOTAL_STEPS}
-          title="How do you make money?"
-          subtitle="Choose the primary revenue model. Subscription is users × tiers. Production is units × unit price. Hybrid runs both."
+          title={t("q5.title")}
+          subtitle={t("q5.subtitle")}
           onNext={handleNext} onBack={handleBack}
           nextDisabled={!canAdvance()}
         >
           <div>
             <Label className="text-gray-500 text-xs uppercase tracking-wider font-semibold">
-              Revenue model
+              {t("q5.revenue_model")}
             </Label>
             <div className="grid grid-cols-3 gap-2 mt-2">
               {[
-                { value: "subscription", label: "Subscription", desc: "Users × tier prices", icon: "🔁" },
-                { value: "production", label: "Production", desc: "Units × unit price", icon: "🏭" },
-                { value: "hybrid", label: "Hybrid", desc: "Both", icon: "🔀" },
+                { value: "subscription", label: t("q5.rm_subscription"), desc: "Users × tier prices", icon: "🔁" },
+                { value: "production", label: t("q5.rm_production"), desc: "Units × unit price", icon: "🏭" },
+                { value: "hybrid", label: t("q5.rm_hybrid"), desc: "Both", icon: "🔀" },
               ].map((opt) => {
                 const selected = (answers.revenueModel ?? "subscription") === opt.value;
                 return (
@@ -778,10 +775,10 @@ export function QuestionnaireFlow() {
             || answers.revenueModel === "hybrid") && (
             <div className="pt-4 mt-4 border-t border-gray-100">
               <Label className="text-gray-500 text-xs uppercase tracking-wider font-semibold">
-                Subscription tiers
+                {t("q5.subscription_tiers")}
               </Label>
               <div className="mt-2 mb-4">
-                <Label className="text-xs text-gray-500 font-medium">Number of pricing tiers</Label>
+                <Label className="text-xs text-gray-500 font-medium">{t("q5.tier_count")}</Label>
                 <div className="flex gap-2 mt-2">
                   {[1, 2, 3, 4].map((n) => (
                     <button
@@ -804,7 +801,7 @@ export function QuestionnaireFlow() {
                   <p className="text-xs text-gray-500 font-semibold uppercase tracking-wider">Tier {i + 1}</p>
                   <div className="grid grid-cols-3 gap-3">
                     <div className="col-span-1">
-                      <Label className="text-xs text-gray-600 mb-1 block font-medium">Name</Label>
+                      <Label className="text-xs text-gray-600 mb-1 block font-medium">{t("q5.tier_name")}</Label>
                       <Input
                         placeholder={["Free", "Basic", "Pro", "Enterprise"][i] ?? `Tier ${i + 1}`}
                         value={answers.tiers?.[i]?.name ?? ""}
@@ -813,7 +810,7 @@ export function QuestionnaireFlow() {
                       />
                     </div>
                     <div>
-                      <Label className="text-xs text-gray-600 mb-1 block font-medium">$/month</Label>
+                      <Label className="text-xs text-gray-600 mb-1 block font-medium">{t("q5.tier_price")}</Label>
                       <MoneyInput
                         placeholder="49"
                         value={answers.tiers?.[i]?.monthlyPrice || undefined}
@@ -822,7 +819,7 @@ export function QuestionnaireFlow() {
                       />
                     </div>
                     <div>
-                      <Label className="text-xs text-gray-600 mb-1 block font-medium">% of users</Label>
+                      <Label className="text-xs text-gray-600 mb-1 block font-medium">{t("q5.tier_alloc")}</Label>
                       <Input
                         type="number"
                         min={0}
@@ -834,16 +831,16 @@ export function QuestionnaireFlow() {
                         className={cn("text-sm h-9", tierCount === 1 && "bg-gray-50 text-gray-500")}
                       />
                       {tierCount === 1 && (
-                        <p className="text-[10px] text-gray-400 mt-1">Locked at 100% with one tier</p>
+                        <p className="text-[10px] text-gray-400 mt-1">{t("q5.tier_locked")}</p>
                       )}
                     </div>
                   </div>
                 </div>
               ))}
               <p className="text-xs text-gray-500 mt-2">
-                Allocation total: {answers.tiers?.reduce((s, t) => s + (t.allocationPercent || 0), 0) ?? 0}%
-                {answers.tiers?.reduce((s, t) => s + (t.allocationPercent || 0), 0) !== 100 && (
-                  <span className="text-amber-600 ml-1 font-medium">(should total 100%)</span>
+                {t("q5.allocation_total")} {answers.tiers?.reduce((s, tier) => s + (tier.allocationPercent || 0), 0) ?? 0}%
+                {answers.tiers?.reduce((s, tier) => s + (tier.allocationPercent || 0), 0) !== 100 && (
+                  <span className="text-amber-600 ml-1 font-medium">{t("q5.allocation_warning")}</span>
                 )}
               </p>
             </div>
@@ -852,7 +849,7 @@ export function QuestionnaireFlow() {
           {(answers.revenueModel === "production" || answers.revenueModel === "hybrid") && (
             <div className="pt-4 mt-4 border-t border-gray-100">
               <Label className="text-gray-500 text-xs uppercase tracking-wider font-semibold">
-                Production / unit economics
+                {t("q5.production_section")}
               </Label>
               <p className="text-xs text-gray-500 mt-1 mb-3">
                 Revenue = units sold × unit price. Direct cost flows through cost-per-unit, so margin
@@ -861,7 +858,7 @@ export function QuestionnaireFlow() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <Label className="text-xs text-gray-600 mb-1 block font-medium">
-                    Units sold in year 1 <span className="text-red-500">*</span>
+                    {t("q5.units_year1")} <span className="text-red-500">*</span>
                   </Label>
                   <MoneyInput
                     prefix=""
@@ -873,7 +870,7 @@ export function QuestionnaireFlow() {
                 </div>
                 <div>
                   <Label className="text-xs text-gray-600 mb-1 block font-medium">
-                    Monthly volume growth
+                    {t("q5.volume_growth")}
                   </Label>
                   <Input
                     type="number"
@@ -889,7 +886,7 @@ export function QuestionnaireFlow() {
                 </div>
                 <div>
                   <Label className="text-xs text-gray-600 mb-1 block font-medium">
-                    Unit price <span className="text-red-500">*</span>
+                    {t("q5.unit_price")} <span className="text-red-500">*</span>
                   </Label>
                   <MoneyInput
                     placeholder="49"
@@ -900,7 +897,7 @@ export function QuestionnaireFlow() {
                 </div>
                 <div>
                   <Label className="text-xs text-gray-600 mb-1 block font-medium">
-                    Direct cost per unit <span className="text-red-500">*</span>
+                    {t("q5.unit_cost")} <span className="text-red-500">*</span>
                   </Label>
                   <MoneyInput
                     placeholder="22"
@@ -908,16 +905,16 @@ export function QuestionnaireFlow() {
                     onValueChange={(v) => update("unitCost", v ?? 0)}
                     className="h-10"
                   />
-                  <p className="text-[10px] text-gray-400 mt-1">Raw materials + direct labor</p>
+                  <p className="text-[10px] text-gray-400 mt-1">{t("q5.unit_cost_help")}</p>
                 </div>
               </div>
               {(answers.unitPrice ?? 0) > 0 && (answers.unitCost ?? 0) >= 0 && (
                 <p className="text-xs text-gray-600 mt-3">
-                  Unit margin:{" "}
+                  {t("q5.unit_margin")}{" "}
                   <span className="font-semibold text-blue-700">
                     {(((answers.unitPrice! - (answers.unitCost ?? 0)) / answers.unitPrice!) * 100).toFixed(1)}%
                   </span>{" "}
-                  · contribution per unit: ${(answers.unitPrice! - (answers.unitCost ?? 0)).toFixed(2)}
+                  · ${(answers.unitPrice! - (answers.unitCost ?? 0)).toFixed(2)} / unit
                 </p>
               )}
             </div>
@@ -940,19 +937,19 @@ export function QuestionnaireFlow() {
       {step === 6 && (
         <QuestionWrapper
           stepNumber={6} totalSteps={TOTAL_STEPS}
-          title="How do you acquire customers?"
-          subtitle="Select all that apply, then tell us your cost to acquire a single customer."
+          title={t("q6.title")}
+          subtitle={t("q6.subtitle")}
           onNext={handleNext} onBack={handleBack}
           nextDisabled={!canAdvance()}
         >
           <div className="grid grid-cols-2 gap-2 mb-4">
             {[
-              { value: "paid-ads", label: "Paid Ads", icon: "📢" },
-              { value: "seo", label: "SEO / Organic", icon: "🔍" },
-              { value: "sales", label: "Sales Team", icon: "📞" },
-              { value: "partnerships", label: "Partnerships", icon: "🤝" },
-              { value: "word-of-mouth", label: "Word of Mouth", icon: "💬" },
-              { value: "product-led", label: "Product-led", icon: "⚡" },
+              { value: "paid-ads", label: t("q6.ch_paid_ads"), icon: "📢" },
+              { value: "seo", label: t("q6.ch_seo"), icon: "🔍" },
+              { value: "sales", label: t("q6.ch_sales"), icon: "📞" },
+              { value: "partnerships", label: t("q6.ch_partnerships"), icon: "🤝" },
+              { value: "word-of-mouth", label: t("q6.ch_word_of_mouth"), icon: "💬" },
+              { value: "product-led", label: t("q6.ch_product_led"), icon: "⚡" },
             ].map((ch) => {
               const selected = answers.acquisitionChannels?.includes(ch.value);
               return (
@@ -981,19 +978,19 @@ export function QuestionnaireFlow() {
           <div className="space-y-3">
             <div>
               <Label className="text-gray-700 mb-2 block font-medium">
-                Estimated cost to acquire one customer (CAC) <span className="text-red-500">*</span>
+                {t("q6.cac_label")} <span className="text-red-500">*</span>
               </Label>
               <MoneyInput
                 placeholder="250"
                 value={answers.cac}
                 onValueChange={(v) => update("cac", v ?? 0)}
               />
-              <p className="text-xs text-gray-500 mt-1">All-in cost: ads spend + sales time + tools</p>
+              <p className="text-xs text-gray-500 mt-1">{t("q6.cac_help")}</p>
             </div>
 
             {(answers.customerType === "b2b" || answers.customerType === "both") && (
               <div>
-                <Label className="text-gray-700 mb-2 block font-medium">Average annual contract value (ACV)</Label>
+                <Label className="text-gray-700 mb-2 block font-medium">{t("q6.acv_label")}</Label>
                 <MoneyInput
                   placeholder="2,400"
                   value={answers.acv}
@@ -1004,7 +1001,7 @@ export function QuestionnaireFlow() {
 
             {(answers.customerType === "b2c" || answers.customerType === "both") && (
               <div>
-                <Label className="text-gray-700 mb-2 block font-medium">Average monthly spend per consumer</Label>
+                <Label className="text-gray-700 mb-2 block font-medium">{t("q6.avg_spend_label")}</Label>
                 <MoneyInput
                   placeholder="29"
                   value={answers.avgMonthlySpend}
@@ -1024,17 +1021,17 @@ export function QuestionnaireFlow() {
       {step === 7 && (
         <QuestionWrapper
           stepNumber={7} totalSteps={TOTAL_STEPS}
-          title="What's your monthly churn rate?"
-          subtitle="The percentage of customers who cancel each month. Lower is better."
+          title={t("q7.title")}
+          subtitle={t("q7.subtitle")}
           onNext={handleNext} onBack={handleBack}
           nextDisabled={!canAdvance()}
         >
           {[
-            { value: "lt2", label: "Less than 2%", desc: "Excellent — enterprise-grade retention", icon: "🟢" },
-            { value: "2to5", label: "2–5%", desc: "Good — typical for well-optimised SaaS", icon: "🟡" },
-            { value: "5to10", label: "5–10%", desc: "Room for improvement — review onboarding", icon: "🟠" },
-            { value: "gt10", label: "Greater than 10%", desc: "High — investigate product-market fit", icon: "🔴" },
-            { value: "unknown", label: "Don't know yet", desc: "We'll use 5% as a baseline", icon: "❓" },
+            { value: "lt2", label: t("q7.opt_lt2"), desc: "Excellent — enterprise-grade retention", icon: "🟢" },
+            { value: "2to5", label: t("q7.opt_2to5"), desc: "Good — typical for well-optimised SaaS", icon: "🟡" },
+            { value: "5to10", label: t("q7.opt_5to10"), desc: "Room for improvement — review onboarding", icon: "🟠" },
+            { value: "gt10", label: t("q7.opt_gt10"), desc: "High — investigate product-market fit", icon: "🔴" },
+            { value: "unknown", label: t("q7.opt_unknown"), desc: "We'll use 5% as a baseline", icon: "❓" },
           ].map((opt) => (
             <OptionCard
               key={opt.value}
@@ -1056,18 +1053,18 @@ export function QuestionnaireFlow() {
       {step === 8 && (
         <QuestionWrapper
           stepNumber={8} totalSteps={TOTAL_STEPS}
-          title="Tell us about your team and costs"
+          title={t("q8.title")}
           onNext={handleNext} onBack={handleBack}
           nextDisabled={!canAdvance()}
         >
           <div>
-            <Label className="text-gray-700 mb-3 block font-medium">Current headcount</Label>
+            <Label className="text-gray-700 mb-3 block font-medium">{t("q8.headcount")}</Label>
             <div className="grid grid-cols-2 gap-2">
               {[
-                { value: "1", label: "Just me (1)" },
-                { value: "2–5", label: "2–5 people" },
-                { value: "6–15", label: "6–15 people" },
-                { value: "15+", label: "15+ people" },
+                { value: "1", label: t("q8.hc_1") },
+                { value: "2–5", label: t("q8.hc_2_5") },
+                { value: "6–15", label: t("q8.hc_6_15") },
+                { value: "15+", label: t("q8.hc_15_plus") },
               ].map((opt) => (
                 <button
                   key={opt.value}
@@ -1086,14 +1083,14 @@ export function QuestionnaireFlow() {
 
           <div className="mt-4">
             <Label className="text-gray-700 mb-2 block font-medium">
-              Monthly burn rate — all costs today <span className="text-red-500">*</span>
+              {t("q8.monthly_burn")} <span className="text-red-500">*</span>
             </Label>
             <MoneyInput
               placeholder="15,000"
               value={answers.monthlyBurn}
               onValueChange={(v) => update("monthlyBurn", v ?? 0)}
             />
-            <p className="text-xs text-gray-500 mt-1">Salaries, tools, office, cloud infra — everything</p>
+            <p className="text-xs text-gray-500 mt-1">{t("q8.burn_help")}</p>
           </div>
           <ProUpsell
             headline="Headcount-driven burn with hiring plan"
@@ -1106,21 +1103,18 @@ export function QuestionnaireFlow() {
       {step === 9 && (
         <QuestionWrapper
           stepNumber={9} totalSteps={TOTAL_STEPS}
-          title="What's your growth ambition?"
+          title={t("q9.title")}
           onNext={handleNext} onBack={handleBack}
           nextDisabled={!canAdvance()}
         >
           {(() => {
             const rm = answers.revenueModel ?? "subscription";
-            // Production-only businesses care about units shipped, not paying
-            // customers. Hybrid businesses care about both. Subscription only
-            // cares about customers.
             return (
               <>
                 {rm !== "production" && (
                   <div className="mb-4">
                     <Label className="text-gray-700 mb-2 block font-medium">
-                      Year 1 customer / user target <span className="text-red-500">*</span>
+                      {t("q9.year1_target")} <span className="text-red-500">*</span>
                     </Label>
                     <MoneyInput
                       prefix=""
@@ -1128,15 +1122,13 @@ export function QuestionnaireFlow() {
                       value={answers.year1UserTarget}
                       onValueChange={(v) => update("year1UserTarget", v ?? 0)}
                     />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Total paying customers at end of year one
-                    </p>
+                    <p className="text-xs text-gray-500 mt-1">{t("q9.year1_target_help")}</p>
                   </div>
                 )}
                 {(rm === "production" || rm === "hybrid") && (
                   <div className="mb-4">
                     <Label className="text-gray-700 mb-2 block font-medium">
-                      Year 1 production target (units) <span className="text-red-500">*</span>
+                      {t("q9.units_target")} <span className="text-red-500">*</span>
                     </Label>
                     <MoneyInput
                       prefix=""
@@ -1144,10 +1136,7 @@ export function QuestionnaireFlow() {
                       value={answers.unitsYear1}
                       onValueChange={(v) => update("unitsYear1", v ?? 0)}
                     />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Total units shipped / produced across year one. Combined with the unit price
-                      &amp; cost you entered on the revenue step, this drives Y1 revenue and direct cost.
-                    </p>
+                    <p className="text-xs text-gray-500 mt-1">{t("q9.units_target_help")}</p>
                   </div>
                 )}
               </>
@@ -1155,11 +1144,11 @@ export function QuestionnaireFlow() {
           })()}
 
           <div>
-            <Label className="text-gray-700 mb-3 block font-medium">Growth scenario</Label>
+            <Label className="text-gray-700 mb-3 block font-medium">{t("q9.growth_scenario")}</Label>
             {[
-              { value: "conservative", label: "Conservative", desc: "~4% monthly growth — realistic, defensible to investors", icon: "🛡️" },
-              { value: "base", label: "Base case", desc: "~9% monthly growth — solid execution, strong market", icon: "📊" },
-              { value: "aggressive", label: "Aggressive", desc: "~18% monthly growth — high-conviction, viral or paid-heavy", icon: "🚀" },
+              { value: "conservative", label: t("q9.opt_conservative"), desc: "~4% monthly growth — realistic, defensible to investors", icon: "🛡️" },
+              { value: "base", label: t("q9.opt_base"), desc: "~9% monthly growth — solid execution, strong market", icon: "📊" },
+              { value: "aggressive", label: t("q9.opt_aggressive"), desc: "~18% monthly growth — high-conviction, viral or paid-heavy", icon: "🚀" },
             ].map((opt) => (
               <OptionCard
                 key={opt.value}
@@ -1182,14 +1171,14 @@ export function QuestionnaireFlow() {
       {step === 10 && (
         <QuestionWrapper
           stepNumber={10} totalSteps={TOTAL_STEPS}
-          title="Tell us about your raise"
-          subtitle="The final piece — we'll use this to calculate runway and returns."
+          title={t("q10.title")}
+          subtitle={t("q10.subtitle")}
           onNext={handleNext} onBack={handleBack}
           nextDisabled={!canAdvance()}
         >
           <div>
             <Label className="text-gray-700 mb-2 block font-medium">
-              How much are you raising? <span className="text-red-500">*</span>
+              {t("q10.raise_amount")} <span className="text-red-500">*</span>
             </Label>
             <MoneyInput
               placeholder="1,000,000"
@@ -1200,11 +1189,11 @@ export function QuestionnaireFlow() {
 
           {(() => {
             const PROCEEDS_OPTIONS = [
-              { value: "product-dev", label: "Product Development" },
-              { value: "hiring", label: "Hiring" },
-              { value: "marketing", label: "Marketing & Sales" },
-              { value: "operations", label: "Operations" },
-              { value: "working-capital", label: "Working Capital" },
+              { value: "product-dev", label: t("q10.uop_product_dev") },
+              { value: "hiring", label: t("q10.uop_hiring") },
+              { value: "marketing", label: t("q10.uop_marketing") },
+              { value: "operations", label: t("q10.uop_operations") },
+              { value: "working-capital", label: t("q10.uop_working_capital") },
             ];
             const selected = answers.useOfProceeds ?? [];
             const alloc = answers.useOfProceedsAllocation ?? {};
@@ -1233,7 +1222,7 @@ export function QuestionnaireFlow() {
             return (
               <div className="mt-3">
                 <Label className="text-gray-700 mb-3 block font-medium">
-                  What will you use it for? (select all) — allocate % of the raise
+                  {t("q10.use_of_proceeds")}
                 </Label>
                 <div className="grid grid-cols-2 gap-2">
                   {PROCEEDS_OPTIONS.map((opt) => {
@@ -1257,7 +1246,7 @@ export function QuestionnaireFlow() {
                 {selected.length > 0 && (
                   <div className="mt-3 space-y-2">
                     <p className="text-xs text-gray-500 font-semibold uppercase tracking-wider">
-                      Allocation across selected
+                      {t("q10.uop_allocation")}
                     </p>
                     {selected.map((key) => {
                       const opt = PROCEEDS_OPTIONS.find((o) => o.value === key);
@@ -1295,7 +1284,7 @@ export function QuestionnaireFlow() {
           })()}
 
           <div className="mt-3">
-            <Label className="text-gray-700 mb-3 block font-medium">Target runway from this raise</Label>
+            <Label className="text-gray-700 mb-3 block font-medium">{t("q10.target_runway")}</Label>
             <div className="grid grid-cols-4 gap-2">
               {[12, 18, 24, 36].map((months) => (
                 <button
@@ -1307,14 +1296,14 @@ export function QuestionnaireFlow() {
                     answers.targetRunway === months ? tileOn : tileOff
                   )}
                 >
-                  {months}mo
+                  {t("q10.runway_months", { months })}
                 </button>
               ))}
             </div>
           </div>
 
           <div className="mt-3">
-            <Label className="text-gray-700 mb-2 block font-medium">Company name (optional)</Label>
+            <Label className="text-gray-700 mb-2 block font-medium">{t("q10.company_name")}</Label>
             <Input
               placeholder="Your startup"
               value={answers.companyName ?? ""}
@@ -1344,12 +1333,12 @@ export function QuestionnaireFlow() {
             : stageDefault;
 
         const PRESETS: { label: string; pct: number; desc: string }[] = [
-          { label: "Mature / public-comp", pct: 10, desc: "WACC-driven, low risk" },
-          { label: "Established growth", pct: 15, desc: "Series B+ / late stage" },
-          { label: "Series A", pct: 22, desc: "Proven PMF, scaling" },
-          { label: "Seed", pct: 28, desc: "Early traction" },
-          { label: "Pre-seed / early", pct: 35, desc: "Idea or MVP" },
-          { label: "Venture / deep-tech", pct: 45, desc: "High-risk early bet" },
+          { label: t("q11.preset_mature"), pct: 10, desc: "WACC-driven, low risk" },
+          { label: t("q11.preset_established"), pct: 15, desc: "Series B+ / late stage" },
+          { label: t("q11.preset_series_a"), pct: 22, desc: "Proven PMF, scaling" },
+          { label: t("q11.preset_seed"), pct: 28, desc: "Early traction" },
+          { label: t("q11.preset_pre_seed"), pct: 35, desc: "Idea or MVP" },
+          { label: t("q11.preset_venture"), pct: 45, desc: "High-risk early bet" },
         ];
 
         const setRate = (pct: number) => update("discountRate", Math.max(0, pct) / 100);
@@ -1357,15 +1346,15 @@ export function QuestionnaireFlow() {
         return (
           <QuestionWrapper
             stepNumber={11} totalSteps={TOTAL_STEPS}
-            title="What discount rate should we use?"
-            subtitle="This is the return investors demand from your stage of business. We'll use it to compute a DCF valuation from the 5-year forecast. Pro unlocks a full WACC build-up."
+            title={t("q11.title")}
+            subtitle={t("q11.subtitle")}
             onNext={handleNext} onBack={handleBack}
             nextDisabled={!canAdvance()}
             isLast
           >
             <div>
               <Label className="text-gray-500 text-xs uppercase tracking-wider font-semibold">
-                Pick a preset
+                {t("q11.pick_preset")}
               </Label>
               <div className="grid grid-cols-2 gap-2 mt-2">
                 {PRESETS.map((p) => {
@@ -1393,7 +1382,7 @@ export function QuestionnaireFlow() {
 
             <div className="mt-4">
               <Label className="text-gray-700 mb-2 block font-medium">
-                Or set your own (%) <span className="text-red-500">*</span>
+                {t("q11.custom_rate")} <span className="text-red-500">*</span>
               </Label>
               <div className="flex items-center gap-2">
                 <Input
@@ -1415,7 +1404,7 @@ export function QuestionnaireFlow() {
 
             <div className="mt-4">
               <Label className="text-gray-700 mb-2 block font-medium">
-                Terminal growth rate (long-term, %)
+                {t("q11.terminal_growth")}
               </Label>
               <div className="flex items-center gap-2">
                 <Input
