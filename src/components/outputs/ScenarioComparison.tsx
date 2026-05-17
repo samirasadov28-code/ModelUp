@@ -2,25 +2,13 @@
 
 import { cn, formatCurrencyCompact, formatNumber } from "@/lib/utils";
 import type { ScenarioMetrics, Currency } from "@/lib/types";
+import { useT } from "@/i18n/LocaleProvider";
 
 interface ScenarioComparisonProps {
   base: ScenarioMetrics;
   conservative: ScenarioMetrics;
   aggressive: ScenarioMetrics;
   currency?: Currency;
-}
-
-function buildCols(currency?: Currency) {
-  const fmt = (v: number) => formatCurrencyCompact(v, currency);
-  return [
-    { key: "revenueY1" as keyof ScenarioMetrics, label: "Revenue Y1", format: fmt },
-    { key: "revenueY2" as keyof ScenarioMetrics, label: "Revenue Y2", format: fmt },
-    { key: "revenueLast" as keyof ScenarioMetrics, label: "Revenue (last year)", format: fmt },
-    { key: "arrLast" as keyof ScenarioMetrics, label: "ARR (end of last year)", format: fmt },
-    { key: "ebitdaLast" as keyof ScenarioMetrics, label: "EBITDA (last year)", format: fmt },
-    { key: "totalUsersLast" as keyof ScenarioMetrics, label: "Customers (last year)", format: (v: number) => formatNumber(v) },
-    { key: "runwayMonths" as keyof ScenarioMetrics, label: "Runway", format: (v: number) => v >= 60 ? "60mo+" : `${v}mo` },
-  ];
 }
 
 const SCENARIO_STYLES = {
@@ -36,23 +24,33 @@ const HEADER_STYLES = {
 };
 
 export function ScenarioComparison({ base, conservative, aggressive, currency }: ScenarioComparisonProps) {
-  const COLS = buildCols(currency);
+  const { t } = useT();
+  const fmt = (v: number) => formatCurrencyCompact(v, currency);
+  const COLS = [
+    { key: "revenueY1" as keyof ScenarioMetrics, label: t("sc.revenue_y1"), format: fmt },
+    { key: "revenueY2" as keyof ScenarioMetrics, label: t("sc.revenue_y2"), format: fmt },
+    { key: "revenueLast" as keyof ScenarioMetrics, label: t("sc.revenue_last"), format: fmt },
+    { key: "arrLast" as keyof ScenarioMetrics, label: t("sc.arr_last"), format: fmt },
+    { key: "ebitdaLast" as keyof ScenarioMetrics, label: t("sc.ebitda_last"), format: fmt },
+    { key: "totalUsersLast" as keyof ScenarioMetrics, label: t("sc.customers_last"), format: (v: number) => formatNumber(v) },
+    { key: "runwayMonths" as keyof ScenarioMetrics, label: t("sc.runway_label"), format: (v: number) => v >= 60 ? "60mo+" : `${v}mo` },
+  ];
   const scenarios = [
-    { data: conservative, name: "Conservative" as const },
-    { data: base, name: "Base" as const },
-    { data: aggressive, name: "Aggressive" as const },
+    { data: conservative, name: "Conservative" as const, displayName: t("sc.conservative") },
+    { data: base, name: "Base" as const, displayName: t("sc.base") },
+    { data: aggressive, name: "Aggressive" as const, displayName: t("sc.aggressive") },
   ];
 
   return (
     <div className="space-y-3">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        {scenarios.map(({ data, name }) => (
+        {scenarios.map(({ data, name, displayName }) => (
           <div key={name} className={cn("rounded-xl border p-5 shadow-sm", SCENARIO_STYLES[name])}>
             <div className="flex items-center justify-between mb-4">
-              <h4 className={cn("text-sm font-bold uppercase tracking-wider", HEADER_STYLES[name])}>{name}</h4>
+              <h4 className={cn("text-sm font-bold uppercase tracking-wider", HEADER_STYLES[name])}>{displayName}</h4>
               {name === "Base" && (
                 <span className="text-xs bg-blue-600 text-white px-2 py-0.5 rounded-full font-semibold">
-                  Selected
+                  {t("sc.selected")}
                 </span>
               )}
             </div>

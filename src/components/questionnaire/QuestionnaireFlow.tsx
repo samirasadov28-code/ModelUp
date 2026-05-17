@@ -513,8 +513,8 @@ export function QuestionnaireFlow() {
             />
           ))}
           <ProUpsell
-            headline="Industry-tuned cost-of-revenue benchmarks"
-            body="Pro picks the right COGS curve for your category — vertical SaaS, hardware, fintech, marketplaces — instead of the blended industry default."
+            headline={t("ups.q1_head")}
+            body={t("ups.q1_body")}
           />
         </QuestionWrapper>
       )}
@@ -542,8 +542,8 @@ export function QuestionnaireFlow() {
             />
           ))}
           <ProUpsell
-            headline="Cohort-level retention curves for B2B vs B2C"
-            body="Pro models enterprise vs SMB vs consumer cohorts separately — different churn, ACV, and payback by segment instead of one blended curve."
+            headline={t("ups.q2_head")}
+            body={t("ups.q2_body")}
           />
         </QuestionWrapper>
       )}
@@ -694,8 +694,8 @@ export function QuestionnaireFlow() {
           </div>
 
           <ProUpsell
-            headline="Region-aware payroll loading & state-level tax precision"
-            body="Pro adds employer NI / FICA / payroll burden to your monthly burn and lets you pick state-level (Delaware vs CA) or canton-level (Zug vs Zurich) corporate-tax precision."
+            headline={t("ups.q3_head")}
+            body={t("ups.q3_body")}
           />
         </QuestionWrapper>
       )}
@@ -725,8 +725,8 @@ export function QuestionnaireFlow() {
             />
           ))}
           <ProUpsell
-            headline="Stage-blended valuation comparables"
-            body="Pro pulls fresh seed/A/B revenue multiples by industry & geography from PitchBook-style comps — not a single static stage multiple."
+            headline={t("ups.q4_head")}
+            body={t("ups.q4_body")}
           />
         </QuestionWrapper>
       )}
@@ -927,8 +927,8 @@ export function QuestionnaireFlow() {
             />
           </div>
           <ProUpsell
-            headline="Per-tier churn, expansion revenue & dynamic unit pricing"
-            body="Pro models tier-level churn / upgrades, ramping unit prices over time, and segmented production lines (multiple SKUs with their own cost & volume curves)."
+            headline={t("ups.q5_head")}
+            body={t("ups.q5_body")}
           />
         </QuestionWrapper>
       )}
@@ -1011,8 +1011,8 @@ export function QuestionnaireFlow() {
             )}
           </div>
           <ProUpsell
-            headline="Per-channel CAC, conversion, and payback curves"
-            body="Pro lets you split CAC by channel — paid ads, sales, partnerships — each with its own conversion rate, ramp, and payback so you can see which channel actually scales."
+            headline={t("ups.q6_head")}
+            body={t("ups.q6_body")}
           />
         </QuestionWrapper>
       )}
@@ -1043,8 +1043,8 @@ export function QuestionnaireFlow() {
             />
           ))}
           <ProUpsell
-            headline="Cohort-based churn that decays over time"
-            body="Pro models month-1 churn separately from steady-state churn (early customers churn 3-5× more) so the LTV math actually matches reality."
+            headline={t("ups.q7_head")}
+            body={t("ups.q7_body")}
           />
         </QuestionWrapper>
       )}
@@ -1093,8 +1093,8 @@ export function QuestionnaireFlow() {
             <p className="text-xs text-gray-500 mt-1">{t("q8.burn_help")}</p>
           </div>
           <ProUpsell
-            headline="Headcount-driven burn with hiring plan"
-            body="Pro builds your burn from a roles-and-salaries hiring plan (engineer, AE, designer) with employer payroll loading by jurisdiction — not a flat monthly figure that drifts."
+            headline={t("ups.q8_head")}
+            body={t("ups.q8_body")}
           />
         </QuestionWrapper>
       )}
@@ -1161,8 +1161,8 @@ export function QuestionnaireFlow() {
             ))}
           </div>
           <ProUpsell
-            headline="S-curve growth with TAM ceiling"
-            body="Pro replaces flat monthly growth with an S-curve that decelerates as you approach your TAM — what investors actually expect for top-down sanity checks."
+            headline={t("ups.q9_head")}
+            body={t("ups.q9_body")}
           />
         </QuestionWrapper>
       )}
@@ -1311,8 +1311,8 @@ export function QuestionnaireFlow() {
             />
           </div>
           <ProUpsell
-            headline="Dilution waterfall across multiple rounds"
-            body="Pro models seed → A → B in sequence — option-pool refresh, ESOP top-ups, secondary — so you can see founder dilution at exit, not just after this round."
+            headline={t("ups.q10_head")}
+            body={t("ups.q10_body")}
           />
         </QuestionWrapper>
       )}
@@ -1431,8 +1431,8 @@ export function QuestionnaireFlow() {
             </div>
 
             <ProUpsell
-              headline="Full WACC build-up: cost of equity (CAPM) + cost of debt × tax shield"
-              body="Pro lets you set risk-free rate, beta, equity risk premium, cost of debt and debt/equity weights to refine this discount rate, plus a full DCF valuation table with sensitivity bands."
+              headline={t("ups.q11_head")}
+              body={t("ups.q11_body")}
             />
           </QuestionWrapper>
         );

@@ -320,6 +320,177 @@ export const en = {
   "pricing.cta_pro": "Get Pro",
   "pricing.cancel_anytime": "Cancel anytime",
   "pricing.faq_title": "Frequently asked",
+
+  // ── PLTable (P&L tab) ──────────────────────────────────────────────────
+  "pl.metric": "Metric",
+  "pl.revenue": "Revenue",
+  "pl.cogs": "Cost of Revenue",
+  "pl.gross_profit": "Gross Profit",
+  "pl.gross_margin_pct": "Gross Margin %",
+  "pl.opex": "Operating Expenses",
+  "pl.ebitda": "EBITDA",
+  "pl.ebitda_margin_pct": "EBITDA Margin %",
+  "pl.net_income": "Net Income",
+  "pl.operational_kpis": "Operational KPIs",
+  "pl.paying_customers_eop": "Paying Customers (EOP)",
+  "pl.arr_yoe": "ARR (Year-end)",
+
+  // ── CashFlowStatementTable ─────────────────────────────────────────────
+  "cf.line_item": "Line item",
+  "cf.net_income_post_tax": "Net income (post-tax)",
+  "cf.plus_da": "+ D&A",
+  "cf.plus_wc": "+ Working-capital changes",
+  "cf.cash_from_ops": "Cash from operations",
+  "cf.capex": "CapEx",
+  "cf.cash_from_investing": "Cash from investing",
+  "cf.equity_raised": "Equity raised",
+  "cf.debt_raised": "Debt raised",
+  "cf.cash_from_financing": "Cash from financing",
+  "cf.net_change_in_cash": "Net change in cash",
+  "cf.beginning_cash": "Beginning cash",
+  "cf.ending_cash": "Ending cash",
+
+  // ── SourcesAndUsesTable ────────────────────────────────────────────────
+  "su.sources_title": "Sources",
+  "su.sources_sub": "Where the capital comes from",
+  "su.uses_title": "Uses",
+  "su.uses_sub": "Where the capital goes (from your Q10 allocation)",
+  "su.col_source": "Source",
+  "su.col_use": "Use",
+  "su.col_amount": "Amount",
+  "su.col_percent": "%",
+  "su.total_sources": "Total sources",
+  "su.total_uses": "Total uses",
+  "su.balanced": "Sources and Uses balance.",
+  "su.unbalanced": "Sources and Uses differ by {delta} — check Q10 allocations.",
+
+  // ── ValuationCard ──────────────────────────────────────────────────────
+  "val.title": "Valuation",
+  "val.subtitle":
+    "DCF and comps-based EBITDA multiple — two independent anchors so you can triangulate.",
+  "val.dcf_intrinsic": "DCF (intrinsic)",
+  "val.enterprise_value": "Enterprise value",
+  "val.discount_rate": "Discount rate",
+  "val.terminal_growth": "Terminal growth",
+  "val.pv_of_fcf": "PV of FCF",
+  "val.pv_of_terminal": "PV of terminal",
+  "val.ebitda_mult_comps": "EBITDA multiple (comps)",
+  "val.revenue_mult_comps": "Revenue multiple (comps)",
+  "val.mult_low": "Low ({mult}×)",
+  "val.mult_base": "Base ({mult}×)",
+  "val.mult_high": "High ({mult}×)",
+  "val.times_mult_basis": "{label} × {mult}× ({basis})",
+  "val.basis_ebitda": "EBITDA mult.",
+  "val.basis_revenue": "ARR mult.",
+
+  // ── CapTableSummary ────────────────────────────────────────────────────
+  "ct.pre_money_valuation": "Pre-money Valuation",
+  "ct.raise_amount": "Raise Amount",
+  "ct.post_money_valuation": "Post-money Valuation",
+  "ct.col_shareholder": "Shareholder",
+  "ct.col_shares_pre": "Shares (pre)",
+  "ct.col_ownership_pre": "Ownership (pre)",
+  "ct.col_shares_post": "Shares (post)",
+  "ct.col_ownership_post": "Ownership (post)",
+  "ct.price_per_share_note":
+    "Price per share: {price} · Based on {pct} new equity",
+  "ct.founders": "Founders",
+  "ct.new_investors": "New Investors",
+
+  // ── UnitEconomicsDashboard ─────────────────────────────────────────────
+  "ue.cac_label": "Customer Acquisition Cost",
+  "ue.cac_sub": "All-in cost per new customer",
+  "ue.ltv_label": "Lifetime Value",
+  "ue.ltv_sub": "Based on {gm}% gross margin",
+  "ue.ltv_cac_label": "LTV / CAC Ratio",
+  "ue.ltv_cac_healthy": "Healthy — investors will like this",
+  "ue.ltv_cac_acceptable": "Acceptable — room to improve",
+  "ue.ltv_cac_needs_work": "Needs work — LTV is below CAC",
+  "ue.payback_label": "Payback Period",
+  "ue.payback_value": "{months} months",
+  "ue.payback_sub": "Time to recover CAC from margin",
+  "ue.blended_arpu": "Blended ARPU",
+  "ue.blended_arpu_per_month": "/month",
+  "ue.blended_arpu_sub": "Weighted average across all pricing tiers",
+  "ue.pro_only": "Pro only",
+
+  // ── ScenarioComparison ─────────────────────────────────────────────────
+  "sc.conservative": "Conservative",
+  "sc.base": "Base",
+  "sc.aggressive": "Aggressive",
+  "sc.selected": "Selected",
+  "sc.revenue_y1": "Revenue Y1",
+  "sc.revenue_y2": "Revenue Y2",
+  "sc.revenue_last": "Revenue (last year)",
+  "sc.arr_last": "ARR (end of last year)",
+  "sc.ebitda_last": "EBITDA (last year)",
+  "sc.customers_last": "Customers (last year)",
+  "sc.runway_label": "Runway",
+
+  // ── SensitivityAnalysis (sliders + metric cards) ───────────────────────
+  "sens.intro_title": "Stress-test every input",
+  "sens.intro_body":
+    "Drag any slider to see how Year-3 ARR, EBITDA, runway, and unit economics respond. The financial engine recomputes live across all 36 months and three scenarios. Your saved base case is unchanged.",
+  "sens.live_impact": "Live impact on Year-3 outputs",
+  "sens.slider_monthly_burn": "Monthly burn",
+  "sens.slider_monthly_burn_hint": "All-in cash spend per month",
+  "sens.slider_cac": "CAC",
+  "sens.slider_cac_hint": "Cost to acquire a single paying customer",
+  "sens.slider_churn": "Monthly churn",
+  "sens.slider_churn_hint": "% of customers cancelling each month",
+  "sens.slider_year1_target": "Year 1 customer target",
+  "sens.slider_year1_target_hint": "End of year 1 paying customers",
+  "sens.slider_funding_ask": "Funding ask",
+  "sens.slider_funding_ask_hint": "Capital raised in this round",
+  "sens.slider_arpu_mult": "Pricing (ARPU multiplier)",
+  "sens.slider_arpu_mult_hint": "Scales every tier price up or down",
+  "sens.slider_cogs_adj": "COGS adjustment",
+  "sens.slider_cogs_adj_hint": "Adds/subtracts percentage points to COGS rate",
+  "sens.growth_scenario_card": "Growth scenario",
+  "sens.growth_scenario_hint":
+    "Conservative ≈ 4%/mo, Base ≈ 9%/mo, Aggressive ≈ 18%/mo.",
+  "sens.base_label": "base:",
+  "sens.delta_vs_base": "vs base",
+  "sens.what_this_tells": "What this tells you",
+  "sens.what_this_body":
+    "The most sensitive levers in your model are usually monthly churn and pricing (they compound monthly). A 1pp churn change can swing Year-3 ARR by 20%+. Burn and funding ask move runway directly. CAC primarily moves the LTV/CAC ratio and payback. Use the sliders above to find your model's break points.",
+
+  // ── ProUpsell card text (one per question + Q3 + Q5) ───────────────────
+  "ups.q1_head": "Industry-tuned cost-of-revenue benchmarks",
+  "ups.q1_body":
+    "Pro picks the right COGS curve for your category — vertical SaaS, hardware, fintech, marketplaces — instead of the blended industry default.",
+  "ups.q2_head": "Cohort-level retention curves for B2B vs B2C",
+  "ups.q2_body":
+    "Pro models enterprise vs SMB vs consumer cohorts separately — different churn, ACV, and payback by segment instead of one blended curve.",
+  "ups.q3_head": "Region-aware payroll loading & state-level tax precision",
+  "ups.q3_body":
+    "Pro adds employer NI / FICA / payroll burden to your monthly burn and lets you pick state-level (Delaware vs CA) or canton-level (Zug vs Zurich) corporate-tax precision.",
+  "ups.q4_head": "Stage-blended valuation comparables",
+  "ups.q4_body":
+    "Pro pulls fresh seed / A / B revenue multiples by industry & geography from PitchBook-style comps — not a single static stage multiple.",
+  "ups.q5_head": "Per-tier churn, expansion revenue & dynamic unit pricing",
+  "ups.q5_body":
+    "Pro models tier-level churn / upgrades, ramping unit prices over time, and segmented production lines (multiple SKUs with their own cost & volume curves).",
+  "ups.q6_head": "Per-channel CAC, conversion, and payback curves",
+  "ups.q6_body":
+    "Pro lets you split CAC by channel — paid ads, sales, partnerships — each with its own conversion rate, ramp, and payback so you can see which channel actually scales.",
+  "ups.q7_head": "Cohort-based churn that decays over time",
+  "ups.q7_body":
+    "Pro models month-1 churn separately from steady-state churn (early customers churn 3-5× more) so the LTV math actually matches reality.",
+  "ups.q8_head": "Headcount-driven burn with hiring plan",
+  "ups.q8_body":
+    "Pro builds your burn from a roles-and-salaries hiring plan (engineer, AE, designer) with employer payroll loading by jurisdiction — not a flat monthly figure that drifts.",
+  "ups.q9_head": "S-curve growth with TAM ceiling",
+  "ups.q9_body":
+    "Pro replaces flat monthly growth with an S-curve that decelerates as you approach your TAM — what investors actually expect for top-down sanity checks.",
+  "ups.q10_head": "Dilution waterfall across multiple rounds",
+  "ups.q10_body":
+    "Pro models seed → A → B in sequence — option-pool refresh, ESOP top-ups, secondary — so you can see founder dilution at exit, not just after this round.",
+  "ups.q11_head": "Full WACC build-up: cost of equity (CAPM) + cost of debt × tax shield",
+  "ups.q11_body":
+    "Pro lets you set risk-free rate, beta, equity risk premium, cost of debt and debt/equity weights to refine this discount rate, plus a full DCF valuation table with sensitivity bands.",
+  "ups.pro_prefix": "Pro:",
+  "ups.see_features": "See Pro features",
 } as const;
 
 export type DictKey = keyof typeof en;
