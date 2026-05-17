@@ -2,6 +2,7 @@
 
 import { formatCurrency, formatPercent } from "@/lib/utils";
 import type { Currency, SourcesAndUsesData } from "@/lib/types";
+import { useT } from "@/i18n/LocaleProvider";
 
 interface SourcesAndUsesTableProps {
   data: SourcesAndUsesData;
@@ -9,6 +10,7 @@ interface SourcesAndUsesTableProps {
 }
 
 export function SourcesAndUsesTable({ data, currency }: SourcesAndUsesTableProps) {
+  const { t } = useT();
   const fmt = (v: number) => formatCurrency(v, 0, currency);
   const balanced = Math.abs(data.totalSources - data.totalUses) < 1;
 
@@ -17,15 +19,15 @@ export function SourcesAndUsesTable({ data, currency }: SourcesAndUsesTableProps
       {/* Sources */}
       <div className="rounded-xl border border-gray-200 overflow-hidden shadow-sm">
         <div className="bg-emerald-50/60 px-5 py-3 border-b border-emerald-100">
-          <p className="text-xs font-bold uppercase tracking-wider text-emerald-700">Sources</p>
-          <p className="text-[11px] text-gray-500 mt-0.5">Where the capital comes from</p>
+          <p className="text-xs font-bold uppercase tracking-wider text-emerald-700">{t("su.sources_title")}</p>
+          <p className="text-[11px] text-gray-500 mt-0.5">{t("su.sources_sub")}</p>
         </div>
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-gray-100 bg-white">
-              <th className="text-left py-2 px-4 text-gray-500 text-xs font-semibold">Source</th>
-              <th className="text-right py-2 px-4 text-gray-500 text-xs font-semibold">%</th>
-              <th className="text-right py-2 px-4 text-gray-500 text-xs font-semibold">Amount</th>
+              <th className="text-left py-2 px-4 text-gray-500 text-xs font-semibold">{t("su.col_source")}</th>
+              <th className="text-right py-2 px-4 text-gray-500 text-xs font-semibold">{t("su.col_percent")}</th>
+              <th className="text-right py-2 px-4 text-gray-500 text-xs font-semibold">{t("su.col_amount")}</th>
             </tr>
           </thead>
           <tbody>
@@ -41,7 +43,7 @@ export function SourcesAndUsesTable({ data, currency }: SourcesAndUsesTableProps
               </tr>
             ))}
             <tr className="bg-emerald-50/40">
-              <td className="py-2.5 px-4 font-semibold text-emerald-700">Total sources</td>
+              <td className="py-2.5 px-4 font-semibold text-emerald-700">{t("su.total_sources")}</td>
               <td className="py-2.5 px-4 text-right font-mono tabular-nums text-emerald-700 font-semibold">
                 100.0%
               </td>
@@ -56,17 +58,17 @@ export function SourcesAndUsesTable({ data, currency }: SourcesAndUsesTableProps
       {/* Uses */}
       <div className="rounded-xl border border-gray-200 overflow-hidden shadow-sm">
         <div className="bg-blue-50/60 px-5 py-3 border-b border-blue-100">
-          <p className="text-xs font-bold uppercase tracking-wider text-blue-700">Uses</p>
+          <p className="text-xs font-bold uppercase tracking-wider text-blue-700">{t("su.uses_title")}</p>
           <p className="text-[11px] text-gray-500 mt-0.5">
-            Where the capital goes (from your Q10 allocation)
+            {t("su.uses_sub")}
           </p>
         </div>
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-gray-100 bg-white">
-              <th className="text-left py-2 px-4 text-gray-500 text-xs font-semibold">Use</th>
-              <th className="text-right py-2 px-4 text-gray-500 text-xs font-semibold">%</th>
-              <th className="text-right py-2 px-4 text-gray-500 text-xs font-semibold">Amount</th>
+              <th className="text-left py-2 px-4 text-gray-500 text-xs font-semibold">{t("su.col_use")}</th>
+              <th className="text-right py-2 px-4 text-gray-500 text-xs font-semibold">{t("su.col_percent")}</th>
+              <th className="text-right py-2 px-4 text-gray-500 text-xs font-semibold">{t("su.col_amount")}</th>
             </tr>
           </thead>
           <tbody>
@@ -82,7 +84,7 @@ export function SourcesAndUsesTable({ data, currency }: SourcesAndUsesTableProps
               </tr>
             ))}
             <tr className="bg-blue-50/40">
-              <td className="py-2.5 px-4 font-semibold text-blue-700">Total uses</td>
+              <td className="py-2.5 px-4 font-semibold text-blue-700">{t("su.total_uses")}</td>
               <td className="py-2.5 px-4 text-right font-mono tabular-nums text-blue-700 font-semibold">
                 100.0%
               </td>
@@ -97,8 +99,8 @@ export function SourcesAndUsesTable({ data, currency }: SourcesAndUsesTableProps
       <div className="md:col-span-2">
         <p className={`text-xs ${balanced ? "text-gray-500" : "text-amber-600 font-semibold"}`}>
           {balanced
-            ? "✓ Sources and Uses balance."
-            : `Sources and Uses differ by ${fmt(data.totalSources - data.totalUses)} — check Q10 allocations.`}
+            ? t("su.balanced")
+            : t("su.unbalanced", { delta: fmt(data.totalSources - data.totalUses) })}
         </p>
       </div>
     </div>

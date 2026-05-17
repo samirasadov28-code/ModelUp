@@ -56,15 +56,17 @@ anything destructive (force-push, branch deletion, dropping data, rewriting publ
   Q0 intro screen and Q1–Q11 titles, subtitles, option labels, and Next/Back/step counter
   buttons**; **output pages: preview + full — all 10 tab labels, metric-card hero strips,
   tab-content section titles & subtitles**; **pricing page** (hero, Free/Pro card headers,
-  CTAs, FAQ heading); the `common.*` set.
-- **What's NOT translated yet**: output components' internal labels (PLTable column
-  headers, CashFlowStatementTable line items, SourcesAndUsesTable column headers,
-  ValuationCard label-set, CapTableSummary headers, ProValuationPanel inputs +
-  computed-card labels, ProCapTableWaterfall inputs + waterfall column headers,
-  SensitivityAnalysis slider labels + metric-change labels, CalculationsPanel section
-  titles); Excel sheet titles + column headers; `/model/new` wrapper copy; AI chat copy +
-  groq prompts; ProUpsell card text (one per question); OptionCard secondary descriptions;
-  pricing-page Free / Pro feature bullet lists.
+  CTAs, FAQ heading); **output components: PLTable column/row labels, CashFlowStatementTable
+  line items, SourcesAndUsesTable headers + balance footnote, ValuationCard (DCF + multiples
+  panel), CapTableSummary headers + footnote, UnitEconomicsDashboard metric cards,
+  ScenarioComparison column labels + scenario names, SensitivityAnalysis intro / sliders /
+  metric-change cards / what-this-tells**; **ProUpsell card text (Q1–Q11 headlines + bodies,
+  CTA, prefix)**; the `common.*` set.
+- **What's NOT translated yet**: ProValuationPanel inputs + computed-card labels;
+  ProCapTableWaterfall inputs + waterfall column headers; CalculationsPanel section
+  titles; Excel sheet titles + column headers; `/model/new` wrapper copy; AI chat copy +
+  groq prompts; OptionCard secondary descriptions; pricing-page Free / Pro feature
+  bullet lists.
 - Translations were AI-assisted in the first pass and need native-speaker review before
   promotion. Keep a `// TODO(i18n-review): <locale>` comment next to any string you're
   unsure about.

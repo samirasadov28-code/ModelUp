@@ -2,6 +2,7 @@
 
 import { cn, formatCurrencyCompact, formatNumber, formatPercent } from "@/lib/utils";
 import type { AnnualSummary, Currency } from "@/lib/types";
+import { useT } from "@/i18n/LocaleProvider";
 
 interface PLTableProps {
   annual: AnnualSummary[];
@@ -11,25 +12,25 @@ interface PLTableProps {
 
 const fmtPct = (value: number) => formatPercent(value, 1);
 
-const rows: { key: keyof AnnualSummary; label: string; indent?: boolean; bold?: boolean; isPercent?: boolean; highlight?: boolean }[] = [
-  { key: "revenue", label: "Revenue", bold: true },
-  { key: "cogs", label: "Cost of Revenue", indent: true },
-  { key: "grossProfit", label: "Gross Profit", bold: true },
-  { key: "grossMargin", label: "Gross Margin %", indent: true, isPercent: true },
-  { key: "opex", label: "Operating Expenses", indent: true },
-  { key: "ebitda", label: "EBITDA", bold: true, highlight: true },
-  { key: "ebitdaMargin", label: "EBITDA Margin %", indent: true, isPercent: true },
-  { key: "netIncome", label: "Net Income", bold: true },
-];
-
 export function PLTable({ annual, compact = false, currency }: PLTableProps) {
+  const { t } = useT();
+  const rows: { key: keyof AnnualSummary; label: string; indent?: boolean; bold?: boolean; isPercent?: boolean; highlight?: boolean }[] = [
+    { key: "revenue", label: t("pl.revenue"), bold: true },
+    { key: "cogs", label: t("pl.cogs"), indent: true },
+    { key: "grossProfit", label: t("pl.gross_profit"), bold: true },
+    { key: "grossMargin", label: t("pl.gross_margin_pct"), indent: true, isPercent: true },
+    { key: "opex", label: t("pl.opex"), indent: true },
+    { key: "ebitda", label: t("pl.ebitda"), bold: true, highlight: true },
+    { key: "ebitdaMargin", label: t("pl.ebitda_margin_pct"), indent: true, isPercent: true },
+    { key: "netIncome", label: t("pl.net_income"), bold: true },
+  ];
   const fmt = (v: number) => formatCurrencyCompact(v, currency);
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-gray-200 bg-gray-50">
-            <th className="text-left py-3 px-4 text-gray-500 font-semibold w-48">Metric</th>
+            <th className="text-left py-3 px-4 text-gray-500 font-semibold w-48">{t("pl.metric")}</th>
             {annual.map((yr) => (
               <th key={yr.year} className="text-right py-3 px-4 text-gray-700 font-semibold">
                 {yr.label}
@@ -79,11 +80,11 @@ export function PLTable({ annual, compact = false, currency }: PLTableProps) {
             <>
               <tr className="border-b border-gray-100 bg-gray-50/60">
                 <td className="py-3 px-4 text-gray-400 text-xs uppercase tracking-wider font-semibold" colSpan={annual.length + 1}>
-                  Operational KPIs
+                  {t("pl.operational_kpis")}
                 </td>
               </tr>
               <tr className="border-b border-gray-100 hover:bg-gray-50/60">
-                <td className="py-3 px-4 text-gray-700">Paying Customers (EOP)</td>
+                <td className="py-3 px-4 text-gray-700">{t("pl.paying_customers_eop")}</td>
                 {annual.map((yr) => (
                   <td key={yr.year} className="py-3 px-4 text-right font-mono text-gray-600 tabular-nums">
                     {formatNumber(yr.endingUsers)}
@@ -91,7 +92,7 @@ export function PLTable({ annual, compact = false, currency }: PLTableProps) {
                 ))}
               </tr>
               <tr className="border-b border-gray-100 hover:bg-gray-50/60">
-                <td className="py-3 px-4 text-gray-900 font-semibold">ARR (Year-end)</td>
+                <td className="py-3 px-4 text-gray-900 font-semibold">{t("pl.arr_yoe")}</td>
                 {annual.map((yr) => (
                   <td key={yr.year} className="py-3 px-4 text-right font-mono text-gray-900 font-semibold tabular-nums">
                     {fmt(yr.arr)}
