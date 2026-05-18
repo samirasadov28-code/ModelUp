@@ -200,17 +200,45 @@ CAP TABLE (post-raise)
   `.trim();
 }
 
+const LOCALE_LANGUAGE_NAMES: Record<string, string> = {
+  en: "English",
+  es: "Spanish",
+  fr: "French",
+  de: "German",
+  pt: "Portuguese",
+  it: "Italian",
+  nl: "Dutch",
+  tr: "Turkish",
+  uk: "Ukrainian",
+  ru: "Russian",
+  ar: "Arabic",
+  hi: "Hindi",
+  bn: "Bengali",
+  zh: "Chinese (Simplified)",
+  ja: "Japanese",
+  id: "Indonesian",
+};
+
+function localeInstruction(locale: string | undefined): string {
+  if (!locale || locale === "en") return "";
+  const name = LOCALE_LANGUAGE_NAMES[locale] ?? locale;
+  return ` Respond in ${name}. Keep technical/financial acronyms (CAC, LTV, EBITDA, WACC, ARR, MRR, SaaS) in English.`;
+}
+
 export async function chatWithModel(params: {
   model?: ModelOutputs;
   messages: ChatMessage[];
+  locale?: string;
 }): Promise<string> {
   const client = getClient();
   if (!client) {
     throw new Error("AI chat is not configured. Set GROQ_API_KEY in environment.");
   }
 
+  const langSuffix = localeInstruction(params.locale);
+
   const systemPrompt = params.model
-    ? `You are an experienced startup CFO and fundraising advisor speaking to the founder. Be direct, concise, and use the founder's actual numbers. Prefer 1–3 short paragraphs unless the user asks for more. If a question asks "what if X", reason from the formulas: revenue depends on customers × ARPU, EBITDA = gross profit − OpEx, runway = cash ÷ net burn, LTV = (ARPU × gross margin) ÷ churn, etc. If the question can't be answered from the data, say so plainly.
+    ? `You are an experienced startup CFO and fundraising advisor speaking to the founder. Be direct, concise, and use the founder's actual numbers. Prefer 1–3 short paragraphs unless the user asks for more. If a question asks "what if X", reason from the formulas: revenue depends on customers × ARPU, EBITDA = gross profit − OpEx, runway = cash ÷ net burn, LTV = (ARPU × gross margin) ÷ churn, etc. If the question can't be answered from the data, say so plainly.${langSuffix}
 
 ${buildModelContext(params.model)}`
     : `You are a friendly startup financial-modelling expert and ModelUp product guide. ModelUp helps founders generate a 5-year financial model from a 10-question intake; Pro is $4.99/mo and unlocks interactive charts, unit economics, scenarios, cap table, calculations panel, AI chat, and an Excel download.
@@ -220,7 +248,7 @@ Help the user with:
 • General fundraising and financial-model questions — CAC, LTV, runway, dilution, valuations, scenarios.
 • Encouraging them to build a model when relevant ("you can answer 10 quick questions and have one in 30 seconds").
 
-Be concise (1–3 short paragraphs). If the question really needs the user's specific numbers and they haven't built a model yet, suggest they build one.`;
+Be concise (1–3 short paragraphs). If the question really needs the user's specific numbers and they haven't built a model yet, suggest they build one.${langSuffix}`;
 
   const response = await client.chat.completions.create({
     model: CHAT_MODEL,

@@ -53,20 +53,23 @@ anything destructive (force-push, branch deletion, dropping data, rewriting publ
   to English when a key is missing for the current locale.
 - `<LanguageSwitcher />` in the nav opens a popover with all 16 options.
 - **What's translated so far**: landing-page nav + hero + "How it works"; **questionnaire
-  Q0 intro screen and Q1–Q11 titles, subtitles, option labels, and Next/Back/step counter
-  buttons**; **output pages: preview + full — all 10 tab labels, metric-card hero strips,
-  tab-content section titles & subtitles**; **pricing page** (hero, Free/Pro card headers,
-  CTAs, FAQ heading); **output components: PLTable column/row labels, CashFlowStatementTable
-  line items, SourcesAndUsesTable headers + balance footnote, ValuationCard (DCF + multiples
-  panel), CapTableSummary headers + footnote, UnitEconomicsDashboard metric cards,
-  ScenarioComparison column labels + scenario names, SensitivityAnalysis intro / sliders /
-  metric-change cards / what-this-tells**; **ProUpsell card text (Q1–Q11 headlines + bodies,
-  CTA, prefix)**; the `common.*` set.
-- **What's NOT translated yet**: ProValuationPanel inputs + computed-card labels;
-  ProCapTableWaterfall inputs + waterfall column headers; CalculationsPanel section
-  titles; Excel sheet titles + column headers; `/model/new` wrapper copy; AI chat copy +
-  groq prompts; OptionCard secondary descriptions; pricing-page Free / Pro feature
-  bullet lists.
+  Q0 intro screen and Q1–Q11 titles, subtitles, option labels + OptionCard secondary
+  descriptions, and Next/Back/step counter buttons**; **output pages: preview + full —
+  all 10 tab labels, metric-card hero strips, tab-content section titles & subtitles**;
+  **pricing page** (hero, Free/Pro card headers, CTAs, FAQ heading, **Free + Pro feature
+  bullet lists**); **output components: PLTable, CashFlowStatementTable, SourcesAndUsesTable,
+  ValuationCard, CapTableSummary, UnitEconomicsDashboard, ScenarioComparison,
+  SensitivityAnalysis, ProValuationPanel (WACC inputs + DCF table + sensitivity matrix),
+  ProCapTableWaterfall (pre-seed editor + future-round inputs + waterfall table headers),
+  CalculationsPanel (all 6 section titles)**; **ProUpsell card text (Q1–Q11)**;
+  **`/model/new` wrapper copy**; **ChatWidget shell (button, header, intro, placeholder,
+  suggested prompts)** plus locale plumbed through `/api/chat` → `chatWithModel` so Groq
+  responds in the founder's language; the `common.*` set.
+- **What's NOT translated yet**: Excel sheet titles + column headers (would require
+  plumbing locale through `/api/model/export`; lower priority since finance Excel files
+  are typically reviewed in English regardless of UI language). `generateFundingNarrative`
+  and `generateModelInsights` Groq prompts still emit English narratives — could be
+  extended the same way `chatWithModel` was.
 - Translations were AI-assisted in the first pass and need native-speaker review before
   promotion. Keep a `// TODO(i18n-review): <locale>` comment next to any string you're
   unsure about.

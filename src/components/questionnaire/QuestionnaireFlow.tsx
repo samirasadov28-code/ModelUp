@@ -497,11 +497,11 @@ export function QuestionnaireFlow() {
           nextDisabled={!canAdvance()}
         >
           {[
-            { value: "saas", label: t("q1.opt_saas"), desc: "Software charged monthly or annually", icon: "⚡" },
-            { value: "marketplace", label: t("q1.opt_marketplace"), desc: "Connecting buyers and sellers, taking a cut", icon: "🔄" },
-            { value: "product", label: t("q1.opt_product"), desc: "Physical or digital product for purchase", icon: "📦" },
-            { value: "service", label: t("q1.opt_service"), desc: "Retainer or project-based professional services", icon: "🤝" },
-            { value: "other", label: t("q1.opt_other"), desc: "Infrastructure, cleantech, hardware, etc.", icon: "🏗️" },
+            { value: "saas", label: t("q1.opt_saas"), desc: t("q1.desc_saas"), icon: "⚡" },
+            { value: "marketplace", label: t("q1.opt_marketplace"), desc: t("q1.desc_marketplace"), icon: "🔄" },
+            { value: "product", label: t("q1.opt_product"), desc: t("q1.desc_product"), icon: "📦" },
+            { value: "service", label: t("q1.opt_service"), desc: t("q1.desc_service"), icon: "🤝" },
+            { value: "other", label: t("q1.opt_other"), desc: t("q1.desc_other"), icon: "🏗️" },
           ].map((opt) => (
             <OptionCard
               key={opt.value}
@@ -528,9 +528,9 @@ export function QuestionnaireFlow() {
           nextDisabled={!canAdvance()}
         >
           {[
-            { value: "b2b", label: t("q2.opt_b2b"), desc: "Sell to companies, teams, or enterprises", icon: "🏢" },
-            { value: "b2c", label: t("q2.opt_b2c"), desc: "Sell directly to individual users", icon: "👤" },
-            { value: "both", label: t("q2.opt_both"), desc: "Mixed customer base", icon: "🌐" },
+            { value: "b2b", label: t("q2.opt_b2b"), desc: t("q2.desc_b2b"), icon: "🏢" },
+            { value: "b2c", label: t("q2.opt_b2c"), desc: t("q2.desc_b2c"), icon: "👤" },
+            { value: "both", label: t("q2.opt_both"), desc: t("q2.desc_both"), icon: "🌐" },
           ].map((opt) => (
             <OptionCard
               key={opt.value}
@@ -710,10 +710,10 @@ export function QuestionnaireFlow() {
           nextDisabled={!canAdvance()}
         >
           {[
-            { value: "pre-seed", label: t("q4.opt_pre_seed"), desc: "Idea or MVP stage, raising your first capital", icon: "🌱" },
-            { value: "seed", label: t("q4.opt_seed"), desc: "Early traction, building the team", icon: "🚀" },
-            { value: "series-a", label: t("q4.opt_series_a"), desc: "Proven product-market fit, scaling", icon: "📈" },
-            { value: "series-b", label: t("q4.opt_series_b"), desc: "Scaling fast, expanding markets", icon: "🏆" },
+            { value: "pre-seed", label: t("q4.opt_pre_seed"), desc: t("q4.desc_pre_seed"), icon: "🌱" },
+            { value: "seed", label: t("q4.opt_seed"), desc: t("q4.desc_seed"), icon: "🚀" },
+            { value: "series-a", label: t("q4.opt_series_a"), desc: t("q4.desc_series_a"), icon: "📈" },
+            { value: "series-b", label: t("q4.opt_series_b"), desc: t("q4.desc_series_b"), icon: "🏆" },
           ].map((opt) => (
             <OptionCard
               key={opt.value}
@@ -746,9 +746,9 @@ export function QuestionnaireFlow() {
             </Label>
             <div className="grid grid-cols-3 gap-2 mt-2">
               {[
-                { value: "subscription", label: t("q5.rm_subscription"), desc: "Users × tier prices", icon: "🔁" },
-                { value: "production", label: t("q5.rm_production"), desc: "Units × unit price", icon: "🏭" },
-                { value: "hybrid", label: t("q5.rm_hybrid"), desc: "Both", icon: "🔀" },
+                { value: "subscription", label: t("q5.rm_subscription"), desc: t("q5.desc_subscription"), icon: "🔁" },
+                { value: "production", label: t("q5.rm_production"), desc: t("q5.desc_production"), icon: "🏭" },
+                { value: "hybrid", label: t("q5.rm_hybrid"), desc: t("q5.desc_hybrid"), icon: "🔀" },
               ].map((opt) => {
                 const selected = (answers.revenueModel ?? "subscription") === opt.value;
                 return (
@@ -1027,11 +1027,11 @@ export function QuestionnaireFlow() {
           nextDisabled={!canAdvance()}
         >
           {[
-            { value: "lt2", label: t("q7.opt_lt2"), desc: "Excellent — enterprise-grade retention", icon: "🟢" },
-            { value: "2to5", label: t("q7.opt_2to5"), desc: "Good — typical for well-optimised SaaS", icon: "🟡" },
-            { value: "5to10", label: t("q7.opt_5to10"), desc: "Room for improvement — review onboarding", icon: "🟠" },
-            { value: "gt10", label: t("q7.opt_gt10"), desc: "High — investigate product-market fit", icon: "🔴" },
-            { value: "unknown", label: t("q7.opt_unknown"), desc: "We'll use 5% as a baseline", icon: "❓" },
+            { value: "lt2", label: t("q7.opt_lt2"), desc: t("q7.desc_lt2"), icon: "🟢" },
+            { value: "2to5", label: t("q7.opt_2to5"), desc: t("q7.desc_2to5"), icon: "🟡" },
+            { value: "5to10", label: t("q7.opt_5to10"), desc: t("q7.desc_5to10"), icon: "🟠" },
+            { value: "gt10", label: t("q7.opt_gt10"), desc: t("q7.desc_gt10"), icon: "🔴" },
+            { value: "unknown", label: t("q7.opt_unknown"), desc: t("q7.desc_unknown"), icon: "❓" },
           ].map((opt) => (
             <OptionCard
               key={opt.value}
@@ -1146,9 +1146,9 @@ export function QuestionnaireFlow() {
           <div>
             <Label className="text-gray-700 mb-3 block font-medium">{t("q9.growth_scenario")}</Label>
             {[
-              { value: "conservative", label: t("q9.opt_conservative"), desc: "~4% monthly growth — realistic, defensible to investors", icon: "🛡️" },
-              { value: "base", label: t("q9.opt_base"), desc: "~9% monthly growth — solid execution, strong market", icon: "📊" },
-              { value: "aggressive", label: t("q9.opt_aggressive"), desc: "~18% monthly growth — high-conviction, viral or paid-heavy", icon: "🚀" },
+              { value: "conservative", label: t("q9.opt_conservative"), desc: t("q9.desc_conservative"), icon: "🛡️" },
+              { value: "base", label: t("q9.opt_base"), desc: t("q9.desc_base"), icon: "📊" },
+              { value: "aggressive", label: t("q9.opt_aggressive"), desc: t("q9.desc_aggressive"), icon: "🚀" },
             ].map((opt) => (
               <OptionCard
                 key={opt.value}
@@ -1333,12 +1333,12 @@ export function QuestionnaireFlow() {
             : stageDefault;
 
         const PRESETS: { label: string; pct: number; desc: string }[] = [
-          { label: t("q11.preset_mature"), pct: 10, desc: "WACC-driven, low risk" },
-          { label: t("q11.preset_established"), pct: 15, desc: "Series B+ / late stage" },
-          { label: t("q11.preset_series_a"), pct: 22, desc: "Proven PMF, scaling" },
-          { label: t("q11.preset_seed"), pct: 28, desc: "Early traction" },
-          { label: t("q11.preset_pre_seed"), pct: 35, desc: "Idea or MVP" },
-          { label: t("q11.preset_venture"), pct: 45, desc: "High-risk early bet" },
+          { label: t("q11.preset_mature"), pct: 10, desc: t("q11.desc_mature") },
+          { label: t("q11.preset_established"), pct: 15, desc: t("q11.desc_established") },
+          { label: t("q11.preset_series_a"), pct: 22, desc: t("q11.desc_series_a") },
+          { label: t("q11.preset_seed"), pct: 28, desc: t("q11.desc_seed") },
+          { label: t("q11.preset_pre_seed"), pct: 35, desc: t("q11.desc_pre_seed") },
+          { label: t("q11.preset_venture"), pct: 45, desc: t("q11.desc_venture") },
         ];
 
         const setRate = (pct: number) => update("discountRate", Math.max(0, pct) / 100);

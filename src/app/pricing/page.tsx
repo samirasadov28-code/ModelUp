@@ -7,28 +7,27 @@ import { EarlyAccessForm } from "@/components/EarlyAccessForm";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useT } from "@/i18n/LocaleProvider";
 
-const FREE_FEATURES = [
-  "5-year P&L summary table",
-  "Cash runway calculation",
-  "Break-even year",
-  "Model generated in seconds",
-];
-
-const PRO_FEATURES = [
-  "Everything in Free",
-  "Interactive revenue & EBITDA charts",
-  "Cash runway area chart",
-  "Unit economics dashboard (CAC, LTV, LTV/CAC, payback)",
-  "Funding ask narrative (investor-ready paragraph)",
-  "3-scenario comparison (Base / Conservative / Aggressive)",
-  "Cap table with pre/post-raise ownership",
-  "Calculations panel — every formula with your numbers",
-  "Populated Excel model download (.xlsx)",
-  "Unlimited models",
-];
-
 export default function PricingPage() {
   const { t } = useT();
+  const FREE_FEATURES = [
+    t("pricing.free_feat_1"),
+    t("pricing.free_feat_2"),
+    t("pricing.free_feat_3"),
+    t("pricing.free_feat_4"),
+  ];
+
+  const PRO_FEATURES = [
+    t("pricing.pro_feat_1"),
+    t("pricing.pro_feat_2"),
+    t("pricing.pro_feat_3"),
+    t("pricing.pro_feat_4"),
+    t("pricing.pro_feat_5"),
+    t("pricing.pro_feat_6"),
+    t("pricing.pro_feat_7"),
+    t("pricing.pro_feat_8"),
+    t("pricing.pro_feat_9"),
+    t("pricing.pro_feat_10"),
+  ];
   return (
     <main className="min-h-screen bg-white text-gray-900">
       <nav className="sticky top-0 z-40 bg-white/90 backdrop-blur-sm border-b border-gray-100">

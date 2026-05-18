@@ -10,6 +10,7 @@ export async function POST(req: NextRequest) {
     const body = (await req.json()) as {
       model?: ModelOutputs;
       messages?: ChatMessage[];
+      locale?: string;
     };
 
     if (!Array.isArray(body.messages) || body.messages.length === 0) {
@@ -24,7 +25,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "messages were empty after sanitisation" }, { status: 400 });
     }
 
-    const reply = await chatWithModel({ model: body.model, messages: trimmed });
+    const reply = await chatWithModel({ model: body.model, messages: trimmed, locale: body.locale });
     return NextResponse.json({ reply });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Chat request failed";

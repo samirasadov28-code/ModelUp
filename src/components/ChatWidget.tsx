@@ -7,25 +7,12 @@ import { MessageCircle, Send, Sparkles, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getModelLocally } from "@/lib/model-client-store";
 import type { ModelOutputs } from "@/lib/types";
+import { useT } from "@/i18n/LocaleProvider";
 
 interface ChatMessage {
   role: "user" | "assistant";
   content: string;
 }
-
-const MODEL_PROMPTS = [
-  "What's my biggest financial risk?",
-  "Is my LTV/CAC ratio healthy?",
-  "What if I doubled my CAC — how does runway change?",
-  "Explain my Year-3 EBITDA in plain English.",
-];
-
-const GENERAL_PROMPTS = [
-  "What does ModelUp do?",
-  "What's the difference between Free and Pro?",
-  "How do I think about CAC vs LTV?",
-  "How do investors evaluate my runway?",
-];
 
 function extractModelIdFromPath(pathname: string | null): string | null {
   if (!pathname) return null;
@@ -34,7 +21,20 @@ function extractModelIdFromPath(pathname: string | null): string | null {
 }
 
 export function ChatWidget() {
+  const { t, locale } = useT();
   const pathname = usePathname();
+  const MODEL_PROMPTS = [
+    t("chat.suggest_model_1"),
+    t("chat.suggest_model_2"),
+    t("chat.suggest_model_3"),
+    t("chat.suggest_model_4"),
+  ];
+  const GENERAL_PROMPTS = [
+    t("chat.suggest_general_1"),
+    t("chat.suggest_general_2"),
+    t("chat.suggest_general_3"),
+    t("chat.suggest_general_4"),
+  ];
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
@@ -88,6 +88,7 @@ export function ChatWidget() {
         body: JSON.stringify({
           model: activeModel ?? undefined,
           messages: next,
+          locale,
         }),
       });
       const data = await res.json();
@@ -107,8 +108,8 @@ export function ChatWidget() {
   };
 
   const headerLabel = activeModel
-    ? `Ask about ${activeModel.answers.companyName ?? "your model"}`
-    : "Ask the ModelUp assistant";
+    ? t("chat.header_with_model", { name: activeModel.answers.companyName ?? t("chat.your_model_fallback") })
+    : t("chat.header_default");
 
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
@@ -118,7 +119,7 @@ export function ChatWidget() {
           aria-label="Chat with the ModelUp assistant"
         >
           <MessageCircle className="w-4 h-4" />
-          <span className="hidden sm:inline">{activeModel ? "Ask the model" : "Chat"}</span>
+          <span className="hidden sm:inline">{activeModel ? t("chat.button_with_model") : t("chat.button")}</span>
         </button>
       </Dialog.Trigger>
 
@@ -134,8 +135,7 @@ export function ChatWidget() {
                   {headerLabel}
                 </Dialog.Title>
                 <Dialog.Description className="text-gray-500 text-xs mt-0.5">
-                  Powered by Groq
-                  {activeModel ? " · uses your actual numbers" : " · Llama 3.3 70B"}
+                  {activeModel ? t("chat.subtitle_model") : t("chat.subtitle_default")}
                 </Dialog.Description>
               </div>
             </div>
@@ -150,9 +150,7 @@ export function ChatWidget() {
             {messages.length === 0 && (
               <div className="space-y-3">
                 <p className="text-sm text-gray-600">
-                  {activeModel
-                    ? "I'm looking at your model now. Ask anything — runway, scenarios, what investors will push back on, what to fix first."
-                    : "Hi! I can help you understand ModelUp or answer general financial-modelling questions. Build a model first and I'll be able to reason about your specific numbers."}
+                  {activeModel ? t("chat.intro_with_model") : t("chat.intro_default")}
                 </p>
                 <div className="space-y-2">
                   {suggestions.map((s) => (
@@ -204,7 +202,7 @@ export function ChatWidget() {
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder={activeModel ? "Ask about your model…" : "Ask anything about ModelUp…"}
+              placeholder={activeModel ? t("chat.placeholder_with_model") : t("chat.placeholder_default")}
               disabled={pending}
               className="flex-1 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-400 disabled:opacity-50"
             />
