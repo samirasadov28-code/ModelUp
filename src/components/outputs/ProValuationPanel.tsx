@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { Calculator, RotateCcw } from "lucide-react";
 import { formatCurrency, formatCurrencyCompact, formatPercent } from "@/lib/utils";
 import type { ModelOutputs } from "@/lib/types";
+import { useT } from "@/i18n/LocaleProvider";
 
 interface ProValuationPanelProps {
   model: ModelOutputs;
@@ -69,6 +70,7 @@ function NumberRow({ label, value, step, min, max, onChange, asPercent, hint }: 
 }
 
 export function ProValuationPanel({ model }: ProValuationPanelProps) {
+  const { t } = useT();
   const initial = useMemo(() => defaultInputsFor(model), [model]);
   const [w, setW] = useState<WaccInputs>(initial);
   const set = <K extends keyof WaccInputs>(key: K, v: WaccInputs[K]) =>
@@ -120,13 +122,10 @@ export function ProValuationPanel({ model }: ProValuationPanelProps) {
         <Calculator className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
         <div className="flex-1">
           <p className="text-sm font-semibold text-gray-900">
-            Build your discount rate from first principles
+            {t("pv.intro_title")}
           </p>
           <p className="text-xs text-gray-600 mt-0.5">
-            Cost of equity uses CAPM: <span className="font-mono">rE = rf + β × ERP</span>. WACC
-            blends in the after-tax cost of debt by capital weight:{" "}
-            <span className="font-mono">WACC = E/V × rE + D/V × rD × (1−t)</span>. Edit any input
-            and the DCF below recomputes live.
+            {t("pv.intro_body")}
           </p>
         </div>
         <button
@@ -135,69 +134,69 @@ export function ProValuationPanel({ model }: ProValuationPanelProps) {
           className="shrink-0 inline-flex items-center gap-1.5 text-xs font-semibold text-gray-700 bg-white hover:bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-lg transition-colors"
         >
           <RotateCcw className="w-3.5 h-3.5" />
-          Reset
+          {t("common.reset_btn")}
         </button>
       </div>
 
       <div className="grid md:grid-cols-3 gap-4">
         <NumberRow
-          label="Risk-free rate"
+          label={t("pv.in_rf")}
           asPercent
           value={w.riskFreeRate}
           step={0.1}
           min={0}
           max={20}
           onChange={(v) => set("riskFreeRate", v)}
-          hint="10-year govt bond yield in your reporting currency. US ~4.5%, UK ~4%, EU ~2.5%."
+          hint={t("pv.in_rf_hint")}
         />
         <NumberRow
-          label="Equity risk premium"
+          label={t("pv.in_erp")}
           asPercent
           value={w.equityRiskPremium}
           step={0.1}
           min={0}
           max={20}
           onChange={(v) => set("equityRiskPremium", v)}
-          hint="Damodaran's developed-market average is ~5.5%; emerging markets +2–4pp."
+          hint={t("pv.in_erp_hint")}
         />
         <NumberRow
-          label="Beta (β)"
+          label={t("pv.in_beta")}
           value={w.beta}
           step={0.05}
           min={0}
           max={5}
           onChange={(v) => set("beta", v)}
-          hint="Industry comp beta. SaaS ~1.2, marketplaces ~1.5, infra ~0.9, consumer apps ~1.4."
+          hint={t("pv.in_beta_hint")}
         />
         <NumberRow
-          label="Cost of debt (pre-tax)"
+          label={t("pv.in_rd")}
           asPercent
           value={w.costOfDebt}
           step={0.1}
           min={0}
           max={30}
           onChange={(v) => set("costOfDebt", v)}
-          hint="What a bank charges your stage of company. Venture debt typically 9-13%."
+          hint={t("pv.in_rd_hint")}
         />
         <NumberRow
-          label="Debt weight (D/V)"
+          label={t("pv.in_dw")}
           asPercent
           value={w.debtWeight}
           step={1}
           min={0}
           max={100}
           onChange={(v) => set("debtWeight", Math.max(0, Math.min(1, v)))}
-          hint="Most early-stage SaaS is 100% equity-funded (0% debt). Hardware/PF often 20-40%."
+          hint={t("pv.in_dw_hint")}
         />
         <NumberRow
-          label="Terminal growth (g)"
+          label={t("pv.in_g")}
           asPercent
           value={w.terminalGrowthRate}
           step={0.1}
           min={0}
           max={15}
           onChange={(v) => set("terminalGrowthRate", v)}
-          hint="Long-run perpetuity growth. 2–3% is the standard developed-market range."
+          hint={t("pv.in_g_hint")}
         />
       </div>
 
@@ -205,7 +204,7 @@ export function ProValuationPanel({ model }: ProValuationPanelProps) {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="rounded-lg border border-gray-200 bg-white p-4">
           <p className="text-[10px] uppercase tracking-wider font-semibold text-gray-500">
-            Cost of equity (CAPM)
+            {t("pv.card_re")}
           </p>
           <p className="text-xl font-bold text-gray-900 font-mono mt-1 tabular-nums">
             {formatPercent(costOfEquity, 2)}
@@ -217,7 +216,7 @@ export function ProValuationPanel({ model }: ProValuationPanelProps) {
         </div>
         <div className="rounded-lg border border-gray-200 bg-white p-4">
           <p className="text-[10px] uppercase tracking-wider font-semibold text-gray-500">
-            After-tax cost of debt
+            {t("pv.card_atcd")}
           </p>
           <p className="text-xl font-bold text-gray-900 font-mono mt-1 tabular-nums">
             {formatPercent(afterTaxCostOfDebt, 2)}
@@ -228,7 +227,7 @@ export function ProValuationPanel({ model }: ProValuationPanelProps) {
         </div>
         <div className="rounded-lg border border-blue-200 bg-blue-50/40 p-4">
           <p className="text-[10px] uppercase tracking-wider font-semibold text-blue-700">
-            WACC
+            {t("pv.card_wacc")}
           </p>
           <p className="text-xl font-bold text-blue-700 font-mono mt-1 tabular-nums">
             {formatPercent(wacc, 2)}
@@ -239,13 +238,13 @@ export function ProValuationPanel({ model }: ProValuationPanelProps) {
         </div>
         <div className="rounded-lg border border-emerald-200 bg-emerald-50/40 p-4">
           <p className="text-[10px] uppercase tracking-wider font-semibold text-emerald-700">
-            DCF enterprise value
+            {t("pv.card_dcf_ev")}
           </p>
           <p className="text-xl font-bold text-emerald-700 font-mono mt-1 tabular-nums">
             {fmtMoney(enterpriseValue)}
           </p>
           <p className="text-[10px] text-emerald-700/70 mt-1">
-            PV of FCF + PV of terminal value
+            {t("pv.card_dcf_ev_sub")}
           </p>
         </div>
       </div>
@@ -253,22 +252,22 @@ export function ProValuationPanel({ model }: ProValuationPanelProps) {
       {/* DCF table */}
       <div>
         <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-3">
-          DCF table — year-by-year
+          {t("pv.dcf_table_title")}
         </p>
         <div className="rounded-xl border border-gray-200 overflow-hidden">
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200">
-                <th className="text-left px-4 py-2 text-gray-500 font-semibold">Year</th>
-                <th className="text-right px-4 py-2 text-gray-500 font-semibold">FCF (net income)</th>
-                <th className="text-right px-4 py-2 text-gray-500 font-semibold">Discount factor</th>
-                <th className="text-right px-4 py-2 text-gray-500 font-semibold">Present value</th>
+                <th className="text-left px-4 py-2 text-gray-500 font-semibold">{t("pv.col_year")}</th>
+                <th className="text-right px-4 py-2 text-gray-500 font-semibold">{t("pv.col_fcf")}</th>
+                <th className="text-right px-4 py-2 text-gray-500 font-semibold">{t("pv.col_df")}</th>
+                <th className="text-right px-4 py-2 text-gray-500 font-semibold">{t("pv.col_pv")}</th>
               </tr>
             </thead>
             <tbody>
               {annualFcf.map((fcf, i) => (
                 <tr key={i} className="border-b border-gray-100 hover:bg-gray-50/60">
-                  <td className="px-4 py-2 text-gray-700">Year {i + 1}</td>
+                  <td className="px-4 py-2 text-gray-700">{t("pv.year_n", { n: String(i + 1) })}</td>
                   <td className="px-4 py-2 text-right font-mono tabular-nums text-gray-700">
                     {fmtFull(fcf)}
                   </td>
@@ -282,7 +281,7 @@ export function ProValuationPanel({ model }: ProValuationPanelProps) {
               ))}
               <tr className="border-b border-gray-100 bg-gray-50/60">
                 <td className="px-4 py-2 text-gray-700 font-semibold">
-                  Terminal value (Y{annualFcf.length}, growing at {formatPercent(w.terminalGrowthRate, 1)})
+                  {t("pv.terminal_row", { n: String(annualFcf.length), g: formatPercent(w.terminalGrowthRate, 1) })}
                 </td>
                 <td className="px-4 py-2 text-right font-mono tabular-nums text-gray-700">
                   {fmtFull(terminalValue)}
@@ -295,7 +294,7 @@ export function ProValuationPanel({ model }: ProValuationPanelProps) {
                 </td>
               </tr>
               <tr className="bg-blue-50/40">
-                <td className="px-4 py-3 text-blue-700 font-bold">Enterprise value</td>
+                <td className="px-4 py-3 text-blue-700 font-bold">{t("pv.ev_row")}</td>
                 <td className="px-4 py-3"></td>
                 <td className="px-4 py-3"></td>
                 <td className="px-4 py-3 text-right font-mono tabular-nums text-blue-700 font-bold">
@@ -310,16 +309,16 @@ export function ProValuationPanel({ model }: ProValuationPanelProps) {
       {/* Sensitivity matrix */}
       <div>
         <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">
-          Sensitivity — enterprise value at varied WACC and terminal growth
+          {t("pv.sens_title")}
         </p>
         <p className="text-xs text-gray-500 mb-3">
-          Rows: WACC ±2pp · Columns: terminal growth ±1pp. The centre cell is your base case.
+          {t("pv.sens_body")}
         </p>
         <div className="rounded-xl border border-gray-200 overflow-x-auto">
           <table className="w-full text-xs">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200">
-                <th className="text-left px-3 py-2 text-gray-500 font-semibold">WACC \ g</th>
+                <th className="text-left px-3 py-2 text-gray-500 font-semibold">{t("pv.sens_corner")}</th>
                 {gGrid.map((g, i) => (
                   <th
                     key={i}

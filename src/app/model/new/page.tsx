@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { QuestionnaireFlow } from "@/components/questionnaire/QuestionnaireFlow";
 import { TrustBadge } from "@/components/outputs/TrustBadge";
+import { NewModelHeader } from "@/components/NewModelHeader";
 
 export const metadata = {
   title: "Build Your Model — ModelUp",
@@ -24,16 +25,7 @@ export default function NewModelPage() {
       </nav>
 
       <div className="max-w-3xl mx-auto px-6 py-12">
-        <div className="text-center mb-10">
-          <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-3 tracking-tight">
-            Build your financial model
-          </h1>
-          <p className="text-gray-500 max-w-md mx-auto">
-            Answer a few questions about your business. We&apos;ll generate a professional-grade
-            5-year financial model in seconds.
-          </p>
-        </div>
-
+        <NewModelHeader />
         <QuestionnaireFlow />
       </div>
     </main>

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ChevronDown, ChevronRight, Calculator } from "lucide-react";
 import { formatCurrency as fmtRaw, formatNumber, formatPercent } from "@/lib/utils";
 import type { ModelOutputs } from "@/lib/types";
+import { useT } from "@/i18n/LocaleProvider";
 
 const COGS_RATES: Record<string, number> = {
   saas: 0.18,
@@ -94,6 +95,7 @@ interface CalculationsPanelProps {
 }
 
 export function CalculationsPanel({ model }: CalculationsPanelProps) {
+  const { t } = useT();
   const { answers, annual, monthly, unitEconomics, runway, capTable, currency } = model;
   const formatCurrency = (v: number, fd: 0 | 2 = 0) => fmtRaw(v, fd, currency);
   const cogsRate = COGS_RATES[answers.businessModel] ?? 0.25;
@@ -116,20 +118,17 @@ export function CalculationsPanel({ model }: CalculationsPanelProps) {
       <div className="rounded-xl border border-blue-200 bg-blue-50/60 p-5 flex items-start gap-3">
         <Calculator className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
         <div>
-          <p className="text-sm font-semibold text-gray-900">How every number is calculated</p>
+          <p className="text-sm font-semibold text-gray-900">{t("calc.intro_title")}</p>
           <p className="text-xs text-gray-600 mt-0.5">
-            Each section shows the formula, the values from your inputs, and the result. Click a
-            heading to collapse it. Want to change inputs?{" "}
-            <span className="text-blue-700 font-medium">
-              Build a new model and the formulas will recompute live.
-            </span>
+            {t("calc.intro_body")}{" "}
+            <span className="text-blue-700 font-medium">{t("calc.intro_cta")}</span>
           </p>
         </div>
       </div>
 
       <Section
-        title="Customer growth"
-        description="How customer counts move month over month"
+        title={t("calc.sec_growth_title")}
+        description={t("calc.sec_growth_desc")}
       >
         <Formula
           label="Monthly growth rate"
@@ -160,8 +159,8 @@ export function CalculationsPanel({ model }: CalculationsPanelProps) {
       </Section>
 
       <Section
-        title="Revenue, COGS, gross profit"
-        description="From customers to gross profit each month"
+        title={t("calc.sec_revenue_title")}
+        description={t("calc.sec_revenue_desc")}
       >
         <Formula
           label="Monthly revenue"
@@ -211,8 +210,8 @@ export function CalculationsPanel({ model }: CalculationsPanelProps) {
       </Section>
 
       <Section
-        title="OpEx, EBITDA, net income"
-        description="From gross profit to bottom line"
+        title={t("calc.sec_opex_title")}
+        description={t("calc.sec_opex_desc")}
       >
         <Formula
           label="Base OpEx"
@@ -248,8 +247,8 @@ export function CalculationsPanel({ model }: CalculationsPanelProps) {
       </Section>
 
       <Section
-        title="Unit economics"
-        description="CAC, LTV, payback, LTV/CAC"
+        title={t("calc.sec_ue_title")}
+        description={t("calc.sec_ue_desc")}
       >
         <Formula
           label="Blended ARPU"
@@ -286,8 +285,8 @@ export function CalculationsPanel({ model }: CalculationsPanelProps) {
       </Section>
 
       <Section
-        title="Runway & break-even"
-        description="When you run out, when EBITDA turns positive"
+        title={t("calc.sec_runway_title")}
+        description={t("calc.sec_runway_desc")}
       >
         <Formula
           label="Opening cash"
@@ -316,8 +315,8 @@ export function CalculationsPanel({ model }: CalculationsPanelProps) {
       </Section>
 
       <Section
-        title="Cap table & valuation"
-        description="Pre-money, post-money, dilution"
+        title={t("calc.sec_captable_title")}
+        description={t("calc.sec_captable_desc")}
         defaultOpen={false}
       >
         <Formula
