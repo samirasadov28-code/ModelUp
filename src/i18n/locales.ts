@@ -32,7 +32,7 @@ export const LOCALES: LocaleConfig[] = [
   { code: "nl", name: "Nederlands", englishName: "Dutch",     flag: "🇳🇱", rtl: false },
   { code: "tr", name: "Türkçe",    englishName: "Turkish",    flag: "🇹🇷", rtl: false },
   { code: "uk", name: "Українська", englishName: "Ukrainian", flag: "🇺🇦", rtl: false },
-  { code: "ru", name: "Русский",   englishName: "Russian",    flag: "🇷🇺", rtl: false },
+  { code: "ru", name: "Русский",   englishName: "Russian",    flag: "",   rtl: false },
   { code: "ar", name: "العربية",   englishName: "Arabic",     flag: "🇸🇦", rtl: true  },
   { code: "hi", name: "हिन्दी",     englishName: "Hindi",      flag: "🇮🇳", rtl: false },
   { code: "bn", name: "বাংলা",      englishName: "Bengali",    flag: "🇧🇩", rtl: false },
