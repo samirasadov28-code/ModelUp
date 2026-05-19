@@ -333,7 +333,7 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-white border-t border-gray-100 py-8">
+      <footer className="bg-white border-t border-gray-100 pt-8 pb-32">
         <div className="max-w-5xl mx-auto px-6 flex items-center justify-between flex-wrap gap-4">
           <span className="text-gray-300 text-xs font-mono">{VERSION_LABEL}</span>
           <div className="flex items-center gap-6">

@@ -117,7 +117,7 @@ export default function PreviewPage() {
         </div>
       </nav>
 
-      <div className="max-w-5xl mx-auto px-6 py-10 space-y-8">
+      <div className="max-w-5xl mx-auto px-6 pt-10 pb-32 space-y-8">
         <div>
           <div className="flex items-center gap-3 mb-2 flex-wrap">
             <span className="text-xs bg-blue-50 text-blue-700 border border-blue-100 px-2.5 py-1 rounded-full font-semibold">
