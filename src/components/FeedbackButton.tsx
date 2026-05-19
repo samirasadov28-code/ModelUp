@@ -2,18 +2,24 @@
 
 import * as Dialog from "@radix-ui/react-dialog";
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 import { MessageSquarePlus, X, Star, Send, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type Status = "idle" | "submitting" | "success" | "error";
 
 export function FeedbackButton() {
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [rating, setRating] = useState<number>(0);
   const [hovered, setHovered] = useState<number>(0);
   const [message, setMessage] = useState("");
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<Status>("idle");
+
+  // The questionnaire renders a sticky bottom action bar — lift the floating
+  // button above it so the two never overlap.
+  const hasStickyBottomBar = pathname === "/model/new";
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -50,7 +56,10 @@ export function FeedbackButton() {
     <Dialog.Root open={open} onOpenChange={setOpen}>
       <Dialog.Trigger asChild>
         <button
-          className="fixed bottom-6 left-6 z-50 inline-flex items-center gap-2 bg-white hover:bg-gray-50 text-gray-700 text-sm font-semibold px-4 py-2.5 rounded-full shadow-lg border border-gray-200 transition-all hover:scale-105 active:scale-95"
+          className={cn(
+            "fixed left-6 z-50 inline-flex items-center gap-2 bg-white hover:bg-gray-50 text-gray-700 text-sm font-semibold px-4 py-2.5 rounded-full shadow-lg border border-gray-200 transition-all hover:scale-105 active:scale-95",
+            hasStickyBottomBar ? "bottom-20" : "bottom-6"
+          )}
           aria-label="Give feedback"
         >
           <MessageSquarePlus className="w-4 h-4" />

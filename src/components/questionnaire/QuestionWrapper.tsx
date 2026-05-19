@@ -45,31 +45,35 @@ export function QuestionWrapper({
 
       <div className="space-y-3">{children}</div>
 
-      <div className="flex items-center justify-between mt-8">
-        {onBack ? (
+      {/* Sticky action bar at the bottom of the viewport so Back/Next is
+          always reachable regardless of scroll position. */}
+      <div className="fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur border-t border-gray-100 shadow-[0_-2px_8px_rgba(0,0,0,0.03)]">
+        <div className="max-w-xl mx-auto px-6 py-3 flex items-center justify-between gap-3">
+          {onBack ? (
+            <button
+              type="button"
+              onClick={onBack}
+              className="text-sm text-gray-500 hover:text-gray-900 transition-colors px-2 py-1"
+            >
+              ← {t("common.back")}
+            </button>
+          ) : (
+            <div />
+          )}
           <button
             type="button"
-            onClick={onBack}
-            className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
+            onClick={onNext}
+            disabled={nextDisabled}
+            className={cn(
+              "px-6 py-2.5 rounded-lg text-sm font-semibold transition-all",
+              nextDisabled
+                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                : "bg-blue-600 text-white hover:bg-blue-700 shadow-md shadow-blue-500/20"
+            )}
           >
-            ← {t("common.back")}
+            {next}
           </button>
-        ) : (
-          <div />
-        )}
-        <button
-          type="button"
-          onClick={onNext}
-          disabled={nextDisabled}
-          className={cn(
-            "px-6 py-2.5 rounded-lg text-sm font-semibold transition-all",
-            nextDisabled
-              ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-              : "bg-blue-600 text-white hover:bg-blue-700 shadow-md shadow-blue-500/20"
-          )}
-        >
-          {next}
-        </button>
+        </div>
       </div>
     </div>
   );

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { QuestionnaireFlow } from "@/components/questionnaire/QuestionnaireFlow";
 import { TrustBadge } from "@/components/outputs/TrustBadge";
 import { NewModelHeader } from "@/components/NewModelHeader";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 export const metadata = {
   title: "Build Your Model — ModelUp",
@@ -20,7 +21,12 @@ export default function NewModelPage() {
               Model<span className="text-blue-600">Up</span>
             </span>
           </Link>
-          <TrustBadge />
+          <div className="flex items-center gap-3">
+            <div className="hidden sm:block">
+              <TrustBadge />
+            </div>
+            <LanguageSwitcher compact />
+          </div>
         </div>
       </nav>
 

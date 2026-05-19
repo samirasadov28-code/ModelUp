@@ -22,6 +22,7 @@ import { SensitivityAnalysis } from "@/components/outputs/SensitivityAnalysis";
 import { MetricCard } from "@/components/outputs/MetricCard";
 import { TrustBadge } from "@/components/outputs/TrustBadge";
 import { ViewModeToggle } from "@/components/ViewModeToggle";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { TourRunner } from "@/components/TourRunner";
 import { EarlyAccessForm } from "@/components/EarlyAccessForm";
 import { getModelLocally } from "@/lib/model-client-store";
@@ -200,6 +201,7 @@ export default function FullModelPage() {
             <div className="hidden lg:block">
               <TrustBadge />
             </div>
+            <LanguageSwitcher compact />
             <ViewModeToggle modelId={params.id} current="pro" />
             <button
               onClick={handleExport}
