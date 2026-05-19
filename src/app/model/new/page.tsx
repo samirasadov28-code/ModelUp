@@ -24,7 +24,7 @@ export default function NewModelPage() {
         </div>
       </nav>
 
-      <div className="max-w-3xl mx-auto px-6 py-12">
+      <div className="max-w-3xl mx-auto px-6 pt-12 pb-32">
         <NewModelHeader />
         <QuestionnaireFlow />
       </div>
