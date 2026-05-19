@@ -563,4 +563,18 @@ export const zh: Dict = {
   "calc.sec_captable_title": "cap table 与估值",
   "calc.sec_captable_desc": "投前估值、投后估值、稀释",
   "common.reset_btn": "重置",
+
+  // ── Tour / coachmarks ───────────────────────────────────────────────────
+  "tour.next": "下一步",
+  "tour.done": "明白了",
+  "tour.skip": "跳过",
+  "tour.step": "第 {current} 步,共 {total} 步",
+  "tour.full_sensitivity_title": "对每个输入做压力测试",
+  "tour.full_sensitivity_body": "拖动任意滑块 — churn、CAC、定价、burn — 整个模型实时重算。最快地找到你的临界点。",
+  "tour.full_valuation_title": "三角验证你的估值",
+  "tour.full_valuation_body": "DCF 与可比公司倍数并排展示。Pro 增加完整的 WACC 构建器(CAPM + 债务成本 × 税盾)和敏感性矩阵。",
+  "tour.full_captable_title": "建模至 Series B 的股权稀释",
+  "tour.full_captable_body": "编辑你的种子前股权拆分,带 ESOP 刷新地预测 Series A/B。瀑布显示每个阶段的创始人股权。",
+  "tour.full_calc_title": "每个数字,每个公式",
+  "tour.full_calc_body": "六个可折叠部分展示每个指标是如何计算的 — 当投资人询问你如何得出第 3 年 ARR 时非常有用。",
 };

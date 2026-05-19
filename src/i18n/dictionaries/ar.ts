@@ -563,4 +563,18 @@ export const ar: Dict = {
   "calc.sec_captable_title": "جدول رأس المال والتقييم",
   "calc.sec_captable_desc": "Pre-money، Post-money، التخفيف",
   "common.reset_btn": "إعادة تعيين",
+
+  // ── Tour / coachmarks ───────────────────────────────────────────────────
+  "tour.next": "التالي",
+  "tour.done": "فهمت",
+  "tour.skip": "تخطي",
+  "tour.step": "الخطوة {current} من {total}",
+  "tour.full_sensitivity_title": "اختبر كل مدخل تحت الضغط",
+  "tour.full_sensitivity_body": "اسحب أي شريط — churn، CAC، السعر، burn — وسيُعاد حساب النموذج بأكمله فورًا. أسرع طريقة لإيجاد نقاط الانكسار.",
+  "tour.full_valuation_title": "ثلّث تقييمك",
+  "tour.full_valuation_body": "DCF ومضاعفات المقارنات جنبًا إلى جنب. يضيف Pro منشئ WACC كامل (CAPM + تكلفة الدين × درع ضريبي) ومصفوفة حساسية.",
+  "tour.full_captable_title": "اعرض التخفيف حتى Series B",
+  "tour.full_captable_body": "عدّل تقسيمات Pre-seed وقم بإسقاط Series A/B مع تحديثات ESOP. الشلال يظهر ملكية المؤسس في كل مرحلة.",
+  "tour.full_calc_title": "كل رقم، كل صيغة",
+  "tour.full_calc_body": "ستة أقسام قابلة للتوسيع تُظهر كيف تم حساب كل مقياس — مفيد عندما يسأل المستثمرون كيف وصلت إلى ARR السنة 3.",
 };

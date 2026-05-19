@@ -653,6 +653,24 @@ export const en = {
 
   // ── Common labels used across components ────────────────────────────
   "common.reset_btn": "Reset",
+
+  // ── Tour / onboarding coachmarks ─────────────────────────────────────
+  "tour.next": "Next",
+  "tour.done": "Got it",
+  "tour.skip": "Skip",
+  "tour.step": "Step {current} of {total}",
+  "tour.full_sensitivity_title": "Stress-test every input",
+  "tour.full_sensitivity_body":
+    "Drag any slider — churn, CAC, pricing, burn — and the whole model recomputes live. The fastest way to find your break points.",
+  "tour.full_valuation_title": "Triangulate your valuation",
+  "tour.full_valuation_body":
+    "DCF and comps-based multiples side-by-side. Pro adds a full WACC builder (CAPM + cost of debt × tax shield) and a sensitivity matrix.",
+  "tour.full_captable_title": "Model dilution through Series B",
+  "tour.full_captable_body":
+    "Edit your pre-seed splits and project Series A/B with ESOP refreshes. The waterfall shows founder ownership at every stage.",
+  "tour.full_calc_title": "Every number, every formula",
+  "tour.full_calc_body":
+    "Six expandable sections show how each metric was computed — useful when investors ask exactly how you got to Year-3 ARR.",
 } as const;
 
 export type DictKey = keyof typeof en;

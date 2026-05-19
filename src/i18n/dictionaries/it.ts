@@ -563,4 +563,18 @@ export const it: Dict = {
   "calc.sec_captable_title": "Cap table e valutazione",
   "calc.sec_captable_desc": "Pre-money, post-money, diluizione",
   "common.reset_btn": "Reimposta",
+
+  // ── Tour / coachmarks ───────────────────────────────────────────────────
+  "tour.next": "Avanti",
+  "tour.done": "Ho capito",
+  "tour.skip": "Salta",
+  "tour.step": "Passo {current} di {total}",
+  "tour.full_sensitivity_title": "Stress-test su ogni input",
+  "tour.full_sensitivity_body": "Trascina qualsiasi cursore — churn, CAC, prezzo, burn — e tutto il modello si ricalcola in tempo reale. Il modo più veloce per trovare i tuoi break point.",
+  "tour.full_valuation_title": "Triangola la tua valutazione",
+  "tour.full_valuation_body": "DCF e multipli comparabili affiancati. Pro aggiunge un builder WACC completo (CAPM + costo del debito × scudo fiscale) e una matrice di sensibilità.",
+  "tour.full_captable_title": "Modella la diluizione fino al Series B",
+  "tour.full_captable_body": "Modifica i tuoi split pre-seed e proietta Series A/B con refresh ESOP. La cascata mostra la proprietà del fondatore in ogni fase.",
+  "tour.full_calc_title": "Ogni numero, ogni formula",
+  "tour.full_calc_body": "Sei sezioni espandibili mostrano come è stata calcolata ogni metrica — utile quando gli investitori chiedono come sei arrivato all'ARR dell'anno 3.",
 };

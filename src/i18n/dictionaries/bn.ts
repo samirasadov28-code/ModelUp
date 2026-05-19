@@ -563,4 +563,18 @@ export const bn: Dict = {
   "calc.sec_captable_title": "ক্যাপ টেবিল এবং মূল্যায়ন",
   "calc.sec_captable_desc": "Pre-money, Post-money, ডাইলিউশন",
   "common.reset_btn": "রিসেট",
+
+  // ── Tour / coachmarks ───────────────────────────────────────────────────
+  "tour.next": "পরবর্তী",
+  "tour.done": "বুঝেছি",
+  "tour.skip": "এড়িয়ে যান",
+  "tour.step": "ধাপ {current} / {total}",
+  "tour.full_sensitivity_title": "প্রতিটি ইনপুটের স্ট্রেস-টেস্ট",
+  "tour.full_sensitivity_body": "যেকোনো স্লাইডার টানুন — churn, CAC, মূল্য, burn — পুরো মডেল লাইভ পুনঃগণনা করবে। আপনার ব্রেক পয়েন্ট খুঁজে পাওয়ার দ্রুততম উপায়।",
+  "tour.full_valuation_title": "আপনার মূল্যায়ন ত্রিকোণীকরণ করুন",
+  "tour.full_valuation_body": "DCF এবং কম্পস মাল্টিপল পাশাপাশি। Pro একটি পূর্ণ WACC বিল্ডার (CAPM + ঋণ খরচ × ট্যাক্স শিল্ড) এবং সংবেদনশীলতা ম্যাট্রিক্স যোগ করে।",
+  "tour.full_captable_title": "Series B পর্যন্ত ডাইলিউশন মডেল করুন",
+  "tour.full_captable_body": "আপনার প্রি-সিড বিভাগ সম্পাদনা করুন এবং ESOP রিফ্রেশ সহ Series A/B প্রক্ষেপণ করুন। ওয়াটারফল প্রতিটি পর্যায়ে ফাউন্ডার মালিকানা দেখায়।",
+  "tour.full_calc_title": "প্রতিটি সংখ্যা, প্রতিটি সূত্র",
+  "tour.full_calc_body": "ছয়টি সম্প্রসারণযোগ্য বিভাগ দেখায় প্রতিটি মেট্রিক কীভাবে গণনা হয়েছিল — যখন বিনিয়োগকারীরা জিজ্ঞাসা করেন আপনি Y3 ARR-এ কীভাবে পৌঁছেছেন তখন কাজে আসে।",
 };

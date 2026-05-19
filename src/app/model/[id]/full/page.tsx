@@ -22,6 +22,7 @@ import { SensitivityAnalysis } from "@/components/outputs/SensitivityAnalysis";
 import { MetricCard } from "@/components/outputs/MetricCard";
 import { TrustBadge } from "@/components/outputs/TrustBadge";
 import { ViewModeToggle } from "@/components/ViewModeToggle";
+import { TourRunner } from "@/components/TourRunner";
 import { EarlyAccessForm } from "@/components/EarlyAccessForm";
 import { getModelLocally } from "@/lib/model-client-store";
 import { formatCurrencyCompact } from "@/lib/utils";
@@ -174,6 +175,19 @@ export default function FullModelPage() {
 
   return (
     <main className="min-h-screen bg-white text-gray-900">
+      <TourRunner
+        storageKey="modelup_tour_full_v1"
+        nextLabel={t("tour.next")}
+        doneLabel={t("tour.done")}
+        skipLabel={t("tour.skip")}
+        stepLabel={t("tour.step")}
+        steps={[
+          { target: '[data-tour="tab-sensitivity"]', title: t("tour.full_sensitivity_title"), body: t("tour.full_sensitivity_body") },
+          { target: '[data-tour="tab-valuation"]', title: t("tour.full_valuation_title"), body: t("tour.full_valuation_body") },
+          { target: '[data-tour="tab-captable"]', title: t("tour.full_captable_title"), body: t("tour.full_captable_body") },
+          { target: '[data-tour="tab-calculations"]', title: t("tour.full_calc_title"), body: t("tour.full_calc_body") },
+        ]}
+      />
       <nav className="sticky top-0 z-40 bg-white/90 backdrop-blur-sm border-b border-gray-100">
         <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between gap-3">
           <Link href="/" className="flex items-center gap-2 flex-shrink-0">
@@ -307,13 +321,13 @@ export default function FullModelPage() {
             <TabsTrigger value="sources-uses">{t("tab.sources_uses")}</TabsTrigger>
             <TabsTrigger value="unit-econ">{t("tab.unit_econ")}</TabsTrigger>
             <TabsTrigger value="scenarios">{t("tab.scenarios")}</TabsTrigger>
-            <TabsTrigger value="captable">{t("tab.cap_table")}</TabsTrigger>
-            <TabsTrigger value="valuation">{t("tab.valuation")}</TabsTrigger>
-            <TabsTrigger value="sensitivity" className="gap-1.5">
+            <TabsTrigger value="captable" data-tour="tab-captable">{t("tab.cap_table")}</TabsTrigger>
+            <TabsTrigger value="valuation" data-tour="tab-valuation">{t("tab.valuation")}</TabsTrigger>
+            <TabsTrigger value="sensitivity" className="gap-1.5" data-tour="tab-sensitivity">
               <Sliders className="w-3.5 h-3.5" />
               {t("tab.sensitivity")}
             </TabsTrigger>
-            <TabsTrigger value="calculations" className="gap-1.5">
+            <TabsTrigger value="calculations" className="gap-1.5" data-tour="tab-calculations">
               <Calculator className="w-3.5 h-3.5" />
               {t("tab.calculations")}
             </TabsTrigger>

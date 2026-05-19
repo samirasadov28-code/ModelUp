@@ -563,4 +563,18 @@ export const nl: Dict = {
   "calc.sec_captable_title": "Cap table en waardering",
   "calc.sec_captable_desc": "Pre-money, post-money, verwatering",
   "common.reset_btn": "Resetten",
+
+  // ── Tour / coachmarks ───────────────────────────────────────────────────
+  "tour.next": "Volgende",
+  "tour.done": "Begrepen",
+  "tour.skip": "Overslaan",
+  "tour.step": "Stap {current} van {total}",
+  "tour.full_sensitivity_title": "Stress-test elke input",
+  "tour.full_sensitivity_body": "Sleep een schuifregelaar — churn, CAC, prijs, burn — en het hele model herberekent live. De snelste manier om je breekpunten te vinden.",
+  "tour.full_valuation_title": "Trianguleer je waardering",
+  "tour.full_valuation_body": "DCF en comps-multiples naast elkaar. Pro voegt een volledige WACC-builder toe (CAPM + kosten van schuld × belastingschild) en een gevoeligheidsmatrix.",
+  "tour.full_captable_title": "Modelleer verwatering tot Series B",
+  "tour.full_captable_body": "Bewerk je pre-seed splits en projecteer Series A/B met ESOP-refreshes. De waterval toont oprichter-eigendom in elke fase.",
+  "tour.full_calc_title": "Elk getal, elke formule",
+  "tour.full_calc_body": "Zes uitklapbare secties tonen hoe elke metric is berekend — handig wanneer investeerders vragen hoe je tot de Y3 ARR komt.",
 };

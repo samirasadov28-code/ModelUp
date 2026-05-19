@@ -563,4 +563,18 @@ export const tr: Dict = {
   "calc.sec_captable_title": "Cap table ve değerleme",
   "calc.sec_captable_desc": "Pre-money, post-money, seyrelme",
   "common.reset_btn": "Sıfırla",
+
+  // ── Tour / coachmarks ───────────────────────────────────────────────────
+  "tour.next": "Sonraki",
+  "tour.done": "Anladım",
+  "tour.skip": "Atla",
+  "tour.step": "Adım {current} / {total}",
+  "tour.full_sensitivity_title": "Her girdiyi stres testine tabi tut",
+  "tour.full_sensitivity_body": "Herhangi bir kaydırıcıyı sürükle — churn, CAC, fiyat, burn — tüm model anında yeniden hesaplansın. Kırılma noktalarınızı bulmanın en hızlı yolu.",
+  "tour.full_valuation_title": "Değerlemenizi üçgenleyin",
+  "tour.full_valuation_body": "DCF ve karşılaştırılabilir çarpanlar yan yana. Pro tam WACC oluşturucu (CAPM + borç maliyeti × vergi kalkanı) ve duyarlılık matrisi ekler.",
+  "tour.full_captable_title": "Series B'ye kadar seyrelmeyi modelle",
+  "tour.full_captable_body": "Pre-seed bölünmelerinizi düzenleyin ve ESOP yenilemeleri ile Series A/B projeksiyonu yapın. Şelale, her aşamada kurucu sahipliğini gösterir.",
+  "tour.full_calc_title": "Her sayı, her formül",
+  "tour.full_calc_body": "Altı genişletilebilir bölüm, her metriğin nasıl hesaplandığını gösterir — yatırımcılar 3. yıl ARR'ye nasıl ulaştığınızı sorduğunda işe yarar.",
 };
