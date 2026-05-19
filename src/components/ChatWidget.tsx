@@ -43,6 +43,10 @@ export function ChatWidget() {
   const [activeModel, setActiveModel] = useState<ModelOutputs | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  // The questionnaire renders a sticky bottom action bar. Lift the floating
+  // button above it so the two never overlap.
+  const hasStickyBottomBar = pathname === "/model/new";
+
   // Load the active model from localStorage when on a /model/[id]/* route
   useEffect(() => {
     const id = extractModelIdFromPath(pathname);
@@ -115,7 +119,10 @@ export function ChatWidget() {
     <Dialog.Root open={open} onOpenChange={setOpen}>
       <Dialog.Trigger asChild>
         <button
-          className="fixed bottom-6 right-6 z-50 inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2.5 rounded-full shadow-lg shadow-blue-500/30 transition-all hover:scale-105 active:scale-95"
+          className={cn(
+            "fixed right-6 z-50 inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2.5 rounded-full shadow-lg shadow-blue-500/30 transition-all hover:scale-105 active:scale-95",
+            hasStickyBottomBar ? "bottom-20" : "bottom-6"
+          )}
           aria-label="Chat with the ModelUp assistant"
         >
           <MessageCircle className="w-4 h-4" />

@@ -11,6 +11,7 @@ import { TrustBadge } from "@/components/outputs/TrustBadge";
 import { ValuationCard } from "@/components/outputs/ValuationCard";
 import { SourcesAndUsesTable } from "@/components/outputs/SourcesAndUsesTable";
 import { ViewModeToggle } from "@/components/ViewModeToggle";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import {
   PreviewTeaser,
   ExampleRevenueChart,
@@ -102,6 +103,7 @@ export default function PreviewPage() {
             <div className="hidden sm:block">
               <TrustBadge />
             </div>
+            <LanguageSwitcher compact />
             {earlyAccess ? (
               <ViewModeToggle modelId={params.id} current="free" />
             ) : (
