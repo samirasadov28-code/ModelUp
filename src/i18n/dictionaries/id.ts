@@ -563,4 +563,18 @@ export const id: Dict = {
   "calc.sec_captable_title": "Cap table dan valuasi",
   "calc.sec_captable_desc": "Pre-money, post-money, dilusi",
   "common.reset_btn": "Atur ulang",
+
+  // ── Tour / coachmarks ───────────────────────────────────────────────────
+  "tour.next": "Berikutnya",
+  "tour.done": "Mengerti",
+  "tour.skip": "Lewati",
+  "tour.step": "Langkah {current} dari {total}",
+  "tour.full_sensitivity_title": "Stress-test setiap input",
+  "tour.full_sensitivity_body": "Geser slider mana saja — churn, CAC, harga, burn — seluruh model dihitung ulang langsung. Cara tercepat menemukan titik kritis Anda.",
+  "tour.full_valuation_title": "Triangulasi valuasi Anda",
+  "tour.full_valuation_body": "DCF dan multiple comps berdampingan. Pro menambahkan pembangun WACC penuh (CAPM + biaya hutang × tameng pajak) dan matriks sensitivitas.",
+  "tour.full_captable_title": "Modelkan dilusi hingga Series B",
+  "tour.full_captable_body": "Edit pemisahan pre-seed dan proyeksikan Series A/B dengan refresh ESOP. Waterfall menampilkan kepemilikan founder di setiap tahap.",
+  "tour.full_calc_title": "Setiap angka, setiap formula",
+  "tour.full_calc_body": "Enam bagian yang dapat diperluas menampilkan cara perhitungan setiap metrik — berguna saat investor bertanya bagaimana Anda sampai pada ARR Tahun 3.",
 };

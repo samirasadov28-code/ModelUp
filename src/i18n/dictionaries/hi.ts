@@ -563,4 +563,18 @@ export const hi: Dict = {
   "calc.sec_captable_title": "कैप टेबल और मूल्यांकन",
   "calc.sec_captable_desc": "Pre-money, Post-money, डाइल्यूशन",
   "common.reset_btn": "रीसेट",
+
+  // ── Tour / coachmarks ───────────────────────────────────────────────────
+  "tour.next": "अगला",
+  "tour.done": "समझ गया",
+  "tour.skip": "छोड़ें",
+  "tour.step": "चरण {current} / {total}",
+  "tour.full_sensitivity_title": "प्रत्येक इनपुट का स्ट्रेस-टेस्ट करें",
+  "tour.full_sensitivity_body": "कोई भी स्लाइडर खींचें — churn, CAC, मूल्य, burn — और पूरा मॉडल लाइव पुनर्गणना करेगा। आपके ब्रेक पॉइंट खोजने का सबसे तेज़ तरीका।",
+  "tour.full_valuation_title": "अपना मूल्यांकन त्रिकोणित करें",
+  "tour.full_valuation_body": "DCF और कॉम्प्स मल्टीपल साथ-साथ। Pro एक पूर्ण WACC बिल्डर (CAPM + ऋण लागत × टैक्स शील्ड) और संवेदनशीलता मैट्रिक्स जोड़ता है।",
+  "tour.full_captable_title": "Series B तक डाइल्यूशन मॉडल करें",
+  "tour.full_captable_body": "अपने प्री-सीड स्प्लिट संपादित करें और ESOP रिफ्रेश के साथ Series A/B प्रोजेक्ट करें। वाटरफ़ॉल हर चरण में फाउंडर ओनरशिप दिखाता है।",
+  "tour.full_calc_title": "प्रत्येक संख्या, प्रत्येक सूत्र",
+  "tour.full_calc_body": "छह विस्तार-योग्य खंड दिखाते हैं कि प्रत्येक मीट्रिक की गणना कैसे हुई — उपयोगी जब निवेशक पूछते हैं कि आप Y3 ARR तक कैसे पहुँचे।",
 };

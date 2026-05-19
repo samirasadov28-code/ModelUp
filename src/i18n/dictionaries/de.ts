@@ -563,4 +563,18 @@ export const de: Dict = {
   "calc.sec_captable_title": "Cap Table & Bewertung",
   "calc.sec_captable_desc": "Pre-Money, Post-Money, Verwässerung",
   "common.reset_btn": "Zurücksetzen",
+
+  // ── Tour / coachmarks ───────────────────────────────────────────────────
+  "tour.next": "Weiter",
+  "tour.done": "Verstanden",
+  "tour.skip": "Überspringen",
+  "tour.step": "Schritt {current} von {total}",
+  "tour.full_sensitivity_title": "Stresstest für jeden Input",
+  "tour.full_sensitivity_body": "Ziehe einen beliebigen Slider — Churn, CAC, Preis, Burn — und das gesamte Modell rechnet live nach. Der schnellste Weg, deine Bruchstellen zu finden.",
+  "tour.full_valuation_title": "Triangulier deine Bewertung",
+  "tour.full_valuation_body": "DCF und Comps-Multiples nebeneinander. Pro ergänzt einen vollständigen WACC-Builder (CAPM + Fremdkapitalkosten × Steuerschild) und eine Sensitivitätsmatrix.",
+  "tour.full_captable_title": "Modelliere die Verwässerung bis Series B",
+  "tour.full_captable_body": "Bearbeite deine Pre-Seed-Splits und projiziere Series A/B mit ESOP-Refreshes. Die Kaskade zeigt das Eigentum des Gründers in jeder Phase.",
+  "tour.full_calc_title": "Jede Zahl, jede Formel",
+  "tour.full_calc_body": "Sechs aufklappbare Abschnitte zeigen, wie jede Kennzahl berechnet wurde — nützlich, wenn Investoren fragen, wie du auf das Year-3-ARR kommst.",
 };

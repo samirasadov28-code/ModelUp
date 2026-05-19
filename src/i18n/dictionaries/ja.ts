@@ -563,4 +563,18 @@ export const ja: Dict = {
   "calc.sec_captable_title": "キャップテーブルとバリュエーション",
   "calc.sec_captable_desc": "プレマネー、ポストマネー、希薄化",
   "common.reset_btn": "リセット",
+
+  // ── Tour / coachmarks ───────────────────────────────────────────────────
+  "tour.next": "次へ",
+  "tour.done": "了解",
+  "tour.skip": "スキップ",
+  "tour.step": "ステップ {current} / {total}",
+  "tour.full_sensitivity_title": "すべての入力をストレステスト",
+  "tour.full_sensitivity_body": "任意のスライダーをドラッグ — チャーン、CAC、価格、バーン — モデル全体がライブで再計算されます。ブレークポイントを見つける最速の方法。",
+  "tour.full_valuation_title": "バリュエーションをトライアンギュレート",
+  "tour.full_valuation_body": "DCF とコンプスマルチプルを並べて表示。Pro は完全な WACC ビルダー(CAPM + 負債コスト × 税効果)と感応度マトリクスを追加します。",
+  "tour.full_captable_title": "Series B までの希薄化をモデリング",
+  "tour.full_captable_body": "プレシードのスプリットを編集し、ESOP リフレッシュ付きで Series A/B を予測。ウォーターフォールは各段階での創業者所有を表示します。",
+  "tour.full_calc_title": "すべての数値、すべての数式",
+  "tour.full_calc_body": "6 つの展開可能なセクションで各メトリクスの計算方法を表示。投資家が Year-3 ARR にどう到達したか尋ねたときに役立ちます。",
 };

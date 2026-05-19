@@ -563,4 +563,18 @@ export const ru: Dict = {
   "calc.sec_captable_title": "Cap table и оценка",
   "calc.sec_captable_desc": "Pre-money, post-money, размытие",
   "common.reset_btn": "Сбросить",
+
+  // ── Tour / coachmarks ───────────────────────────────────────────────────
+  "tour.next": "Далее",
+  "tour.done": "Понятно",
+  "tour.skip": "Пропустить",
+  "tour.step": "Шаг {current} из {total}",
+  "tour.full_sensitivity_title": "Стресс-тест каждого входа",
+  "tour.full_sensitivity_body": "Перетащите любой ползунок — churn, CAC, цена, burn — и вся модель пересчитается вживую. Самый быстрый способ найти точки слома.",
+  "tour.full_valuation_title": "Триангулируйте оценку",
+  "tour.full_valuation_body": "DCF и comps-мультипликаторы рядом. Pro добавляет полный конструктор WACC (CAPM + стоимость долга × налоговый щит) и матрицу чувствительности.",
+  "tour.full_captable_title": "Смоделируйте размытие до Series B",
+  "tour.full_captable_body": "Редактируйте pre-seed разделения и проектируйте Series A/B с ESOP обновлениями. Каскад показывает владение основателя на каждом этапе.",
+  "tour.full_calc_title": "Каждое число, каждая формула",
+  "tour.full_calc_body": "Шесть раскрывающихся разделов показывают, как рассчитывалась каждая метрика — полезно, когда инвесторы спрашивают, как вы пришли к Y3 ARR.",
 };
