@@ -8,6 +8,7 @@ export const es: Dict = {
   "nav.pro": "Pro",
   "nav.view_free": "Gratis",
   "nav.view_pro": "Pro",
+  "nav.other_products": "ModeLoop Otros Productos",
 
   "hero.pill": "Modelado financiero con IA",
   "hero.headline_a": "El copiloto de IA para",
