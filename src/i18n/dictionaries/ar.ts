@@ -8,7 +8,7 @@ export const ar: Dict = {
   "nav.pro": "Pro",
   "nav.view_free": "مجاني",
   "nav.view_pro": "Pro",
-  "nav.other_products": "ModeLoop منتجات أخرى",
+  "nav.other_products": "اكتشف منتجاتنا الأخرى",
 
   "hero.pill": "نمذجة مالية مدعومة بالذكاء الاصطناعي",
   "hero.headline_a": "المساعد الذكي لـ",

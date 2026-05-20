@@ -8,7 +8,7 @@ export const tr: Dict = {
   "nav.pro": "Pro",
   "nav.view_free": "Ücretsiz",
   "nav.view_pro": "Pro",
-  "nav.other_products": "ModeLoop Diğer Ürünler",
+  "nav.other_products": "Diğer ürünlerimizi keşfedin",
 
   "hero.pill": "Yapay zekâ destekli finansal modelleme",
   "hero.headline_a": "Kurucu finansları için",
