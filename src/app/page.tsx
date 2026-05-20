@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Lightbulb, Zap, DollarSign, BarChart3, TrendingUp, Download, Sparkles } from "lucide-react";
+import { ArrowRight, Lightbulb, Zap, DollarSign, BarChart3, TrendingUp, Download, Sparkles, LayoutGrid } from "lucide-react";
 import { VERSION_LABEL } from "@/lib/version";
 import { ForceUpdateButton } from "@/components/ForceUpdateButton";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
@@ -23,6 +23,16 @@ export default function LandingPage() {
           </Link>
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <LanguageSwitcher compact />
+            <a
+              href="https://asadov-stack.netlify.app/"
+              target="_blank"
+              rel="noopener noreferrer"
+              title={t("nav.other_products")}
+              className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-gray-700 bg-white hover:bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-full transition-colors whitespace-nowrap"
+            >
+              <LayoutGrid className="w-3.5 h-3.5" />
+              <span className="hidden md:inline">{t("nav.other_products")}</span>
+            </a>
             <Link
               href="/pricing"
               className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-100 px-3 py-1.5 rounded-full transition-colors whitespace-nowrap"
@@ -343,6 +353,15 @@ export default function LandingPage() {
             <Link href="/model/new" className="text-gray-400 text-xs hover:text-gray-600 transition-colors">
               Build a model
             </Link>
+            <a
+              href="https://asadov-stack.netlify.app/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-gray-400 text-xs hover:text-gray-600 transition-colors"
+            >
+              <LayoutGrid className="w-3.5 h-3.5" />
+              {t("nav.other_products")}
+            </a>
             <ForceUpdateButton />
           </div>
         </div>

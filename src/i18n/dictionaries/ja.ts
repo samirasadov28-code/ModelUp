@@ -8,6 +8,7 @@ export const ja: Dict = {
   "nav.pro": "Pro",
   "nav.view_free": "無料",
   "nav.view_pro": "Pro",
+  "nav.other_products": "ModeLoop 他の製品",
 
   "hero.pill": "AI による財務モデリング",
   "hero.headline_a": "創業者のための",

@@ -8,6 +8,7 @@ export const zh: Dict = {
   "nav.pro": "Pro",
   "nav.view_free": "免费",
   "nav.view_pro": "Pro",
+  "nav.other_products": "ModeLoop 其他产品",
 
   "hero.pill": "AI 驱动的财务建模",
   "hero.headline_a": "面向创始人的",
