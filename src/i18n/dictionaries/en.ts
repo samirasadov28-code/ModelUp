@@ -12,7 +12,7 @@ export const en = {
   "nav.pro": "Pro",
   "nav.view_free": "Free",
   "nav.view_pro": "Pro",
-  "nav.other_products": "ModeLoop Other Products",
+  "nav.other_products": "Explore our other products",
 
   // ── Landing page hero ──────────────────────────────────────────────────
   "hero.pill": "AI-powered financial modeling",

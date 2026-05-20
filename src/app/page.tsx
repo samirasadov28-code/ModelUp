@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Lightbulb, Zap, DollarSign, BarChart3, TrendingUp, Download, Sparkles, LayoutGrid } from "lucide-react";
+import { ArrowRight, Lightbulb, Zap, DollarSign, BarChart3, TrendingUp, Download, Sparkles } from "lucide-react";
 import { VERSION_LABEL } from "@/lib/version";
 import { ForceUpdateButton } from "@/components/ForceUpdateButton";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
@@ -23,16 +23,6 @@ export default function LandingPage() {
           </Link>
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <LanguageSwitcher compact />
-            <a
-              href="https://asadov-stack.netlify.app/"
-              target="_blank"
-              rel="noopener noreferrer"
-              title={t("nav.other_products")}
-              className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-gray-700 bg-white hover:bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-full transition-colors whitespace-nowrap"
-            >
-              <LayoutGrid className="w-3.5 h-3.5" />
-              <span className="hidden md:inline">{t("nav.other_products")}</span>
-            </a>
             <Link
               href="/pricing"
               className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-100 px-3 py-1.5 rounded-full transition-colors whitespace-nowrap"
@@ -342,6 +332,26 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Cross-product CTA */}
+      <section className="bg-white">
+        <div className="max-w-5xl mx-auto px-6 pb-4 flex justify-center">
+          <a
+            href="https://asadov-stack.netlify.app/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group inline-flex items-center gap-3 rounded-full border border-gray-200 bg-white pl-2 pr-5 py-2 shadow-sm hover:shadow-md hover:border-blue-300 transition-all"
+          >
+            <span className="inline-flex items-center text-[10px] font-extrabold uppercase tracking-wider bg-blue-600 text-white px-2.5 py-1 rounded-full">
+              ModeLoop
+            </span>
+            <span className="text-sm font-semibold text-gray-800 group-hover:text-gray-900">
+              {t("nav.other_products")}
+            </span>
+            <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all" />
+          </a>
+        </div>
+      </section>
+
       {/* Footer */}
       <footer className="bg-white border-t border-gray-100 pt-8 pb-32">
         <div className="max-w-5xl mx-auto px-6 flex items-center justify-between flex-wrap gap-4">
@@ -353,15 +363,6 @@ export default function LandingPage() {
             <Link href="/model/new" className="text-gray-400 text-xs hover:text-gray-600 transition-colors">
               Build a model
             </Link>
-            <a
-              href="https://asadov-stack.netlify.app/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-gray-400 text-xs hover:text-gray-600 transition-colors"
-            >
-              <LayoutGrid className="w-3.5 h-3.5" />
-              {t("nav.other_products")}
-            </a>
             <ForceUpdateButton />
           </div>
         </div>

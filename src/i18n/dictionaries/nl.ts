@@ -8,7 +8,7 @@ export const nl: Dict = {
   "nav.pro": "Pro",
   "nav.view_free": "Gratis",
   "nav.view_pro": "Pro",
-  "nav.other_products": "ModeLoop Andere Producten",
+  "nav.other_products": "Ontdek onze andere producten",
 
   "hero.pill": "AI-gedreven financiële modellering",
   "hero.headline_a": "De AI-copiloot voor",
