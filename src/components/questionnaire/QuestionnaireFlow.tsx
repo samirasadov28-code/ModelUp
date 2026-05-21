@@ -241,16 +241,26 @@ export function QuestionnaireFlow() {
     }
   };
 
+  // Churn (step 7) only matters when revenue depends on a user base, so it's
+  // hidden for production-only models. The step counter shrinks to match.
+  const churnVisible = (answers.revenueModel ?? "subscription") !== "production";
+  const stepTotal = churnVisible ? TOTAL_STEPS : TOTAL_STEPS - 1;
+  const stepNum = (abs: number) => (!churnVisible && abs > 7 ? abs - 1 : abs);
+
   function handleNext() {
-    if (step < TOTAL_STEPS) {
-      setStep((s) => s + 1);
-    } else {
+    if (step >= TOTAL_STEPS) {
       handleSubmit();
+      return;
     }
+    let next = step + 1;
+    if (next === 7 && !churnVisible) next += 1; // skip churn for production
+    setStep(next);
   }
 
   function handleBack() {
-    setStep((s) => Math.max(0, s - 1));
+    let prev = step - 1;
+    if (prev === 7 && !churnVisible) prev -= 1; // skip churn for production
+    setStep(Math.max(0, prev));
   }
 
   async function handleSuggest(e: FormEvent) {
@@ -303,7 +313,7 @@ export function QuestionnaireFlow() {
     setError(null);
     try {
       const churnMap: Record<string, number> = {
-        lt2: 1.5, "2to5": 3.5, "5to10": 7.5, gt10: 12, unknown: 5,
+        none: 0, lt2: 1.5, "2to5": 3.5, "5to10": 7.5, gt10: 12, unknown: 5,
       };
       const monthlyChurnRate = churnMap[answers.churnEstimate ?? "unknown"] ?? 5;
 
@@ -463,7 +473,7 @@ export function QuestionnaireFlow() {
 
   return (
     <div className="w-full max-w-2xl mx-auto space-y-8">
-      <ProgressBar current={step} total={TOTAL_STEPS} />
+      <ProgressBar current={stepNum(step)} total={stepTotal} />
       {aiNote && (
         <div className="rounded-xl border border-blue-100 bg-blue-50/60 px-4 py-3 flex items-start gap-2">
           <Sparkles className="w-4 h-4 text-blue-600 mt-0.5 shrink-0" />
@@ -490,7 +500,7 @@ export function QuestionnaireFlow() {
       {/* Q1 — Business model */}
       {step === 1 && (
         <QuestionWrapper
-          stepNumber={1} totalSteps={TOTAL_STEPS}
+          stepNumber={1} totalSteps={stepTotal}
           title={t("q1.title")}
           subtitle={t("q1.subtitle")}
           onNext={handleNext} onBack={handleBack}
@@ -522,7 +532,7 @@ export function QuestionnaireFlow() {
       {/* Q2 — Customer type */}
       {step === 2 && (
         <QuestionWrapper
-          stepNumber={2} totalSteps={TOTAL_STEPS}
+          stepNumber={2} totalSteps={stepTotal}
           title={t("q2.title")}
           onNext={handleNext} onBack={handleBack}
           nextDisabled={!canAdvance()}
@@ -551,7 +561,7 @@ export function QuestionnaireFlow() {
       {/* Q3 — Geography + tax jurisdiction */}
       {step === 3 && (
         <QuestionWrapper
-          stepNumber={3} totalSteps={TOTAL_STEPS}
+          stepNumber={3} totalSteps={stepTotal}
           title={t("q3.title")}
           subtitle={t("q3.subtitle")}
           onNext={handleNext} onBack={handleBack}
@@ -703,7 +713,7 @@ export function QuestionnaireFlow() {
       {/* Q4 — Funding stage */}
       {step === 4 && (
         <QuestionWrapper
-          stepNumber={4} totalSteps={TOTAL_STEPS}
+          stepNumber={4} totalSteps={stepTotal}
           title={t("q4.title")}
           subtitle={t("q4.subtitle")}
           onNext={handleNext} onBack={handleBack}
@@ -734,7 +744,7 @@ export function QuestionnaireFlow() {
       {/* Q5 — Revenue model */}
       {step === 5 && (
         <QuestionWrapper
-          stepNumber={5} totalSteps={TOTAL_STEPS}
+          stepNumber={5} totalSteps={stepTotal}
           title={t("q5.title")}
           subtitle={t("q5.subtitle")}
           onNext={handleNext} onBack={handleBack}
@@ -936,7 +946,7 @@ export function QuestionnaireFlow() {
       {/* Q6 — Acquisition */}
       {step === 6 && (
         <QuestionWrapper
-          stepNumber={6} totalSteps={TOTAL_STEPS}
+          stepNumber={6} totalSteps={stepTotal}
           title={t("q6.title")}
           subtitle={t("q6.subtitle")}
           onNext={handleNext} onBack={handleBack}
@@ -1020,13 +1030,14 @@ export function QuestionnaireFlow() {
       {/* Q7 — Churn */}
       {step === 7 && (
         <QuestionWrapper
-          stepNumber={7} totalSteps={TOTAL_STEPS}
+          stepNumber={7} totalSteps={stepTotal}
           title={t("q7.title")}
           subtitle={t("q7.subtitle")}
           onNext={handleNext} onBack={handleBack}
           nextDisabled={!canAdvance()}
         >
           {[
+            { value: "none", label: t("q7.opt_none"), desc: t("q7.desc_none"), icon: "💎" },
             { value: "lt2", label: t("q7.opt_lt2"), desc: t("q7.desc_lt2"), icon: "🟢" },
             { value: "2to5", label: t("q7.opt_2to5"), desc: t("q7.desc_2to5"), icon: "🟡" },
             { value: "5to10", label: t("q7.opt_5to10"), desc: t("q7.desc_5to10"), icon: "🟠" },
@@ -1052,7 +1063,7 @@ export function QuestionnaireFlow() {
       {/* Q8 — Team & costs */}
       {step === 8 && (
         <QuestionWrapper
-          stepNumber={8} totalSteps={TOTAL_STEPS}
+          stepNumber={stepNum(8)} totalSteps={stepTotal}
           title={t("q8.title")}
           onNext={handleNext} onBack={handleBack}
           nextDisabled={!canAdvance()}
@@ -1102,7 +1113,7 @@ export function QuestionnaireFlow() {
       {/* Q9 — Growth ambition */}
       {step === 9 && (
         <QuestionWrapper
-          stepNumber={9} totalSteps={TOTAL_STEPS}
+          stepNumber={stepNum(9)} totalSteps={stepTotal}
           title={t("q9.title")}
           onNext={handleNext} onBack={handleBack}
           nextDisabled={!canAdvance()}
@@ -1170,7 +1181,7 @@ export function QuestionnaireFlow() {
       {/* Q10 — Fundraising ask */}
       {step === 10 && (
         <QuestionWrapper
-          stepNumber={10} totalSteps={TOTAL_STEPS}
+          stepNumber={stepNum(10)} totalSteps={stepTotal}
           title={t("q10.title")}
           subtitle={t("q10.subtitle")}
           onNext={handleNext} onBack={handleBack}
@@ -1345,7 +1356,7 @@ export function QuestionnaireFlow() {
 
         return (
           <QuestionWrapper
-            stepNumber={11} totalSteps={TOTAL_STEPS}
+            stepNumber={stepNum(11)} totalSteps={stepTotal}
             title={t("q11.title")}
             subtitle={t("q11.subtitle")}
             onNext={handleNext} onBack={handleBack}

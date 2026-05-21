@@ -159,6 +159,7 @@ export const en = {
   // ── Q7 — Churn ─────────────────────────────────────────────────────────
   "q7.title": "What's your monthly churn rate?",
   "q7.subtitle": "The percentage of customers who cancel each month. Lower is better.",
+  "q7.opt_none": "0% — no churn",
   "q7.opt_lt2": "Less than 2%",
   "q7.opt_2to5": "2–5%",
   "q7.opt_5to10": "5–10%",
@@ -514,6 +515,7 @@ export const en = {
   "q5.desc_subscription": "Users × tier prices",
   "q5.desc_production": "Units × unit price",
   "q5.desc_hybrid": "Both",
+  "q7.desc_none": "No customers ever cancel (e.g. one-off or perpetual)",
   "q7.desc_lt2": "Excellent — enterprise-grade retention",
   "q7.desc_2to5": "Good — typical for well-optimised SaaS",
   "q7.desc_5to10": "Room for improvement — review onboarding",

@@ -85,7 +85,7 @@ const COGS_COMPONENT_SHARES: Record<string, { label: string; share: number; note
 function resolveChurnRate(answers: QuestionnaireAnswers): number {
   if (answers.monthlyChurnRate > 0) return answers.monthlyChurnRate / 100;
   const map: Record<string, number> = {
-    lt2: 0.015, "2to5": 0.035, "5to10": 0.075, gt10: 0.12, unknown: 0.05,
+    none: 0, lt2: 0.015, "2to5": 0.035, "5to10": 0.075, gt10: 0.12, unknown: 0.05,
   };
   return map[answers.churnEstimate] ?? 0.05;
 }

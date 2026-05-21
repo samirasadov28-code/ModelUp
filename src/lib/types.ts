@@ -3,7 +3,7 @@ export type CustomerType = "b2b" | "b2c" | "both";
 export type Geography = "us" | "uk" | "eu" | "asia" | "global";
 export type FundingStage = "pre-seed" | "seed" | "series-a" | "series-b";
 export type GrowthCurve = "conservative" | "base" | "aggressive";
-export type ChurnEstimate = "lt2" | "2to5" | "5to10" | "gt10" | "unknown";
+export type ChurnEstimate = "none" | "lt2" | "2to5" | "5to10" | "gt10" | "unknown";
 export type ModelType = "saas" | "alternative" | "project_finance";
 export type SubscriptionStatus = "free" | "trialing" | "active" | "canceled";
 

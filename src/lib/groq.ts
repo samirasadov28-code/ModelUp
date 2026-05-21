@@ -299,7 +299,7 @@ const CUSTOMER_TYPES: CustomerType[] = ["b2b", "b2c", "both"];
 const GEOGRAPHIES: Geography[] = ["us", "uk", "eu", "asia", "global"];
 const FUNDING_STAGES: FundingStage[] = ["pre-seed", "seed", "series-a", "series-b"];
 const GROWTH_CURVES: GrowthCurve[] = ["conservative", "base", "aggressive"];
-const CHURN_ESTIMATES: ChurnEstimate[] = ["lt2", "2to5", "5to10", "gt10", "unknown"];
+const CHURN_ESTIMATES: ChurnEstimate[] = ["none", "lt2", "2to5", "5to10", "gt10", "unknown"];
 const TAX_JURISDICTIONS: TaxJurisdiction[] = [
   "us", "uk", "ireland", "other",
   "germany", "france", "netherlands", "spain", "italy", "sweden",
