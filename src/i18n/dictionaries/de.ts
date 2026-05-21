@@ -144,6 +144,7 @@ export const de: Dict = {
 
   "q7.title": "Wie hoch ist deine monatliche Churn-Rate?",
   "q7.subtitle": "Prozent der Kunden, die monatlich kündigen. Niedriger ist besser.",
+  "q7.opt_none": "0% — keine Abwanderung",
   "q7.opt_lt2": "Unter 2 %",
   "q7.opt_2to5": "2–5 %",
   "q7.opt_5to10": "5–10 %",
@@ -441,6 +442,7 @@ export const de: Dict = {
   "q5.desc_subscription": "Nutzer × Tarif-Preise",
   "q5.desc_production": "Einheiten × Stückpreis",
   "q5.desc_hybrid": "Beides",
+  "q7.desc_none": "Kein Kunde kündigt jemals (z. B. einmalig oder unbefristet)",
   "q7.desc_lt2": "Hervorragend — Enterprise-grade Retention",
   "q7.desc_2to5": "Gut — typisch für gut optimiertes SaaS",
   "q7.desc_5to10": "Verbesserungspotenzial — Onboarding überprüfen",

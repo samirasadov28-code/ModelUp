@@ -144,6 +144,7 @@ export const id: Dict = {
 
   "q7.title": "Berapa tingkat churn bulanan Anda?",
   "q7.subtitle": "Persentase pelanggan yang berhenti setiap bulan. Semakin rendah semakin baik.",
+  "q7.opt_none": "0% — tanpa churn",
   "q7.opt_lt2": "Kurang dari 2%",
   "q7.opt_2to5": "2–5%",
   "q7.opt_5to10": "5–10%",
@@ -441,6 +442,7 @@ export const id: Dict = {
   "q5.desc_subscription": "Pengguna × harga tier",
   "q5.desc_production": "Unit × harga unit",
   "q5.desc_hybrid": "Keduanya",
+  "q7.desc_none": "Tidak ada pelanggan yang berhenti (mis. sekali bayar atau permanen)",
   "q7.desc_lt2": "Sangat baik — retensi kelas enterprise",
   "q7.desc_2to5": "Baik — tipikal SaaS yang dioptimalkan baik",
   "q7.desc_5to10": "Ruang untuk peningkatan — tinjau onboarding",

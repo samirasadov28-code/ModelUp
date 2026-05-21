@@ -144,6 +144,7 @@ export const nl: Dict = {
 
   "q7.title": "Wat is je maandelijkse churn-percentage?",
   "q7.subtitle": "Het percentage klanten dat per maand opzegt. Lager is beter.",
+  "q7.opt_none": "0% — geen churn",
   "q7.opt_lt2": "Minder dan 2%",
   "q7.opt_2to5": "2–5%",
   "q7.opt_5to10": "5–10%",
@@ -441,6 +442,7 @@ export const nl: Dict = {
   "q5.desc_subscription": "Gebruikers × tarief-prijzen",
   "q5.desc_production": "Eenheden × stuksprijs",
   "q5.desc_hybrid": "Beide",
+  "q7.desc_none": "Geen enkele klant zegt ooit op (bijv. eenmalig of eeuwigdurend)",
   "q7.desc_lt2": "Uitstekend — enterprise-grade retentie",
   "q7.desc_2to5": "Goed — typisch voor goed geoptimaliseerd SaaS",
   "q7.desc_5to10": "Ruimte voor verbetering — onboarding herzien",

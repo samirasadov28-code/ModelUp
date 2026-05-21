@@ -144,6 +144,7 @@ export const tr: Dict = {
 
   "q7.title": "Aylık churn oranınız nedir?",
   "q7.subtitle": "Her ay iptal eden müşterilerin yüzdesi. Düşük olması daha iyidir.",
+  "q7.opt_none": "%0 — churn yok",
   "q7.opt_lt2": "%2'den az",
   "q7.opt_2to5": "%2–5",
   "q7.opt_5to10": "%5–10",
@@ -441,6 +442,7 @@ export const tr: Dict = {
   "q5.desc_subscription": "Kullanıcılar × tier fiyatları",
   "q5.desc_production": "Birimler × birim fiyatı",
   "q5.desc_hybrid": "Her ikisi",
+  "q7.desc_none": "Hiçbir müşteri iptal etmez (ör. tek seferlik veya süresiz)",
   "q7.desc_lt2": "Mükemmel — kurumsal düzey tutundurma",
   "q7.desc_2to5": "İyi — iyi optimize edilmiş SaaS için tipik",
   "q7.desc_5to10": "Geliştirilebilir — onboarding'i gözden geçirin",

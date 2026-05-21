@@ -144,6 +144,7 @@ export const ja: Dict = {
 
   "q7.title": "月次チャーンレートは?",
   "q7.subtitle": "毎月解約する顧客の割合。低いほど良い。",
+  "q7.opt_none": "0% — チャーンなし",
   "q7.opt_lt2": "2% 未満",
   "q7.opt_2to5": "2–5%",
   "q7.opt_5to10": "5–10%",
@@ -441,6 +442,7 @@ export const ja: Dict = {
   "q5.desc_subscription": "ユーザー数 × ティア価格",
   "q5.desc_production": "単位数 × 単価",
   "q5.desc_hybrid": "両方",
+  "q7.desc_none": "顧客が解約しない(例: 単発または永続)",
   "q7.desc_lt2": "卓越 — エンタープライズ級リテンション",
   "q7.desc_2to5": "良好 — よく最適化された SaaS の典型",
   "q7.desc_5to10": "改善の余地あり — オンボーディングを見直す",

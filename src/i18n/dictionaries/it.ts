@@ -144,6 +144,7 @@ export const it: Dict = {
 
   "q7.title": "Qual è il tuo tasso di churn mensile?",
   "q7.subtitle": "Percentuale di clienti che disdice ogni mese. Più basso è meglio.",
+  "q7.opt_none": "0% — nessun churn",
   "q7.opt_lt2": "Meno del 2%",
   "q7.opt_2to5": "2–5%",
   "q7.opt_5to10": "5–10%",
@@ -441,6 +442,7 @@ export const it: Dict = {
   "q5.desc_subscription": "Utenti × prezzi per livello",
   "q5.desc_production": "Unità × prezzo unitario",
   "q5.desc_hybrid": "Entrambi",
+  "q7.desc_none": "Nessun cliente disdice mai (es. una tantum o perpetuo)",
   "q7.desc_lt2": "Eccellente — retention di livello enterprise",
   "q7.desc_2to5": "Buono — tipico per SaaS ben ottimizzato",
   "q7.desc_5to10": "Margine di miglioramento — rivedi l'onboarding",

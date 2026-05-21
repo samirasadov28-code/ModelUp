@@ -144,6 +144,7 @@ export const fr: Dict = {
 
   "q7.title": "Quel est votre taux de churn mensuel ?",
   "q7.subtitle": "Le pourcentage de clients qui annulent chaque mois. Plus bas vaut mieux.",
+  "q7.opt_none": "0% — aucun churn",
   "q7.opt_lt2": "Moins de 2 %",
   "q7.opt_2to5": "2–5 %",
   "q7.opt_5to10": "5–10 %",
@@ -441,6 +442,7 @@ export const fr: Dict = {
   "q5.desc_subscription": "Utilisateurs × prix par palier",
   "q5.desc_production": "Unités × prix unitaire",
   "q5.desc_hybrid": "Les deux",
+  "q7.desc_none": "Aucun client n'annule jamais (ex. paiement unique ou perpétuel)",
   "q7.desc_lt2": "Excellent — rétention de niveau entreprise",
   "q7.desc_2to5": "Bon — typique pour SaaS bien optimisé",
   "q7.desc_5to10": "Marge d'amélioration — revoyez l'onboarding",

@@ -144,6 +144,7 @@ export const zh: Dict = {
 
   "q7.title": "你的月度流失率是多少?",
   "q7.subtitle": "每月取消的客户百分比。越低越好。",
+  "q7.opt_none": "0% — 无流失",
   "q7.opt_lt2": "低于 2%",
   "q7.opt_2to5": "2–5%",
   "q7.opt_5to10": "5–10%",
@@ -441,6 +442,7 @@ export const zh: Dict = {
   "q5.desc_subscription": "用户数 × 套餐价格",
   "q5.desc_production": "单位数 × 单位价格",
   "q5.desc_hybrid": "两者皆有",
+  "q7.desc_none": "客户从不取消(例如一次性或永久)",
   "q7.desc_lt2": "出色 — 企业级留存",
   "q7.desc_2to5": "良好 — 优化良好的 SaaS 典型",
   "q7.desc_5to10": "有改进空间 — 检查 onboarding",
