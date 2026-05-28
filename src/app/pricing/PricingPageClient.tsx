@@ -1,0 +1,160 @@
+"use client";
+
+import Image from "next/image";
+import Link from "next/link";
+import { ArrowRight, Check, Sparkles } from "lucide-react";
+import { EarlyAccessForm } from "@/components/EarlyAccessForm";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { useT } from "@/i18n/LocaleProvider";
+
+export default function PricingPageClient() {
+  const { t } = useT();
+  const FREE_FEATURES = [
+    t("pricing.free_feat_1"),
+    t("pricing.free_feat_2"),
+    t("pricing.free_feat_3"),
+    t("pricing.free_feat_4"),
+  ];
+
+  const PRO_FEATURES = [
+    t("pricing.pro_feat_1"),
+    t("pricing.pro_feat_2"),
+    t("pricing.pro_feat_3"),
+    t("pricing.pro_feat_4"),
+    t("pricing.pro_feat_5"),
+    t("pricing.pro_feat_6"),
+    t("pricing.pro_feat_7"),
+    t("pricing.pro_feat_8"),
+    t("pricing.pro_feat_9"),
+    t("pricing.pro_feat_10"),
+  ];
+  return (
+    <main className="min-h-screen bg-white text-gray-900">
+      <nav className="sticky top-0 z-40 bg-white/90 backdrop-blur-sm border-b border-gray-100">
+        <div className="max-w-5xl mx-auto px-6 py-3 flex items-center justify-between gap-3">
+          <Link href="/" className="flex items-center gap-2">
+            <Image src="/Logo_192.png" alt="ModelUp" width={28} height={28} className="rounded-lg" />
+            <span className="text-gray-900 font-bold text-lg tracking-tight">
+              Model<span className="text-blue-600">Up</span>
+            </span>
+          </Link>
+          <div className="flex items-center gap-3">
+            <LanguageSwitcher compact />
+            <Link
+              href="/model/new"
+              className="inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors shadow-sm"
+            >
+              {t("nav.build_model")}
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+        </div>
+      </nav>
+
+      <div className="max-w-4xl mx-auto px-6 pt-16 pb-32">
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-extrabold text-gray-900 mb-3 tracking-tight">
+            {t("pricing.headline_a")} {t("pricing.headline_b")}
+          </h1>
+          <p className="text-gray-500 text-lg">{t("pricing.subheadline")}</p>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-6">
+          <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
+            <div className="mb-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-1">{t("pricing.free_title")}</h2>
+              <p className="text-gray-500 text-sm">{t("pricing.free_subtitle")}</p>
+              <p className="text-3xl font-extrabold text-gray-900 mt-4">$0</p>
+            </div>
+            <ul className="space-y-3 mb-8">
+              {FREE_FEATURES.map((f) => (
+                <li key={f} className="flex items-start gap-3 text-sm text-gray-700">
+                  <Check className="w-4 h-4 text-gray-400 shrink-0 mt-0.5" />
+                  {f}
+                </li>
+              ))}
+            </ul>
+            <Link
+              href="/model/new"
+              className="block w-full text-center py-3 rounded-xl border border-gray-200 text-gray-700 hover:border-gray-300 hover:bg-gray-50 text-sm font-semibold transition-colors"
+            >
+              {t("pricing.cta_free")}
+            </Link>
+          </div>
+
+          <div className="rounded-2xl border-2 border-blue-200 bg-gradient-to-br from-blue-50 via-white to-cyan-50 p-8 relative overflow-hidden shadow-xl shadow-blue-500/10">
+            <div className="mb-6">
+              <div className="flex items-center gap-2 mb-1">
+                <Sparkles className="w-4 h-4 text-blue-600" />
+                <h2 className="text-xl font-bold text-gray-900">{t("pricing.pro_title")}</h2>
+              </div>
+              <p className="text-gray-500 text-sm">{t("pricing.pro_subtitle")}</p>
+              <div className="mt-4">
+                <span className="text-3xl font-extrabold text-gray-900">$4.99</span>
+                <span className="text-gray-500 text-sm ml-1">{t("pricing.pro_price_per_mo")}</span>
+              </div>
+              <p className="text-xs text-emerald-600 mt-1 font-semibold">{t("pricing.cancel_anytime")}</p>
+            </div>
+            <ul className="space-y-3 mb-8">
+              {PRO_FEATURES.map((f) => (
+                <li key={f} className="flex items-start gap-3 text-sm text-gray-800">
+                  <Check className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+                  {f}
+                </li>
+              ))}
+            </ul>
+            <Link
+              href="/model/new"
+              className="block w-full text-center py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-colors shadow-lg shadow-blue-500/20"
+            >
+              {t("common.get_pro")}
+            </Link>
+            <p className="text-center text-xs text-gray-400 mt-3">{t("pricing.cancel_anytime")}</p>
+          </div>
+        </div>
+
+        <div className="mt-10">
+          <EarlyAccessForm />
+        </div>
+
+        <div className="mt-16 text-center">
+          <p className="text-gray-400 text-sm mb-6">Trusted by founders at</p>
+          <div className="flex items-center justify-center gap-8 flex-wrap">
+            {["Pre-seed", "Seed", "Series A", "Series B+"].map((stage) => (
+              <span key={stage} className="text-gray-300 font-semibold text-sm">
+                {stage}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-16 space-y-6 max-w-2xl mx-auto">
+          <h2 className="text-xl font-bold text-gray-900 text-center mb-8">{t("pricing.faq_title")}</h2>
+          {[
+            {
+              q: "How is this different from a generic template?",
+              a: "ModelUp uses professional CFA/FMWC-grade Excel models as the engine. Your inputs are injected into the Scen sheet and the full model recalculates — we don't estimate your numbers, we compute them."
+            },
+            {
+              q: "Can I download the Excel file?",
+              a: "Yes — Pro subscribers get the fully populated .xlsx file with all inputs pre-filled. Open in Excel or Google Sheets to review every formula and modify assumptions."
+            },
+            {
+              q: "What business types are supported?",
+              a: "SaaS/subscription, marketplace, physical/digital products, service businesses, and capital-intensive businesses (cleantech, infrastructure) via a project finance model."
+            },
+            {
+              q: "Can I build multiple models?",
+              a: "Pro subscribers can build unlimited models. Free users can build one model and view the preview."
+            },
+          ].map(({ q, a }) => (
+            <div key={q} className="border-b border-gray-200 pb-6">
+              <h3 className="text-gray-900 font-semibold mb-2">{q}</h3>
+              <p className="text-gray-500 text-sm leading-relaxed">{a}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </main>
+  );
+}
