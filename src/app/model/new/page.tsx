@@ -6,8 +6,10 @@ import { NewModelHeader } from "@/components/NewModelHeader";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 export const metadata = {
-  title: "Build Your Model — ModelUp",
-  description: "Answer 10 questions. Get a professional financial model.",
+  title: "Build your AI financial model",
+  description:
+    "Describe your startup in a sentence — our AI infers your business model, pricing, churn, CAC, burn, and raise, then generates a 5-year P&L, cash flow, DCF + EBITDA-multiple valuation, and cap table in 30 seconds.",
+  alternates: { canonical: "/model/new" },
 };
 
 export default function NewModelPage() {

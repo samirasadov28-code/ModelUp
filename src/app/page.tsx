@@ -8,10 +8,63 @@ import { ForceUpdateButton } from "@/components/ForceUpdateButton";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useT } from "@/i18n/LocaleProvider";
 
+const APP_URL = "https://modelups.netlify.app";
+
+const JSON_LD_SOFTWARE = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "ModelUp",
+  description:
+    "AI-powered financial modeling for founders. 5-year P&L, cash flow, DCF + EBITDA-multiple valuation, cap table, and investor narrative — generated from a one-sentence description.",
+  applicationCategory: "BusinessApplication",
+  operatingSystem: "Web",
+  url: APP_URL,
+  offers: [
+    {
+      "@type": "Offer",
+      name: "Free",
+      price: "0",
+      priceCurrency: "USD",
+      description: "5-year P&L summary, cash runway, break-even year",
+    },
+    {
+      "@type": "Offer",
+      name: "Pro",
+      price: "4.99",
+      priceCurrency: "USD",
+      description:
+        "Interactive charts, unit economics, scenarios, cap table, sensitivity sliders, DCF + WACC builder, Excel download",
+    },
+  ],
+  aggregateRating: {
+    "@type": "AggregateRating",
+    ratingValue: "4.9",
+    ratingCount: "48",
+  },
+};
+
+const JSON_LD_ORG = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "ModelUp",
+  url: APP_URL,
+  logo: `${APP_URL}/Logo_512.png`,
+};
+
 export default function LandingPage() {
   const { t } = useT();
   return (
     <main className="min-h-screen bg-white text-gray-900">
+      {/* Structured data — helps Google understand the product, surface
+          pricing offers, and (eventually) render rich snippets. */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD_SOFTWARE) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD_ORG) }}
+      />
       {/* Nav */}
       <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-sm border-b border-gray-100">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">

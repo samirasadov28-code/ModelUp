@@ -25,6 +25,7 @@ export const metadata: Metadata = {
     "SaaS financial projections",
   ],
   metadataBase: new URL(APP_URL),
+  alternates: { canonical: "/" },
   icons: {
     icon: [
       { url: "/Logo_192.png", sizes: "192x192", type: "image/png" },
