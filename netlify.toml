@@ -24,3 +24,6 @@
 # NEXT_PUBLIC_APP_URL                → https://modelups.netlify.app
 # PYTHON_SERVICE_URL                 → URL of deployed excel-service
 # NEXT_PUBLIC_GATE_ENABLED           → false
+# RESEND_API_KEY                     → Resend API key (https://resend.com/api-keys)
+# FEEDBACK_EMAIL                     → recipient (default: finmodelup@gmail.com)
+# FEEDBACK_FROM                      → optional sender override (default: "ModelUp Feedback <onboarding@resend.dev>")
