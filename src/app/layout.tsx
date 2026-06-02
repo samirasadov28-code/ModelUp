@@ -4,6 +4,7 @@ import "./globals.css";
 import { FeedbackButton } from "@/components/FeedbackButton";
 import { ChatWidget } from "@/components/ChatWidget";
 import { LocaleProvider } from "@/i18n/LocaleProvider";
+import { ServiceWorkerRegistrar } from "@/components/ServiceWorkerRegistrar";
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID ?? "G-P2KEZWEVZ8";
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://modelups.netlify.app";
@@ -28,13 +29,18 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
   icons: {
     icon: [
-      { url: "/Logo_192.png", sizes: "192x192", type: "image/png" },
-      { url: "/Logo_512.png", sizes: "512x512", type: "image/png" },
+      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
     ],
-    apple: [{ url: "/Logo_192.png", sizes: "192x192", type: "image/png" }],
-    shortcut: "/Logo_192.png",
+    apple: [{ url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }],
+    shortcut: "/icons/icon-192.png",
   },
   manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    title: "ModelUp",
+    statusBarStyle: "default",
+  },
   openGraph: {
     type: "website",
     siteName: "ModelUp",
@@ -69,12 +75,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <meta name="theme-color" content="#2563eb" />
+        <meta name="mobile-web-app-capable" content="yes" />
       </head>
       <body className="bg-white text-gray-900 antialiased">
         <LocaleProvider>
           {children}
           <FeedbackButton />
           <ChatWidget />
+          <ServiceWorkerRegistrar />
         </LocaleProvider>
 
         {/* Google Analytics */}
