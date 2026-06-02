@@ -409,12 +409,15 @@ export default function LandingPage() {
       <footer className="bg-white border-t border-gray-100 pt-8 pb-32">
         <div className="max-w-5xl mx-auto px-6 flex items-center justify-between flex-wrap gap-4">
           <span className="text-gray-300 text-xs font-mono">{VERSION_LABEL}</span>
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-6 flex-wrap">
             <Link href="/pricing" className="text-gray-400 text-xs hover:text-gray-600 transition-colors">
               Pricing
             </Link>
             <Link href="/model/new" className="text-gray-400 text-xs hover:text-gray-600 transition-colors">
               Build a model
+            </Link>
+            <Link href="/privacy" className="text-gray-400 text-xs hover:text-gray-600 transition-colors">
+              Privacy Policy
             </Link>
             <ForceUpdateButton />
           </div>
