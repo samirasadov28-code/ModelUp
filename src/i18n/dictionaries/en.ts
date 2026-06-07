@@ -137,6 +137,7 @@ export const en = {
   "q5.production_section": "Production / unit economics",
   "q5.units_year1": "Units sold in year 1",
   "q5.volume_growth": "Monthly volume growth",
+  "q5.volume_growth_hint": "% per month — leave blank or 0 to use your Q9 growth scenario",
   "q5.unit_price": "Unit price",
   "q5.unit_cost": "Direct cost per unit",
   "q5.unit_cost_help": "Raw materials + direct labor",

@@ -124,6 +124,7 @@ export const nl: Dict = {
   "q5.production_section": "Productie / unit economics",
   "q5.units_year1": "Verkochte eenheden in jaar 1",
   "q5.volume_growth": "Maandelijkse volumegroei",
+  "q5.volume_growth_hint": "% per maand — leeg laten of 0 om je Q9-groeiscenario te gebruiken",
   "q5.unit_price": "Eenheidsprijs",
   "q5.unit_cost": "Directe kosten per eenheid",
   "q5.unit_cost_help": "Grondstoffen + directe arbeid",
