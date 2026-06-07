@@ -1163,11 +1163,17 @@ export function QuestionnaireFlow() {
 
           <div>
             <Label className="text-gray-700 mb-3 block font-medium">{t("q9.growth_scenario")}</Label>
-            {[
-              { value: "conservative", label: t("q9.opt_conservative"), desc: t("q9.desc_conservative"), icon: "🛡️" },
-              { value: "base", label: t("q9.opt_base"), desc: t("q9.desc_base"), icon: "📊" },
-              { value: "aggressive", label: t("q9.opt_aggressive"), desc: t("q9.desc_aggressive"), icon: "🚀" },
-            ].map((opt) => (
+            {(() => {
+              // For production businesses the engine treats Q9 as an annual rate
+              // (manufacturing volumes don't compound 9% MoM). Show the matching
+              // copy so the picker label matches the math.
+              const isProd = answers.revenueModel === "production";
+              return [
+                { value: "conservative", label: t("q9.opt_conservative"), desc: isProd ? t("q9.desc_conservative_prod") : t("q9.desc_conservative"), icon: "🛡️" },
+                { value: "base", label: t("q9.opt_base"), desc: isProd ? t("q9.desc_base_prod") : t("q9.desc_base"), icon: "📊" },
+                { value: "aggressive", label: t("q9.opt_aggressive"), desc: isProd ? t("q9.desc_aggressive_prod") : t("q9.desc_aggressive"), icon: "🚀" },
+              ];
+            })().map((opt) => (
               <OptionCard
                 key={opt.value}
                 label={opt.label}
