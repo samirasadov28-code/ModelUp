@@ -147,14 +147,18 @@ function computeMonthly(
   const unitsYear1 = Math.max(0, answers.unitsYear1 ?? 0);
   const unitPrice = Math.max(0, answers.unitPrice ?? 0);
   const unitCost = Math.max(0, answers.unitCost ?? 0);
-  // Q9 growth curve drives volume by default so picking base/aggressive
-  // actually compounds production revenue. Q5's volume-growth field is a
-  // deliberate override only when the user enters a positive value — leaving
-  // it at 0 (or empty) means "use my growth scenario".
+  // Q9's growth curve rates are intentionally aggressive for SaaS user
+  // acquisition (9% MoM ≈ 181% YoY). Applied to physical production volumes
+  // that's wildly unrealistic — manufacturing/CapEx-bound output rarely
+  // compounds that fast. So when we fall back to Q9 for production, treat
+  // the chosen rate as **annual** and convert to an equivalent monthly rate.
+  // The Q5 volume-growth field, when explicitly set > 0, stays monthly so
+  // power users keep direct control.
+  const annualToMonthly = (annual: number) => Math.pow(1 + annual, 1 / 12) - 1;
   const explicitVolumeGrowth = (answers.unitMonthlyVolumeGrowth ?? 0) > 0;
   const volumeGrowth = explicitVolumeGrowth
     ? (answers.unitMonthlyVolumeGrowth as number)
-    : monthlyGrowth;
+    : annualToMonthly(monthlyGrowth);
   // Solve for starting units so cumulative Y1 units roughly equals unitsYear1.
   // Σ_{m=0..11} u0 × (1 + g)^m = u0 × ((1+g)^12 − 1)/g.  → u0 = target / ratio.
   let units = 0;

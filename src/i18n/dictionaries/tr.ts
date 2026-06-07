@@ -124,7 +124,7 @@ export const tr: Dict = {
   "q5.production_section": "Üretim / birim ekonomisi",
   "q5.units_year1": "1. yıl satılan birim",
   "q5.volume_growth": "Aylık hacim büyümesi",
-  "q5.volume_growth_hint": "%/ay — Q9 büyüme senaryonu kullanmak için boş bırak veya 0 gir",
+  "q5.volume_growth_hint": "%/ay (bileşik) — Q9 senaryonu yıllık olarak kullanmak için boş bırak veya 0 gir",
   "q5.unit_price": "Birim fiyatı",
   "q5.unit_cost": "Birim başına doğrudan maliyet",
   "q5.unit_cost_help": "Hammadde + doğrudan işçilik",

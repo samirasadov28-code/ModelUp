@@ -124,7 +124,7 @@ export const pt: Dict = {
   "q5.production_section": "Produção / economia unitária",
   "q5.units_year1": "Unidades vendidas no ano 1",
   "q5.volume_growth": "Crescimento mensal de volume",
-  "q5.volume_growth_hint": "% por mês — deixe em branco ou 0 para usar seu cenário de crescimento Q9",
+  "q5.volume_growth_hint": "% por mês (composto) — deixe em branco ou 0 para usar seu cenário Q9 como anual",
   "q5.unit_price": "Preço unitário",
   "q5.unit_cost": "Custo direto por unidade",
   "q5.unit_cost_help": "Matérias-primas + mão de obra direta",
