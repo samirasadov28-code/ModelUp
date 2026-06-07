@@ -124,6 +124,7 @@ export const ja: Dict = {
   "q5.production_section": "生産 / ユニットエコノミクス",
   "q5.units_year1": "1 年目の販売ユニット",
   "q5.volume_growth": "月次ボリューム成長",
+  "q5.volume_growth_hint": "%/月 — 空欄または 0 で Q9 の成長シナリオを使用",
   "q5.unit_price": "単価",
   "q5.unit_cost": "ユニット当たり直接コスト",
   "q5.unit_cost_help": "原材料 + 直接労働",

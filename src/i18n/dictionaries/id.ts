@@ -124,6 +124,7 @@ export const id: Dict = {
   "q5.production_section": "Produksi / unit economics",
   "q5.units_year1": "Unit terjual di tahun 1",
   "q5.volume_growth": "Pertumbuhan volume bulanan",
+  "q5.volume_growth_hint": "% per bulan — kosongkan atau 0 untuk memakai skenario pertumbuhan Q9 Anda",
   "q5.unit_price": "Harga per unit",
   "q5.unit_cost": "Biaya langsung per unit",
   "q5.unit_cost_help": "Bahan baku + tenaga kerja langsung",

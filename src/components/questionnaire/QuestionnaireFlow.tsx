@@ -892,7 +892,7 @@ export function QuestionnaireFlow() {
                     }
                     className="h-10"
                   />
-                  <p className="text-[10px] text-gray-400 mt-1">% per month, e.g. 5 = 5%/mo</p>
+                  <p className="text-[10px] text-gray-400 mt-1">{t("q5.volume_growth_hint")}</p>
                 </div>
                 <div>
                   <Label className="text-xs text-gray-600 mb-1 block font-medium">
