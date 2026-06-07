@@ -66,7 +66,9 @@ const DEFAULT_ANSWERS: Partial<QuestionnaireAnswers> = {
   fundingAsk: 1500000,
   targetRunway: 18,
   revenueModel: "subscription",
-  unitMonthlyVolumeGrowth: 0.05,
+  // unitMonthlyVolumeGrowth is intentionally left unset — the engine falls
+  // back to the Q9 annual scenario rate, so picking "base" actually drives
+  // production growth instead of being silently overridden by a 5% default.
 };
 
 const tileOff = "border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50";
@@ -336,7 +338,7 @@ export function QuestionnaireFlow() {
         unitsYear1: answers.unitsYear1,
         unitPrice: answers.unitPrice,
         unitCost: answers.unitCost,
-        unitMonthlyVolumeGrowth: answers.unitMonthlyVolumeGrowth ?? 0.05,
+        unitMonthlyVolumeGrowth: answers.unitMonthlyVolumeGrowth,
         acquisitionChannels: answers.acquisitionChannels ?? [],
         cac: answers.cac ?? 0,
         acv: answers.acv,
@@ -885,11 +887,16 @@ export function QuestionnaireFlow() {
                   <Input
                     type="number"
                     step="0.5"
-                    placeholder="5"
+                    placeholder="auto"
                     value={answers.unitMonthlyVolumeGrowth != null ? (answers.unitMonthlyVolumeGrowth * 100).toFixed(1) : ""}
-                    onChange={(e) =>
-                      update("unitMonthlyVolumeGrowth", Number(e.target.value) / 100)
-                    }
+                    onChange={(e) => {
+                      const raw = e.target.value;
+                      if (raw === "") {
+                        update("unitMonthlyVolumeGrowth", undefined as unknown as number);
+                      } else {
+                        update("unitMonthlyVolumeGrowth", Number(raw) / 100);
+                      }
+                    }}
                     className="h-10"
                   />
                   <p className="text-[10px] text-gray-400 mt-1">{t("q5.volume_growth_hint")}</p>
