@@ -124,7 +124,7 @@ export const zh: Dict = {
   "q5.production_section": "生产 / 单位经济学",
   "q5.units_year1": "第 1 年销售单位",
   "q5.volume_growth": "月度量增长",
-  "q5.volume_growth_hint": "% 每月 — 留空或填 0 以使用你的 Q9 增长方案",
+  "q5.volume_growth_hint": "% 每月 (复利) — 留空或填 0 以将 Q9 方案作为年度增长使用",
   "q5.unit_price": "单价",
   "q5.unit_cost": "每单位直接成本",
   "q5.unit_cost_help": "原材料 + 直接人工",
