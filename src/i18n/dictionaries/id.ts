@@ -283,6 +283,11 @@ export const id: Dict = {
   "pricing.pro_price_per_mo": "/bulan",
   "pricing.cta_free": "Mulai gratis",
   "pricing.cta_pro": "Dapatkan Pro",
+  "pricing.pro_price_free": "Gratis",
+  "pricing.cta_pro_free": "Buka model Pro lengkap — gratis",
+  "pricing.early_access_banner": "Akses awal — Pro gratis untuk semua",
+  "pricing.early_access_badge": "Gratis selama akses awal · tanpa kartu",
+  "pricing.no_signup_needed": "Tanpa pendaftaran, tanpa kartu — buka saja modelnya",
   "pricing.cancel_anytime": "Batalkan kapan saja",
   "pricing.faq_title": "Sering ditanyakan",
 

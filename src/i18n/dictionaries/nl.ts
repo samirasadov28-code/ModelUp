@@ -283,6 +283,11 @@ export const nl: Dict = {
   "pricing.pro_price_per_mo": "/mnd",
   "pricing.cta_free": "Gratis beginnen",
   "pricing.cta_pro": "Pro nemen",
+  "pricing.pro_price_free": "Gratis",
+  "pricing.cta_pro_free": "Open het volledige Pro-model — gratis",
+  "pricing.early_access_banner": "Vroege toegang — Pro is gratis voor iedereen",
+  "pricing.early_access_badge": "Gratis tijdens vroege toegang · geen kaart nodig",
+  "pricing.no_signup_needed": "Geen registratie, geen kaart — open gewoon het model",
   "pricing.cancel_anytime": "Altijd opzegbaar",
   "pricing.faq_title": "Veelgestelde vragen",
 

@@ -319,8 +319,13 @@ export const en = {
   "pricing.pro_title": "Pro",
   "pricing.pro_subtitle": "Everything Free, plus the full model",
   "pricing.pro_price_per_mo": "/mo",
+  "pricing.pro_price_free": "Free",
   "pricing.cta_free": "Start free",
   "pricing.cta_pro": "Get Pro",
+  "pricing.cta_pro_free": "Open full Pro model — free",
+  "pricing.early_access_banner": "Early access — Pro is free for everyone",
+  "pricing.early_access_badge": "Free during early access · no card required",
+  "pricing.no_signup_needed": "No signup, no card — just open the model",
   "pricing.cancel_anytime": "Cancel anytime",
   "pricing.faq_title": "Frequently asked",
 

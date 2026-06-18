@@ -283,6 +283,11 @@ export const hi: Dict = {
   "pricing.pro_price_per_mo": "/माह",
   "pricing.cta_free": "मुफ़्त शुरू करें",
   "pricing.cta_pro": "Pro लें",
+  "pricing.pro_price_free": "मुफ़्त",
+  "pricing.cta_pro_free": "पूरा Pro मॉडल खोलें — मुफ़्त",
+  "pricing.early_access_banner": "प्रारंभिक एक्सेस — Pro सबके लिए मुफ़्त",
+  "pricing.early_access_badge": "प्रारंभिक एक्सेस के दौरान मुफ़्त · कार्ड ज़रूरी नहीं",
+  "pricing.no_signup_needed": "कोई साइनअप नहीं, कोई कार्ड नहीं — बस मॉडल खोलें",
   "pricing.cancel_anytime": "कभी भी रद्द करें",
   "pricing.faq_title": "अक्सर पूछे जाने वाले",
 

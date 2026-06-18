@@ -283,6 +283,11 @@ export const fr: Dict = {
   "pricing.pro_price_per_mo": "/mois",
   "pricing.cta_free": "Commencer gratuitement",
   "pricing.cta_pro": "Passer Pro",
+  "pricing.pro_price_free": "Gratuit",
+  "pricing.cta_pro_free": "Ouvrir le modèle Pro complet — gratuit",
+  "pricing.early_access_banner": "Accès anticipé — Pro est gratuit pour tous",
+  "pricing.early_access_badge": "Gratuit pendant l'accès anticipé · sans carte",
+  "pricing.no_signup_needed": "Aucune inscription, pas de carte — ouvrez juste le modèle",
   "pricing.cancel_anytime": "Annulez quand vous voulez",
   "pricing.faq_title": "Questions fréquentes",
 
