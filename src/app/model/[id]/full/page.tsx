@@ -28,11 +28,12 @@ import { EarlyAccessForm } from "@/components/EarlyAccessForm";
 import { getModelLocally } from "@/lib/model-client-store";
 import { formatCurrencyCompact } from "@/lib/utils";
 import { hasEarlyAccess } from "@/lib/early-access";
+import { EARLY_ACCESS_FREE_FOR_ALL } from "@/lib/access";
 import { useT } from "@/i18n/LocaleProvider";
 import { Calculator, Download, Lightbulb, Lock, Sliders, Sparkles } from "lucide-react";
 import type { ModelOutputs } from "@/lib/types";
 
-const GATE_ENABLED = process.env.NEXT_PUBLIC_GATE_ENABLED === "true";
+const GATE_ENABLED = process.env.NEXT_PUBLIC_GATE_ENABLED === "true" && !EARLY_ACCESS_FREE_FOR_ALL;
 
 export default function FullModelPage() {
   const params = useParams<{ id: string }>();

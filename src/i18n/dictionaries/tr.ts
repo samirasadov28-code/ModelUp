@@ -283,6 +283,11 @@ export const tr: Dict = {
   "pricing.pro_price_per_mo": "/ay",
   "pricing.cta_free": "Ücretsiz başla",
   "pricing.cta_pro": "Pro'ya geç",
+  "pricing.pro_price_free": "Ücretsiz",
+  "pricing.cta_pro_free": "Tam Pro modelini aç — ücretsiz",
+  "pricing.early_access_banner": "Erken erişim — Pro herkes için ücretsiz",
+  "pricing.early_access_badge": "Erken erişim sırasında ücretsiz · kart gerekmez",
+  "pricing.no_signup_needed": "Kayıt yok, kart yok — modeli aç",
   "pricing.cancel_anytime": "İstediğin zaman iptal",
   "pricing.faq_title": "Sıkça sorulanlar",
 

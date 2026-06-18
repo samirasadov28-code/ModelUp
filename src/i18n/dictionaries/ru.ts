@@ -283,6 +283,11 @@ export const ru: Dict = {
   "pricing.pro_price_per_mo": "/мес",
   "pricing.cta_free": "Начать бесплатно",
   "pricing.cta_pro": "Получить Pro",
+  "pricing.pro_price_free": "Бесплатно",
+  "pricing.cta_pro_free": "Открыть полную Pro-модель — бесплатно",
+  "pricing.early_access_banner": "Ранний доступ — Pro бесплатно для всех",
+  "pricing.early_access_badge": "Бесплатно в период раннего доступа · без карты",
+  "pricing.no_signup_needed": "Без регистрации и карты — просто откройте модель",
   "pricing.cancel_anytime": "Отмена в любой момент",
   "pricing.faq_title": "Часто задаваемые вопросы",
 

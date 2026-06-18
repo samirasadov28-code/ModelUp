@@ -283,6 +283,11 @@ export const uk: Dict = {
   "pricing.pro_price_per_mo": "/міс",
   "pricing.cta_free": "Почати безкоштовно",
   "pricing.cta_pro": "Отримати Pro",
+  "pricing.pro_price_free": "Безкоштовно",
+  "pricing.cta_pro_free": "Відкрити повну Pro-модель — безкоштовно",
+  "pricing.early_access_banner": "Ранній доступ — Pro безкоштовний для всіх",
+  "pricing.early_access_badge": "Безкоштовно під час раннього доступу · без картки",
+  "pricing.no_signup_needed": "Без реєстрації, без картки — просто відкрий модель",
   "pricing.cancel_anytime": "Скасуйте будь-коли",
   "pricing.faq_title": "Часті питання",
 

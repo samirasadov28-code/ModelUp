@@ -1,6 +1,6 @@
 {
   "name": "modelup",
-  "version": "2.16.4",
+  "version": "2.17.0",
   "private": true,
   "scripts": {
     "dev": "next dev",

@@ -283,6 +283,11 @@ export const bn: Dict = {
   "pricing.pro_price_per_mo": "/মাস",
   "pricing.cta_free": "ফ্রি শুরু করুন",
   "pricing.cta_pro": "Pro নিন",
+  "pricing.pro_price_free": "বিনামূল্যে",
+  "pricing.cta_pro_free": "সম্পূর্ণ Pro মডেল খুলুন — বিনামূল্যে",
+  "pricing.early_access_banner": "আগাম এক্সেস — Pro সবার জন্য বিনামূল্যে",
+  "pricing.early_access_badge": "আগাম এক্সেস চলাকালীন বিনামূল্যে · কার্ড লাগবে না",
+  "pricing.no_signup_needed": "কোনো সাইনআপ নয়, কোনো কার্ড নয় — শুধু মডেল খুলুন",
   "pricing.cancel_anytime": "যেকোনো সময় বাতিল",
   "pricing.faq_title": "প্রায়ই জিজ্ঞাসিত",
 

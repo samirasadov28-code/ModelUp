@@ -283,6 +283,11 @@ export const ja: Dict = {
   "pricing.pro_price_per_mo": "/月",
   "pricing.cta_free": "無料で開始",
   "pricing.cta_pro": "Pro を購入",
+  "pricing.pro_price_free": "無料",
+  "pricing.cta_pro_free": "完全な Pro モデルを開く — 無料",
+  "pricing.early_access_banner": "早期アクセス — Pro は全員無料",
+  "pricing.early_access_badge": "早期アクセス期間中は無料 · カード不要",
+  "pricing.no_signup_needed": "登録もカードも不要 — そのままモデルを開く",
   "pricing.cancel_anytime": "いつでもキャンセル",
   "pricing.faq_title": "よくある質問",
 

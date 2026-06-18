@@ -283,6 +283,11 @@ export const ar: Dict = {
   "pricing.pro_price_per_mo": "/شهر",
   "pricing.cta_free": "ابدأ مجانًا",
   "pricing.cta_pro": "الحصول على Pro",
+  "pricing.pro_price_free": "مجانًا",
+  "pricing.cta_pro_free": "افتح نموذج Pro الكامل — مجانًا",
+  "pricing.early_access_banner": "وصول مبكر — Pro مجاني للجميع",
+  "pricing.early_access_badge": "مجاني خلال الوصول المبكر · بدون بطاقة",
+  "pricing.no_signup_needed": "لا تسجيل، لا بطاقة — فقط افتح النموذج",
   "pricing.cancel_anytime": "إلغاء في أي وقت",
   "pricing.faq_title": "الأسئلة الشائعة",
 

@@ -53,6 +53,10 @@ export default function PricingPageClient() {
 
       <div className="max-w-4xl mx-auto px-6 pt-16 pb-32">
         <div className="text-center mb-12">
+          <div className="inline-flex items-center gap-2 bg-emerald-50 text-emerald-800 border border-emerald-200 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider mb-5">
+            <Sparkles className="w-3.5 h-3.5" />
+            {t("pricing.early_access_banner")}
+          </div>
           <h1 className="text-4xl font-extrabold text-gray-900 mb-3 tracking-tight">
             {t("pricing.headline_a")} {t("pricing.headline_b")}
           </h1>
@@ -89,11 +93,11 @@ export default function PricingPageClient() {
                 <h2 className="text-xl font-bold text-gray-900">{t("pricing.pro_title")}</h2>
               </div>
               <p className="text-gray-500 text-sm">{t("pricing.pro_subtitle")}</p>
-              <div className="mt-4">
-                <span className="text-3xl font-extrabold text-gray-900">$4.99</span>
-                <span className="text-gray-500 text-sm ml-1">{t("pricing.pro_price_per_mo")}</span>
+              <div className="mt-4 flex items-baseline gap-3">
+                <span className="text-3xl font-extrabold text-emerald-600">{t("pricing.pro_price_free")}</span>
+                <span className="text-base text-gray-400 line-through font-semibold">$4.99{t("pricing.pro_price_per_mo")}</span>
               </div>
-              <p className="text-xs text-emerald-600 mt-1 font-semibold">{t("pricing.cancel_anytime")}</p>
+              <p className="text-xs text-emerald-700 mt-2 font-semibold">{t("pricing.early_access_badge")}</p>
             </div>
             <ul className="space-y-3 mb-8">
               {PRO_FEATURES.map((f) => (
@@ -105,11 +109,11 @@ export default function PricingPageClient() {
             </ul>
             <Link
               href="/model/new"
-              className="block w-full text-center py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-colors shadow-lg shadow-blue-500/20"
+              className="block w-full text-center py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold transition-colors shadow-lg shadow-emerald-500/20"
             >
-              {t("common.get_pro")}
+              {t("pricing.cta_pro_free")}
             </Link>
-            <p className="text-center text-xs text-gray-400 mt-3">{t("pricing.cancel_anytime")}</p>
+            <p className="text-center text-xs text-gray-400 mt-3">{t("pricing.no_signup_needed")}</p>
           </div>
         </div>
 

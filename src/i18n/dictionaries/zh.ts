@@ -283,6 +283,11 @@ export const zh: Dict = {
   "pricing.pro_price_per_mo": "/月",
   "pricing.cta_free": "免费开始",
   "pricing.cta_pro": "升级 Pro",
+  "pricing.pro_price_free": "免费",
+  "pricing.cta_pro_free": "打开完整 Pro 模型 — 免费",
+  "pricing.early_access_banner": "早期访问 — Pro 对所有人免费",
+  "pricing.early_access_badge": "早期访问期间免费 · 无需信用卡",
+  "pricing.no_signup_needed": "无需注册,无需信用卡 — 直接打开模型",
   "pricing.cancel_anytime": "随时取消",
   "pricing.faq_title": "常见问题",
 
