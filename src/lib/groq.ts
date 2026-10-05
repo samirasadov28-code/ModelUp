@@ -27,9 +27,11 @@ import type {
 import { formatCurrencyCompact, formatNumber } from "./utils";
 
 const GROQ_BASE_URL = "https://api.groq.com/openai/v1";
-const NARRATIVE_MODEL = "llama-3.3-70b-versatile";
-const INSIGHTS_MODEL = "llama-3.3-70b-versatile";
-const CHAT_MODEL = "llama-3.3-70b-versatile";
+const NARRATIVE_MODEL = process.env.GROQ_MODEL_FAST ?? "openai/gpt-oss-20b";
+const INSIGHTS_MODEL = process.env.GROQ_MODEL_FAST ?? "openai/gpt-oss-20b";
+const CHAT_MODEL = process.env.GROQ_MODEL ?? "openai/gpt-oss-120b";
+// gpt-oss reasons before answering; keep it short so max_tokens is not used up
+const REASONING_OPTS = { reasoning_effort: "low", include_reasoning: false } as object;
 
 let _client: OpenAI | null = null;
 
@@ -85,7 +87,8 @@ Investor equity: ${(capTable.newEquityPercent * 100).toFixed(1)}%
   try {
     const response = await client.chat.completions.create({
       model: NARRATIVE_MODEL,
-      max_tokens: 220,
+      max_tokens: 700,
+      ...REASONING_OPTS,
       messages: [
         {
           role: "system",
@@ -130,7 +133,8 @@ Churn: ${answers.monthlyChurnRate}%/mo, Growth: ${answers.growthCurve}
   try {
     const response = await client.chat.completions.create({
       model: INSIGHTS_MODEL,
-      max_tokens: 320,
+      max_tokens: 900,
+      ...REASONING_OPTS,
       response_format: { type: "json_object" },
       messages: [
         {
@@ -252,7 +256,8 @@ Be concise (1–3 short paragraphs). If the question really needs the user's spe
 
   const response = await client.chat.completions.create({
     model: CHAT_MODEL,
-    max_tokens: 700,
+    max_tokens: 1500,
+    ...REASONING_OPTS,
     temperature: 0.4,
     messages: [
       { role: "system", content: systemPrompt },
@@ -515,8 +520,9 @@ CONTEXT FIELDS:
 Output strictly a JSON object. No prose, no markdown.`;
 
   const response = await client.chat.completions.create({
-    model: NARRATIVE_MODEL,
-    max_tokens: 1400,
+    model: CHAT_MODEL,
+    max_tokens: 2800,
+    ...REASONING_OPTS,
     temperature: 0.35,
     response_format: { type: "json_object" },
     messages: [
