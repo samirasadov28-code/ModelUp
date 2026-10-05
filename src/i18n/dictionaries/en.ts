@@ -562,7 +562,7 @@ export const en = {
   "chat.header_with_model": "Ask about {name}",
   "chat.header_default": "Ask the ModelUp assistant",
   "chat.subtitle_model": "Powered by Groq · uses your actual numbers",
-  "chat.subtitle_default": "Powered by Groq · Llama 3.3 70B",
+  "chat.subtitle_default": "Powered by Groq · gpt-oss",
   "chat.intro_with_model":
     "I'm looking at your model now. Ask anything — runway, scenarios, what investors will push back on, what to fix first.",
   "chat.intro_default":

@@ -485,7 +485,7 @@ export const ja: Dict = {
   "chat.header_with_model": "{name} について質問",
   "chat.header_default": "ModelUp アシスタントに質問",
   "chat.subtitle_model": "Groq 提供 · あなたの実際の数値を使用",
-  "chat.subtitle_default": "Groq 提供 · Llama 3.3 70B",
+  "chat.subtitle_default": "Groq 提供 · gpt-oss",
   "chat.intro_with_model": "今あなたのモデルを見ています。何でも質問してください — ランウェイ、シナリオ、投資家が指摘すること、最初に直すべきこと。",
   "chat.intro_default": "こんにちは!ModelUp の理解や一般的な財務モデリングの質問にお答えできます。まずモデルを作成してください。そうすればあなたの具体的な数値で推論できます。",
   "chat.placeholder_with_model": "あなたのモデルについて質問…",

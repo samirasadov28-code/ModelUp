@@ -485,7 +485,7 @@ export const uk: Dict = {
   "chat.header_with_model": "Запитати про {name}",
   "chat.header_default": "Запитайте асистента ModelUp",
   "chat.subtitle_model": "На основі Groq · використовує ваші реальні числа",
-  "chat.subtitle_default": "На основі Groq · Llama 3.3 70B",
+  "chat.subtitle_default": "На основі Groq · gpt-oss",
   "chat.intro_with_model": "Я зараз дивлюся на вашу модель. Питайте що завгодно — runway, сценарії, що оскаржать інвестори, що виправити першим.",
   "chat.intro_default": "Привіт! Я допоможу зрозуміти ModelUp або відповім на загальні питання фінансового моделювання. Спочатку побудуйте модель, і я зможу міркувати про ваші конкретні числа.",
   "chat.placeholder_with_model": "Запитайте про свою модель…",
