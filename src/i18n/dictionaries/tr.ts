@@ -485,7 +485,7 @@ export const tr: Dict = {
   "chat.header_with_model": "{name} hakkında sor",
   "chat.header_default": "ModelUp asistanına sorun",
   "chat.subtitle_model": "Groq destekli · gerçek rakamlarınızı kullanır",
-  "chat.subtitle_default": "Groq destekli · Llama 3.3 70B",
+  "chat.subtitle_default": "Groq destekli · gpt-oss",
   "chat.intro_with_model": "Şu anda modelinize bakıyorum. Her şeyi sorun — runway, senaryolar, yatırımcıların itiraz edeceği şeyler, ilk önce neyi düzeltmek gerek.",
   "chat.intro_default": "Merhaba! ModelUp'ı anlamanıza yardım edebilir veya genel finansal modelleme sorularını yanıtlayabilirim. Önce bir model oluşturun, böylece kendi rakamlarınızla mantık yürütebilirim.",
   "chat.placeholder_with_model": "Modeliniz hakkında sorun…",

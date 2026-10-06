@@ -485,7 +485,7 @@ export const id: Dict = {
   "chat.header_with_model": "Tanyakan tentang {name}",
   "chat.header_default": "Tanya asisten ModelUp",
   "chat.subtitle_model": "Didukung oleh Groq · menggunakan angka asli Anda",
-  "chat.subtitle_default": "Didukung oleh Groq · Llama 3.3 70B",
+  "chat.subtitle_default": "Didukung oleh Groq · gpt-oss",
   "chat.intro_with_model": "Saya sedang melihat model Anda. Tanyakan apa saja — runway, skenario, apa yang akan investor pertanyakan, apa yang harus diperbaiki dulu.",
   "chat.intro_default": "Halo! Saya bisa membantu Anda memahami ModelUp atau menjawab pertanyaan umum pemodelan keuangan. Bangun model dulu, lalu saya bisa beralasan dengan angka spesifik Anda.",
   "chat.placeholder_with_model": "Tanyakan tentang model Anda…",

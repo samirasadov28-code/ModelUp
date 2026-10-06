@@ -485,7 +485,7 @@ export const zh: Dict = {
   "chat.header_with_model": "询问 {name}",
   "chat.header_default": "询问 ModelUp 助手",
   "chat.subtitle_model": "由 Groq 提供 · 使用你的真实数据",
-  "chat.subtitle_default": "由 Groq 提供 · Llama 3.3 70B",
+  "chat.subtitle_default": "由 Groq 提供 · gpt-oss",
   "chat.intro_with_model": "我正在查看你的模型。可以提任何问题 — 现金跑道、情景、投资人会反驳什么、首先要修复什么。",
   "chat.intro_default": "你好!我可以帮你了解 ModelUp 或回答一般的财务建模问题。先构建一个模型,我就能基于你的具体数字推理。",
   "chat.placeholder_with_model": "询问你的模型…",

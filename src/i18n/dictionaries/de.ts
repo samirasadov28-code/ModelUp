@@ -485,7 +485,7 @@ export const de: Dict = {
   "chat.header_with_model": "Frage zu {name}",
   "chat.header_default": "Frage den ModelUp-Assistenten",
   "chat.subtitle_model": "Powered by Groq · nutzt deine echten Zahlen",
-  "chat.subtitle_default": "Powered by Groq · Llama 3.3 70B",
+  "chat.subtitle_default": "Powered by Groq · gpt-oss",
   "chat.intro_with_model": "Ich sehe mir dein Modell an. Frag alles — Runway, Szenarien, was Investoren hinterfragen werden, was zuerst zu beheben ist.",
   "chat.intro_default": "Hi! Ich helfe dir, ModelUp zu verstehen oder allgemeine Finanzmodellierungs-Fragen zu beantworten. Erstelle zuerst ein Modell, dann kann ich mit deinen konkreten Zahlen argumentieren.",
   "chat.placeholder_with_model": "Frage zu deinem Modell…",

@@ -485,7 +485,7 @@ export const bn: Dict = {
   "chat.header_with_model": "{name} সম্পর্কে জিজ্ঞাসা করুন",
   "chat.header_default": "ModelUp সহকারীকে জিজ্ঞাসা করুন",
   "chat.subtitle_model": "Groq দ্বারা চালিত · আপনার আসল সংখ্যা ব্যবহার করে",
-  "chat.subtitle_default": "Groq দ্বারা চালিত · Llama 3.3 70B",
+  "chat.subtitle_default": "Groq দ্বারা চালিত · gpt-oss",
   "chat.intro_with_model": "আমি এখন আপনার মডেলটি দেখছি। যা ইচ্ছে জিজ্ঞাসা করুন — রানওয়ে, পরিদৃশ্য, বিনিয়োগকারীরা কী প্রশ্ন তুলবেন, প্রথমে কী ঠিক করবেন।",
   "chat.intro_default": "হ্যালো! আমি আপনাকে ModelUp বুঝতে বা সাধারণ আর্থিক-মডেলিং প্রশ্নের উত্তর দিতে সাহায্য করতে পারি। প্রথমে একটি মডেল তৈরি করুন, তারপর আমি আপনার নির্দিষ্ট সংখ্যা নিয়ে যুক্তি দিতে পারব।",
   "chat.placeholder_with_model": "আপনার মডেল সম্পর্কে জিজ্ঞাসা করুন…",

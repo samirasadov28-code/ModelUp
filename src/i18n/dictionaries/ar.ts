@@ -485,7 +485,7 @@ export const ar: Dict = {
   "chat.header_with_model": "اسأل عن {name}",
   "chat.header_default": "اسأل مساعد ModelUp",
   "chat.subtitle_model": "مدعوم بـ Groq · يستخدم أرقامك الفعلية",
-  "chat.subtitle_default": "مدعوم بـ Groq · Llama 3.3 70B",
+  "chat.subtitle_default": "مدعوم بـ Groq · gpt-oss",
   "chat.intro_with_model": "أنا أنظر إلى نموذجك الآن. اسأل أي شيء — runway، السيناريوهات، ما سيعترض عليه المستثمرون، ما يجب إصلاحه أولاً.",
   "chat.intro_default": "مرحبًا! يمكنني مساعدتك على فهم ModelUp أو الإجابة على أسئلة عامة في النمذجة المالية. أنشئ نموذجًا أولاً، ثم سأتمكن من التفكير في أرقامك المحددة.",
   "chat.placeholder_with_model": "اسأل عن نموذجك…",
