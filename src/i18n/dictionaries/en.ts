@@ -47,7 +47,7 @@ export const en = {
   "common.continue": "Continue",
   "common.loading": "Loading…",
   "common.error_generic": "Something went wrong. Please try again.",
-  "common.get_pro": "Get Pro — $4.99/mo",
+  "common.get_pro": "Get Pro — $4.99 one-off",
   "common.open_full_model": "Open full model",
   "common.download_excel": "Download Excel",
   "common.try_example": "Try an example",
@@ -272,7 +272,7 @@ export const en = {
   "preview.upgrade_title": "Unlock your full financial model",
   "preview.upgrade_body":
     "Interactive charts, unit economics, funding narrative, scenario comparison, cap table, every formula plugged in with your numbers, and the populated Excel file.",
-  "preview.upgrade_cancel": "Cancel anytime · No commitment",
+  "preview.upgrade_cancel": "One-off payment · Lifetime access",
   "preview.upgrade_see_included": "See what's included →",
   "preview.sources_uses_title": "Sources & Uses",
   "preview.sources_uses_sub":
@@ -318,7 +318,7 @@ export const en = {
   "pricing.free_subtitle": "Forever, no card required",
   "pricing.pro_title": "Pro",
   "pricing.pro_subtitle": "Everything Free, plus the full model",
-  "pricing.pro_price_per_mo": "/mo",
+  "pricing.pro_price_per_mo": " one-off",
   "pricing.pro_price_free": "Free",
   "pricing.cta_free": "Start free",
   "pricing.cta_pro": "Get Pro",
@@ -326,7 +326,7 @@ export const en = {
   "pricing.early_access_banner": "Early access — Pro is free for everyone",
   "pricing.early_access_badge": "Free during early access · no card required",
   "pricing.no_signup_needed": "No signup, no card — just open the model",
-  "pricing.cancel_anytime": "Cancel anytime",
+  "pricing.cancel_anytime": "Lifetime access",
   "pricing.faq_title": "Frequently asked",
 
   // ── PLTable (P&L tab) ──────────────────────────────────────────────────

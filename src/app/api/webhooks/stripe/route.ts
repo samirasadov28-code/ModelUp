@@ -65,6 +65,19 @@ export async function POST(req: NextRequest) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const session = event.data.object as any;
         console.log("Checkout completed:", session.id);
+        // One-off lifetime purchase: mark the customer as active (never expires).
+        if (session.mode === "payment" && session.payment_status === "paid") {
+          const email = session.customer_details?.email || session.customer_email;
+          const cid = (session.customer as string | null) ?? email;
+          if (email && cid) {
+            await upsertUser({
+              id: cid,
+              email,
+              stripeCustomerId: session.customer ?? undefined,
+              subscriptionStatus: "active",
+            });
+          }
+        }
         break;
       }
 
