@@ -422,6 +422,9 @@ export default function LandingPage() {
             <Link href="/privacy" className="text-gray-400 text-xs hover:text-gray-600 transition-colors">
               Privacy Policy
             </Link>
+            <Link href="/terms" className="text-gray-400 text-xs hover:text-gray-600 transition-colors">
+              Terms
+            </Link>
             <ForceUpdateButton />
           </div>
         </div>
