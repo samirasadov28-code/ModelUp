@@ -351,7 +351,7 @@ export default function LandingPage() {
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-blue-100 text-xs uppercase tracking-widest font-bold">Pro</h3>
                 <span className="inline-flex items-center gap-2 text-white font-bold">
-                  <span className="line-through text-blue-200/70 font-medium text-sm">$4.99/mo</span>
+                  <span className="line-through text-blue-200/70 font-medium text-sm">$4.99 one-off</span>
                   <span className="bg-emerald-400 text-emerald-900 text-xs font-extrabold uppercase px-2 py-0.5 rounded-full">free</span>
                 </span>
               </div>

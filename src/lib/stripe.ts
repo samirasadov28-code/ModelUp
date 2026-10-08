@@ -24,15 +24,13 @@ export async function createCheckoutSession(params: {
 }): Promise<string> {
   const stripe = getStripe();
   const session = await stripe.checkout.sessions.create({
-    mode: "subscription",
+    mode: "payment",
+    customer_creation: params.customerId ? undefined : "always",
     payment_method_types: ["card"],
     customer: params.customerId,
     line_items: [{ price: params.priceId, quantity: 1 }],
     success_url: params.successUrl,
     cancel_url: params.cancelUrl,
-    subscription_data: params.trialDays
-      ? { trial_period_days: params.trialDays }
-      : undefined,
     metadata: params.metadata,
   });
   if (!session.url) throw new Error("No Stripe checkout URL returned");

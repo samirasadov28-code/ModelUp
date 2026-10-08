@@ -87,7 +87,7 @@ export default function PreviewPage() {
   const company = answers.companyName ?? "Your business";
   const breakEvenText = runway.breakEvenYear ? `Year ${runway.breakEvenYear}` : "Year 3+";
   const fmtCurrency = (v: number) => formatCurrencyCompact(v, currency);
-  const upgradeLabel = earlyAccess ? "Open full model" : "Get Pro — $4.99/mo";
+  const upgradeLabel = earlyAccess ? "Open full model" : "Get Pro — $4.99 one-off";
 
   return (
     <main className="min-h-screen bg-white text-gray-900">
@@ -231,7 +231,7 @@ export default function PreviewPage() {
         <div className="rounded-2xl border-2 border-blue-200 bg-gradient-to-br from-blue-50 via-white to-cyan-50 p-8 text-center shadow-xl shadow-blue-500/10">
           <div className="inline-flex items-center gap-2 bg-blue-600 text-white text-xs px-3 py-1.5 rounded-full mb-4 font-semibold">
             <Sparkles className="w-3.5 h-3.5" />
-            Pro · $4.99/mo
+            Pro · $4.99 one-off
           </div>
           <h2 className="text-2xl font-extrabold text-gray-900 mb-2">
             {t("preview.upgrade_title")}

@@ -153,9 +153,9 @@ export default function FullModelPage() {
             }}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold transition-colors shadow-lg shadow-blue-500/20"
           >
-            Get Pro — $4.99/mo
+            Get Pro — $4.99 one-off
           </button>
-          <p className="text-center text-xs text-gray-400 -mt-2">Cancel anytime · No commitment</p>
+          <p className="text-center text-xs text-gray-400 -mt-2">One-off payment · Lifetime access</p>
 
           <EarlyAccessForm onUnlocked={() => setIsSubscribed(true)} />
 

@@ -18,7 +18,7 @@
 # STRIPE_SECRET_KEY                  → Stripe secret key
 # NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY → Stripe publishable key
 # STRIPE_WEBHOOK_SECRET              → Stripe webhook signing secret
-# STRIPE_PRICE_ID_PRO_MONTHLY        → Stripe price ID for $9.99/mo plan
+# STRIPE_PRICE_ID_PRO_MONTHLY        → Stripe price ID for $4.99 one-off lifetime price (name kept for compatibility)
 # NEXTAUTH_URL                       → https://modelups.netlify.app
 # NEXTAUTH_SECRET                    → random 32-char secret
 # NEXT_PUBLIC_APP_URL                → https://modelups.netlify.app
