@@ -141,7 +141,7 @@ export default function PricingPageClient() {
             },
             {
               q: "Can I download the Excel file?",
-              a: "Yes — Pro subscribers get the fully populated .xlsx file with all inputs pre-filled. Open in Excel or Google Sheets to review every formula and modify assumptions."
+              a: "Yes — Pro users get the fully populated .xlsx file with all inputs pre-filled. Open in Excel or Google Sheets to review every formula and modify assumptions."
             },
             {
               q: "What business types are supported?",
@@ -149,7 +149,7 @@ export default function PricingPageClient() {
             },
             {
               q: "Can I build multiple models?",
-              a: "Pro subscribers can build unlimited models. Free users can build one model and view the preview."
+              a: "Pro users can build unlimited models. Free users can build one model and view the preview."
             },
           ].map(({ q, a }) => (
             <div key={q} className="border-b border-gray-200 pb-6">
