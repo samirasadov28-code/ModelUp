@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -24,10 +24,8 @@ import { TrustBadge } from "@/components/outputs/TrustBadge";
 import { ViewModeToggle } from "@/components/ViewModeToggle";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { TourRunner } from "@/components/TourRunner";
-import { EarlyAccessForm } from "@/components/EarlyAccessForm";
 import { getModelLocally } from "@/lib/model-client-store";
 import { formatCurrencyCompact } from "@/lib/utils";
-import { hasEarlyAccess } from "@/lib/early-access";
 import { EARLY_ACCESS_FREE_FOR_ALL } from "@/lib/access";
 import { useT } from "@/i18n/LocaleProvider";
 import { Calculator, Download, Lightbulb, Lock, Sliders, Sparkles } from "lucide-react";
@@ -37,19 +35,14 @@ const GATE_ENABLED = process.env.NEXT_PUBLIC_GATE_ENABLED === "true" && !EARLY_A
 
 export default function FullModelPage() {
   const params = useParams<{ id: string }>();
-  const searchParams = useSearchParams();
-  const justSubscribed = searchParams.get("subscribed") === "1";
   const { t } = useT();
 
   const [model, setModel] = useState<ModelOutputs | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isSubscribed, setIsSubscribed] = useState(!GATE_ENABLED || justSubscribed);
+  const [isSubscribed] = useState(!GATE_ENABLED);
   const [exporting, setExporting] = useState(false);
 
-  useEffect(() => {
-    if (!GATE_ENABLED) return;
-    if (hasEarlyAccess()) setIsSubscribed(true);
-  }, []);
+
 
   useEffect(() => {
     if (!params.id) return;
@@ -157,7 +150,7 @@ export default function FullModelPage() {
           </button>
           <p className="text-center text-xs text-gray-400 -mt-2">One-off payment · Lifetime access</p>
 
-          <EarlyAccessForm onUnlocked={() => setIsSubscribed(true)} />
+          <p className="text-sm text-gray-500">Paid access is being verified. No email-only unlock is available.</p>
 
           <Link
             href={`/model/${params.id}/preview`}
@@ -191,14 +184,14 @@ export default function FullModelPage() {
         ]}
       />
       <nav className="sticky top-0 z-40 bg-white/90 backdrop-blur-sm border-b border-gray-100">
-        <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between gap-3">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
           <Link href="/" className="flex items-center gap-2 flex-shrink-0">
             <Image src="/Logo_192.png" alt="ModelUp" width={28} height={28} className="rounded-lg" />
             <span className="text-gray-900 font-bold text-lg tracking-tight whitespace-nowrap">
               Model<span className="text-blue-600">Up</span>
             </span>
           </Link>
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3">
             <div className="hidden lg:block">
               <TrustBadge />
             </div>
