@@ -23,13 +23,25 @@ export async function upsertUser(params: {
 }): Promise<void> {
   const db = getSupabase();
   if (!db) return;
-  await db.from("users").upsert({
-    id: params.id,
-    email: params.email,
-    stripe_customer_id: params.stripeCustomerId,
+  const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  // Stripe ids and emails are not auth ids. Resolve existing identity first.
+  const { data: existing, error: lookupError } = await db.from("users")
+    .select("id,email,stripe_customer_id").eq("email", params.email.trim().toLowerCase()).maybeSingle();
+  if (lookupError) throw new Error("User identity lookup failed");
+  if (!existing || !uuid.test(existing.id)) throw new Error("Authenticated user mapping required");
+  if (uuid.test(params.id) && params.id !== existing.id) throw new Error("User identity conflict");
+  if (!uuid.test(params.id) && (!existing.stripe_customer_id || existing.stripe_customer_id !== params.stripeCustomerId)) {
+    throw new Error("Verified Stripe customer mapping required");
+  }
+  if (existing.stripe_customer_id && params.stripeCustomerId && existing.stripe_customer_id !== params.stripeCustomerId) {
+    throw new Error("Stripe customer identity conflict");
+  }
+  const { error } = await db.from("users").update({
+    stripe_customer_id: params.stripeCustomerId ?? existing.stripe_customer_id,
     subscription_status: params.subscriptionStatus ?? "free",
     updated_at: new Date().toISOString(),
-  });
+  }).eq("id", existing.id);
+  if (error) throw new Error("User entitlement write failed");
 }
 
 export async function getUserSubscriptionStatus(userId: string): Promise<string> {
