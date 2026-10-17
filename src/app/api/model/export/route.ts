@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getModel } from "@/lib/model-store";
 import { generateExcelBuffer } from "@/lib/excel-generator";
 import { EARLY_ACCESS_FREE_FOR_ALL } from "@/lib/access";
+import { PRO_COOKIE, readProCookie } from "@/lib/pro-cookie";
+import { isSessionActive } from "@/lib/pro-purchases";
 import type { ModelOutputs } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -9,7 +11,10 @@ export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
   if (!EARLY_ACCESS_FREE_FOR_ALL) {
-    return NextResponse.json({ error: "Authenticated Pro verification is required before paid exports can be enabled." }, { status: 403 });
+    const sid = readProCookie(req.cookies.get(PRO_COOKIE)?.value);
+    if (!sid || !(await isSessionActive(sid))) {
+      return NextResponse.json({ error: "Pro required. Purchase or restore your Pro access." }, { status: 403 });
+    }
   }
   try {
     const body = (await req.json()) as { modelId?: string; model?: ModelOutputs };

@@ -4,14 +4,15 @@
  * When `true` (current default during early access), the `/model/[id]/full`
  * page is unlocked for everyone, the Stripe checkout CTAs are replaced with
  * direct "Open full model" links, and pricing copy explains the temporary
- * free access. **All Stripe / Supabase / webhook code is left intact** — flip
- * this constant back to `false` to reinstate paid subscriptions without any
- * other code changes.
+ * free access. **All Stripe / Supabase / webhook code is left intact** — set
+ * `NEXT_PUBLIC_EARLY_ACCESS_FREE_FOR_ALL=false` (build-time env) to reinstate the paid
+ * paywall without any other code changes.
  *
- * Future paid relaunch checklist:
- *   1. Set EARLY_ACCESS_FREE_FOR_ALL = false here.
- *   2. (Optional) set NEXT_PUBLIC_GATE_ENABLED=true on Netlify if you also
- *      want the historical email-allowlist gate enabled.
- *   3. Redeploy.
+ * Paid go-live checklist (needs Sam's approval):
+ *   1. Apply supabase/migration_pro_purchases.sql to the production Supabase project.
+ *   2. Create the live $4.99 one-off price + live webhook endpoint in Stripe
+ *      (events: checkout.session.completed, checkout.session.async_payment_succeeded,
+ *      charge.refunded, charge.dispute.created) and set the live env vars.
+ *   3. Set NEXT_PUBLIC_EARLY_ACCESS_FREE_FOR_ALL=false on Netlify and redeploy.
  */
-export const EARLY_ACCESS_FREE_FOR_ALL = true;
+export const EARLY_ACCESS_FREE_FOR_ALL = process.env.NEXT_PUBLIC_EARLY_ACCESS_FREE_FOR_ALL !== "false";
