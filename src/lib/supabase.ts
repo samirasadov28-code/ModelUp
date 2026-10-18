@@ -1,4 +1,5 @@
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
+import type { ModelOutputs } from "./types";
 
 let _client: SupabaseClient | null = null;
 
@@ -76,4 +77,16 @@ export async function saveModelToDb(params: {
     model_outputs: params.outputs,
     updated_at: new Date().toISOString(),
   });
+}
+
+export async function getModelFromDb(id: string): Promise<ModelOutputs | null> {
+  const db = getSupabase();
+  if (!db) return null;
+  const { data, error } = await db
+    .from("models")
+    .select("model_outputs")
+    .eq("id", id)
+    .maybeSingle();
+  if (error || !data?.model_outputs) return null;
+  return data.model_outputs as ModelOutputs;
 }

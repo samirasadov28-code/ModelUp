@@ -18,3 +18,9 @@ create table if not exists stripe_events_processed (
 alter table pro_purchases enable row level security;
 alter table stripe_events_processed enable row level security;
 -- No policies: only the service-role key (server) can read or write these tables.
+
+-- Server code uses the service-role key; grant table privileges explicitly
+-- (tables created by raw SQL do not pick up service_role default privileges,
+--  and without these the webhook inserts fail with "permission denied").
+grant all on pro_purchases to service_role;
+grant all on stripe_events_processed to service_role;
