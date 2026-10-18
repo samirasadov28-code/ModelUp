@@ -1,93 +1,83 @@
 import { NextRequest, NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { getStripe } from "@/lib/stripe";
-import { upsertUser } from "@/lib/supabase";
+import { claimEvent, releaseEvent, recordPurchase, setStatusByPaymentIntent } from "@/lib/pro-purchases";
+
+export const runtime = "nodejs";
+
+/** Validates the paid session is for exactly our Pro price, using SUBTOTAL (not total, which drops with coupons/tax). */
+async function validateAndRecord(stripe: Stripe, sessionId: string, livemodeOfEvent: boolean) {
+  const expectedPrice = process.env.STRIPE_PRICE_ID_PRO_MONTHLY;
+  if (!expectedPrice) throw new Error("STRIPE_PRICE_ID_PRO_MONTHLY not set");
+
+  const session = await stripe.checkout.sessions.retrieve(sessionId); // fresh state, not the event payload
+  if (session.mode !== "payment") return;
+  if (session.payment_status !== "paid") return;          // async methods fire a later event
+  if (session.metadata?.product !== "modelup_pro") return;
+
+  const items = await stripe.checkout.sessions.listLineItems(sessionId, { limit: 10 });
+  if (items.data.length !== 1) return;
+  const li = items.data[0];
+  if (li.price?.id !== expectedPrice || li.quantity !== 1) return;
+  if (li.price.unit_amount == null || li.amount_subtotal !== li.price.unit_amount) return;
+
+  await recordPurchase({
+    sessionId,
+    paymentIntent: typeof session.payment_intent === "string" ? session.payment_intent : session.payment_intent?.id ?? null,
+    email: session.customer_details?.email ?? null,
+    amountSubtotal: li.amount_subtotal,
+    currency: session.currency ?? "usd",
+    livemode: livemodeOfEvent,
+  });
+}
 
 export async function POST(req: NextRequest) {
   const body = await req.text();
   const signature = req.headers.get("stripe-signature");
-
   if (!signature || !process.env.STRIPE_WEBHOOK_SECRET) {
     return NextResponse.json({ error: "Missing signature or webhook secret" }, { status: 400 });
   }
 
+  const stripe = getStripe();
   let event: Stripe.Event;
   try {
-    const stripe = getStripe();
     event = stripe.webhooks.constructEvent(body, signature, process.env.STRIPE_WEBHOOK_SECRET);
-  } catch (err) {
-    console.error("Stripe webhook signature verification failed:", err);
+  } catch {
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
+  let claimed = false;
   try {
+    claimed = await claimEvent(event.id, event.type);
+    if (!claimed) return NextResponse.json({ received: true, duplicate: true });
+
     switch (event.type) {
-      case "customer.subscription.created":
-      case "customer.subscription.updated": {
-        const sub = event.data.object as Stripe.Subscription;
-        const customerId = sub.customer as string;
-        const status = sub.status === "active" ? "active"
-          : sub.status === "trialing" ? "trialing"
-          : sub.status === "canceled" ? "canceled"
-          : "free";
-
-        // Look up user by Stripe customer ID
-        const stripe = getStripe();
-        const customer = await stripe.customers.retrieve(customerId) as Stripe.Customer;
-        if (customer.email) {
-          await upsertUser({
-            id: customer.metadata?.userId ?? customerId,
-            email: customer.email,
-            stripeCustomerId: customerId,
-            subscriptionStatus: status,
-          });
-        }
+      case "checkout.session.completed":
+      case "checkout.session.async_payment_succeeded": {
+        const s = event.data.object as Stripe.Checkout.Session;
+        await validateAndRecord(stripe, s.id, event.livemode);
         break;
       }
-
-      case "customer.subscription.deleted": {
-        const sub = event.data.object as Stripe.Subscription;
-        const customerId = sub.customer as string;
-        const stripe = getStripe();
-        const customer = await stripe.customers.retrieve(customerId) as Stripe.Customer;
-        if (customer.email) {
-          await upsertUser({
-            id: customer.metadata?.userId ?? customerId,
-            email: customer.email,
-            stripeCustomerId: customerId,
-            subscriptionStatus: "canceled",
-          });
-        }
+      case "charge.refunded": {
+        const c = event.data.object as Stripe.Charge;
+        // Revoke on any refund; a partial refund is treated as a revoke too (conservative).
+        const pi = typeof c.payment_intent === "string" ? c.payment_intent : c.payment_intent?.id;
+        if (pi && c.refunded) await setStatusByPaymentIntent(pi, "refunded");
         break;
       }
-
-      case "checkout.session.completed": {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const session = event.data.object as any;
-        console.log("Checkout completed:", session.id);
-        // One-off lifetime purchase: mark the customer as active (never expires).
-        if (session.mode === "payment" && session.payment_status === "paid") {
-          const email = session.customer_details?.email || session.customer_email;
-          const cid = (session.customer as string | null) ?? email;
-          if (email && cid) {
-            await upsertUser({
-              id: cid,
-              email,
-              stripeCustomerId: session.customer ?? undefined,
-              subscriptionStatus: "active",
-            });
-          }
-        }
+      case "charge.dispute.created": {
+        const d = event.data.object as Stripe.Dispute;
+        const pi = typeof d.payment_intent === "string" ? d.payment_intent : d.payment_intent?.id;
+        if (pi) await setStatusByPaymentIntent(pi, "disputed");
         break;
       }
-
       default:
         break;
     }
-
     return NextResponse.json({ received: true });
   } catch (err) {
     console.error("Webhook handler error:", err);
+    if (claimed) await releaseEvent(event.id); // let Stripe retry
     return NextResponse.json({ error: "Handler error" }, { status: 500 });
   }
 }

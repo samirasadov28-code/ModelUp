@@ -31,15 +31,14 @@ import { useT } from "@/i18n/LocaleProvider";
 import { Calculator, Download, Lightbulb, Lock, Sliders, Sparkles } from "lucide-react";
 import type { ModelOutputs } from "@/lib/types";
 
-const GATE_ENABLED = process.env.NEXT_PUBLIC_GATE_ENABLED === "true" && !EARLY_ACCESS_FREE_FOR_ALL;
-
 export default function FullModelPage() {
   const params = useParams<{ id: string }>();
   const { t } = useT();
 
   const [model, setModel] = useState<ModelOutputs | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isSubscribed] = useState(!GATE_ENABLED);
+  const [isSubscribed, setIsSubscribed] = useState(EARLY_ACCESS_FREE_FOR_ALL);
+  const [proChecked, setProChecked] = useState(EARLY_ACCESS_FREE_FOR_ALL);
   const [exporting, setExporting] = useState(false);
 
 
@@ -62,6 +61,25 @@ export default function FullModelPage() {
       })
       .catch(() => setLoading(false));
   }, [params.id]);
+
+  // Runs only when early access is off: redeem a just-paid session, then check Pro status.
+  useEffect(() => {
+    if (EARLY_ACCESS_FREE_FOR_ALL) return;
+    let cancelled = false;
+    (async () => {
+      const sid = new URLSearchParams(window.location.search).get("session_id");
+      if (sid) {
+        for (let i = 0; i < 10 && !cancelled; i++) {   // webhook can lag a few seconds
+          const r = await fetch("/api/pro/redeem", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sessionId: sid }) });
+          if (r.status !== 202) break;
+          await new Promise((res) => setTimeout(res, 2000));
+        }
+      }
+      const s = await fetch("/api/pro/status").then((r) => r.json()).catch(() => ({ pro: false }));
+      if (!cancelled) { setIsSubscribed(!!s.pro); setProChecked(true); }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   async function handleExport() {
     setExporting(true);
@@ -90,7 +108,7 @@ export default function FullModelPage() {
     }
   }
 
-  if (loading) {
+  if (loading || !proChecked) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center space-y-4">
@@ -150,7 +168,7 @@ export default function FullModelPage() {
           </button>
           <p className="text-center text-xs text-gray-400 -mt-2">One-off payment · Lifetime access</p>
 
-          <p className="text-sm text-gray-500">Paid access is being verified. No email-only unlock is available.</p>
+          <p className="text-sm text-gray-500">Already paid? Open the success link from the same browser you paid from.</p>
 
           <Link
             href={`/model/${params.id}/preview`}
